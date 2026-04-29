@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 
 export default async function TAWorkOrdersPage() {
   const profile = await requireAuth(["ta"]);
@@ -41,8 +42,8 @@ export default async function TAWorkOrdersPage() {
               className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900"
             >
               <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium text-zinc-900 dark:text-zinc-50">
+                <Link href={`/portal/work-orders/${wo.id}`} className="block">
+                  <h3 className="font-medium text-zinc-900 hover:underline dark:text-zinc-50">
                     {wo.project_name}
                   </h3>
                   <p className="mt-1 text-sm text-zinc-500">
@@ -51,7 +52,14 @@ export default async function TAWorkOrdersPage() {
                   <p className="text-sm text-zinc-500">
                     {wo.school}, {wo.location}
                   </p>
-                </div>
+                  {wo.sign_by && wo.status === "sent" && (
+                    <p className={`mt-1 text-xs font-medium ${
+                      new Date(wo.sign_by) < new Date() ? "text-red-600" : "text-yellow-600"
+                    }`}>
+                      {new Date(wo.sign_by) < new Date() ? "Overdue" : `Sign by ${wo.sign_by}`}
+                    </p>
+                  )}
+                </Link>
                 <div className="flex items-center gap-3">
                   <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[wo.status] || ""}`}>
                     {wo.status}

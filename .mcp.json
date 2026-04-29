@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "interact-portal-monday": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/Users/markhansen/.claude/mcp-servers/interact-portal/build/index.js"],
+      "env": {
+        "MONDAY_API_KEY": "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjU0NDMxMDU2NSwiYWFpIjoxMSwidWlkIjo2ODU5NzkwMSwiaWFkIjoiMjAyNS0wNy0yOVQxMjoyMjozNi4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6OTg5MzY2OSwicmduIjoidXNlMSJ9.cm9PNTNWgq__MOTh7EsQfQVWK87MgjS_4bTtAf4AFLI",
+        "MONDAY_BOARD_ID": "18410746908",
+        "MONDAY_PERSON_ID": "68597901"
+      }
+    },
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp"
+    }
+  }
+}

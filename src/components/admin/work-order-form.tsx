@@ -64,6 +64,7 @@ export function WorkOrderForm({
     co_taught: false,
     grade: "",
     accommodation: "",
+    sign_by: "",
     notes: "",
   });
 
@@ -316,6 +317,26 @@ export function WorkOrderForm({
               Select a TA and program type to calculate rate.
             </p>
           )}
+        </div>
+      </Section>
+
+      {/* Deadline */}
+      <Section title="Signing Deadline">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>Sign by date</Label>
+            <input
+              type="date"
+              value={form.sign_by}
+              onChange={(e) => update("sign_by", e.target.value)}
+              className="input"
+            />
+          </div>
+          <div className="flex items-end">
+            <p className="text-sm text-zinc-500">
+              TA will see this deadline. Reminders sent if unsigned.
+            </p>
+          </div>
         </div>
       </Section>
 

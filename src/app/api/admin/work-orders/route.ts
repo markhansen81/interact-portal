@@ -49,6 +49,7 @@ export async function POST(request: Request) {
       co_taught: body.co_taught,
       grade: body.grade,
       accommodation: body.accommodation,
+      sign_by: body.sign_by || null,
       notes: body.notes,
       status: "draft",
     })

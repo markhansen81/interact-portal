@@ -24,6 +24,7 @@ interface WorkOrder {
   grade: string;
   accommodation: string;
   status: string;
+  sign_by: string | null;
   notes: string;
   created_at: string;
   profiles: {
@@ -64,6 +65,11 @@ export function WorkOrderPreview({ workOrder: wo }: { workOrder: WorkOrder }) {
           </h2>
           <StatusBadge status={wo.status} />
         </div>
+        {wo.sign_by && (
+          <span className={`text-sm ${new Date(wo.sign_by) < new Date() ? "text-red-600" : "text-zinc-500"}`}>
+            Sign by: {wo.sign_by}
+          </span>
+        )}
         {wo.status === "draft" && (
           <button
             onClick={handleSend}
