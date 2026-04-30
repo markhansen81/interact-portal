@@ -77,22 +77,21 @@ export async function PATCH(
     },
   });
 
-  // Forward to DATEV when approved
-  if (body.status === "approved" && process.env.DATEV_UPLOAD_EMAIL) {
-    await sendEmail({
-      to: process.env.DATEV_UPLOAD_EMAIL,
-      subject: `Invoice ${invoice.invoice_number} — ${taName} — €${Number(invoice.total).toFixed(2)}`,
-      html: `
-        <div style="font-family: Arial, sans-serif;">
-          <h3>Invoice for Processing</h3>
-          <p><strong>TA:</strong> ${taName} (${ta.email})</p>
-          <p><strong>Invoice:</strong> ${invoice.invoice_number}</p>
-          <p><strong>Amount:</strong> €${Number(invoice.total).toFixed(2)}</p>
-          <p><strong>Approved:</strong> ${new Date().toLocaleDateString("de-DE")}</p>
-          ${invoice.uploaded_pdf_url ? `<p><strong>PDF:</strong> <a href="${invoice.uploaded_pdf_url}">Download</a></p>` : ""}
-        </div>
-      `,
-    });
+  // Push approved invoice to Monday for DATEV processing
+  if (body.status === "approved" && process.env.MONDAY_API_TOKEN) {
+    try {
+      const { pushInvoiceToMonday } = await import("@/lib/monday");
+      await pushInvoiceToMonday({
+        invoiceNumber: invoice.invoice_number,
+        taName,
+        taEmail: ta.email,
+        amount: Number(invoice.total),
+        workOrderId: invoice.work_order_id,
+        pdfUrl: invoice.uploaded_pdf_url,
+      });
+    } catch (e) {
+      console.error("[MONDAY] Failed to push invoice:", e);
+    }
   }
 
   return NextResponse.json({ success: true });
