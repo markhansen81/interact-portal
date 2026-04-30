@@ -23,11 +23,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // Fetch items from Monday with Staff Status not "Staffed"
+  // Check if we should only sync upcoming
+  const url = new URL(request.url);
+  const upcomingOnly = url.searchParams.get("upcoming") !== "false";
+
+  // Fetch all items from Monday (up to 500)
   const result = await mondayQuery(`
     query {
       boards(ids: ${process.env.MONDAY_JOBS_BOARD_ID}) {
-        items_page(limit: 100) {
+        items_page(limit: 500) {
           items {
             id
             name
@@ -42,17 +46,28 @@ export async function POST(request: Request) {
     }
   `);
 
-  const items = result?.data?.boards?.[0]?.items_page?.items || [];
+  const allItems = result?.data?.boards?.[0]?.items_page?.items || [];
   const adminClient = createAdminClient();
 
+  const today = new Date().toISOString().split("T")[0];
   let created = 0;
   let updated = 0;
+  let skipped = 0;
 
-  for (const item of items) {
+  for (const item of allItems) {
     const jobData = mapMondayItemToJob(item);
 
-    // Skip items with no TAs needed or no dates
-    if (!jobData.start_date) continue;
+    // Skip items without dates
+    if (!jobData.start_date) {
+      skipped++;
+      continue;
+    }
+
+    // If upcoming only, skip past jobs
+    if (upcomingOnly && jobData.end_date && jobData.end_date < today) {
+      skipped++;
+      continue;
+    }
 
     const { data: existing } = await adminClient
       .from("jobs")
@@ -69,5 +84,11 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.json({ success: true, created, updated, total: items.length });
+  return NextResponse.json({
+    success: true,
+    created,
+    updated,
+    skipped,
+    total: allItems.length,
+  });
 }
