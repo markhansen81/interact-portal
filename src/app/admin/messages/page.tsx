@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 
 export default async function MessagesPage() {
   const supabase = await createClient();
@@ -24,9 +25,10 @@ export default async function MessagesPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {tas.map((ta) => (
-            <div
+            <Link
+              href={`/admin/messages/${ta.id}`}
               key={ta.id}
-              className="rounded-xl border border-zinc-200 bg-white p-4 hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+              className="block rounded-xl border border-zinc-200 bg-white p-4 hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
             >
               <div className="flex items-center gap-3">
                 {ta.photo_url ? (
@@ -49,7 +51,7 @@ export default async function MessagesPage() {
                   <p className="text-xs text-zinc-500">{ta.email}</p>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}
