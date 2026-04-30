@@ -188,9 +188,10 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
         </div>
 
         {showPreview ? (
-          <div className="rounded-xl border border-zinc-300 bg-white shadow-lg mx-auto" style={{ width: 794, minHeight: 1123, position: "relative" }}>
-            {/* A4 ratio: 210mm x 297mm = 794px x 1123px at 96dpi */}
-            <div style={{ padding: "60px 60px 80px", fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.6, overflowWrap: "break-word", wordWrap: "break-word" }}
+          <div className="rounded-xl border border-zinc-300 bg-white shadow-lg overflow-hidden wo-editor mx-auto" style={{ width: 794, minHeight: 1123, position: "relative" }}>
+            {/* Use ql-editor class so preview matches editor styling exactly */}
+            <div className="ql-editor"
+              style={{ padding: "60px 60px 80px", fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.6, overflowWrap: "break-word", wordWrap: "break-word" }}
               dangerouslySetInnerHTML={{ __html: getPreviewHtml() }} />
             {/* Footer */}
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, borderTop: "1px solid #e5e7eb", padding: "12px 60px", display: "flex", alignItems: "center", gap: 12 }}>
