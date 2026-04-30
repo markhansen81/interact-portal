@@ -22,12 +22,20 @@ export default async function WorkOrdersPage() {
         <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
           Work Orders
         </h2>
-        <Link
-          href="/admin/work-orders/new"
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900"
-        >
-          Create Work Order
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            href="/admin/work-orders/template"
+            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
+          >
+            Edit Template
+          </Link>
+          <Link
+            href="/admin/work-orders/new"
+            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900"
+          >
+            Create Work Order
+          </Link>
+        </div>
       </div>
 
       {!workOrders || workOrders.length === 0 ? (
