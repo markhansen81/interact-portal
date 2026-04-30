@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { InvoiceActions } from "@/components/admin/invoice-actions";
 
 export default async function InvoicesPage() {
   const supabase = await createClient();
@@ -29,9 +30,7 @@ export default async function InvoicesPage() {
 
       {/* Invoices */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-          Invoices
-        </h3>
+        <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Invoices</h3>
         {!invoices || invoices.length === 0 ? (
           <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-8 text-center dark:border-zinc-700 dark:bg-zinc-900">
             <p className="text-zinc-500">No invoices submitted yet.</p>
@@ -44,8 +43,9 @@ export default async function InvoicesPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">Invoice #</th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">TA</th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">Total</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">Submitted</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">Source</th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">Status</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-zinc-500">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -60,15 +60,18 @@ export default async function InvoicesPage() {
                         {ta?.first_name && ta?.last_name ? `${ta.first_name} ${ta.last_name}` : ta?.email || "—"}
                       </td>
                       <td className="px-6 py-4 text-sm text-zinc-500">
-                        {inv.total ? `€${Number(inv.total).toFixed(2)}` : "—"}
+                        €{Number(inv.total).toFixed(2)}
                       </td>
                       <td className="px-6 py-4 text-sm text-zinc-500">
-                        {inv.submitted_at ? new Date(inv.submitted_at).toLocaleDateString() : "—"}
+                        {inv.source === "upload" ? "PDF Upload" : "Calculator"}
                       </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[inv.status] || ""}`}>
                           {inv.status}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <InvoiceActions id={inv.id} status={inv.status} type="invoice" />
                       </td>
                     </tr>
                   );
@@ -79,11 +82,9 @@ export default async function InvoicesPage() {
         )}
       </div>
 
-      {/* Expense Reimbursements */}
+      {/* Expenses */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-          Expense Reimbursements
-        </h3>
+        <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Expense Reimbursements</h3>
         {!expenses || expenses.length === 0 ? (
           <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-8 text-center dark:border-zinc-700 dark:bg-zinc-900">
             <p className="text-zinc-500">No expense claims submitted yet.</p>
@@ -97,6 +98,7 @@ export default async function InvoicesPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">Total</th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">Submitted</th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">Status</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-zinc-500">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -108,7 +110,7 @@ export default async function InvoicesPage() {
                         {ta?.first_name && ta?.last_name ? `${ta.first_name} ${ta.last_name}` : ta?.email || "—"}
                       </td>
                       <td className="px-6 py-4 text-sm text-zinc-500">
-                        {exp.total ? `€${Number(exp.total).toFixed(2)}` : "—"}
+                        €{Number(exp.total).toFixed(2)}
                       </td>
                       <td className="px-6 py-4 text-sm text-zinc-500">
                         {exp.submitted_at ? new Date(exp.submitted_at).toLocaleDateString() : "—"}
@@ -117,6 +119,9 @@ export default async function InvoicesPage() {
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[exp.status] || ""}`}>
                           {exp.status}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <InvoiceActions id={exp.id} status={exp.status} type="expense" />
                       </td>
                     </tr>
                   );
