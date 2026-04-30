@@ -25,6 +25,9 @@ interface WorkOrder {
   accommodation: string;
   status: string;
   sign_by: string | null;
+  pdf_url: string | null;
+  signature_data: { signature_png?: string; timestamp?: string } | null;
+  signed_at: string | null;
   notes: string;
   created_at: string;
   profiles: {
@@ -366,10 +369,39 @@ export function WorkOrderPreview({ workOrder: initialWO }: { workOrder: WorkOrde
 
         {/* Signature Area */}
         <div className="p-8">
+          {wo.status === "signed" && wo.pdf_url && (
+            <div className="mb-6 rounded-lg bg-green-50 p-4 dark:bg-green-900/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-green-700 dark:text-green-400">Signed</p>
+                  <p className="text-xs text-green-600">{wo.signed_at ? new Date(wo.signed_at).toLocaleString() : ""}</p>
+                </div>
+                <a
+                  href={wo.pdf_url}
+                  target="_blank"
+                  className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                >
+                  Download Signed PDF
+                </a>
+              </div>
+            </div>
+          )}
+          {wo.status === "signed" && !wo.pdf_url && (
+            <div className="mb-6 rounded-lg bg-green-50 p-4 dark:bg-green-900/10">
+              <p className="text-sm font-semibold text-green-700 dark:text-green-400">Signed</p>
+              <p className="text-xs text-green-600">{wo.signed_at ? new Date(wo.signed_at).toLocaleString() : ""}</p>
+            </div>
+          )}
           <p className="text-sm text-zinc-600 dark:text-zinc-400">With this signature I accept the Work Order:</p>
           <div className="mt-8 grid grid-cols-2 gap-8">
             <div>
-              <div className="h-16 border-b border-zinc-300 dark:border-zinc-700" />
+              {wo.signature_data?.signature_png ? (
+                <div className="h-16 border-b border-zinc-300 dark:border-zinc-700">
+                  <img src={wo.signature_data.signature_png} alt="Signature" className="h-14 object-contain" />
+                </div>
+              ) : (
+                <div className="h-16 border-b border-zinc-300 dark:border-zinc-700" />
+              )}
               <p className="mt-2 font-medium text-zinc-900 dark:text-zinc-50">{taName}</p>
               <p className="text-sm italic text-zinc-500">Teaching Artist (Contractor)</p>
             </div>
