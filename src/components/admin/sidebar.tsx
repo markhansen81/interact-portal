@@ -10,6 +10,7 @@ const navItems = [
   { href: "/admin/work-orders", label: "Work Orders", icon: "file-text" },
   { href: "/admin/contracts", label: "Contracts", icon: "pen-tool" },
   { href: "/admin/invoices", label: "Invoices", icon: "receipt" },
+  { href: "/admin/availability", label: "Availability", icon: "calendar" },
   { href: "/admin/services", label: "Services & Rates", icon: "settings" },
   { href: "/admin/messages", label: "Messages", icon: "message-circle" },
 ];
@@ -38,6 +39,9 @@ const iconPaths: Record<string, React.ReactNode> = {
   ),
   briefcase: (
     <path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+  ),
+  calendar: (
+    <path d="M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM16 2v4M8 2v4M3 10h18" />
   ),
 };
 
