@@ -231,10 +231,10 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
             <TB onClick={() => exec("underline")} title="Underline"><u>U</u></TB>
             <TB onClick={() => exec("strikeThrough")} title="Strikethrough"><s>S</s></TB>
             <Sep />
-            <TB onClick={() => exec("formatBlock", "H1")} title="Title">H1</TB>
-            <TB onClick={() => exec("formatBlock", "H2")} title="Subtitle">H2</TB>
-            <TB onClick={() => exec("formatBlock", "H3")} title="Section">H3</TB>
-            <TB onClick={() => exec("formatBlock", "P")} title="Paragraph">P</TB>
+            <TB onClick={() => exec("formatBlock", "<h1>")} title="Title">H1</TB>
+            <TB onClick={() => exec("formatBlock", "<h2>")} title="Subtitle">H2</TB>
+            <TB onClick={() => exec("formatBlock", "<h3>")} title="Section">H3</TB>
+            <TB onClick={() => exec("formatBlock", "<p>")} title="Paragraph">P</TB>
             <Sep />
             <TB onClick={() => exec("justifyLeft")} title="Left">
               <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 16 16"><path d="M2 2h12v1.5H2zm0 4h8v1.5H2zm0 4h12v1.5H2zm0 4h8v1.5H2z"/></svg>
