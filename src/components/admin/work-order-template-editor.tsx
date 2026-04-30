@@ -49,7 +49,8 @@ const SAMPLE_DATA: Record<string, string> = {
   SignByDate: "10.05.2026", CreatedDate: new Date().toLocaleDateString("de-DE"),
 };
 
-const DEFAULT_TEMPLATE = `<p class="ql-align-right"><strong style="color: rgb(102, 102, 102); font-size: 18px;">INTERACT ENGLISH</strong></p>
+const DEFAULT_TEMPLATE = `<p><em style="color: rgb(153, 153, 153);">[Use the image button ⬆ in the toolbar to insert your logo here]</em></p>
+<p><br></p>
 <p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">InterACT English gGmbH</span></p>
 <p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">Planufer 92B, 10967 Berlin</span></p>
 <p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">Tel. 030 20339702</span></p>
@@ -113,7 +114,27 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
   const [saved, setSaved] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [stampUrl, setStampUrl] = useState<string | null>(null);
+  const [footerLogoUrl, setFooterLogoUrl] = useState<string | null>(null);
   const router = useRouter();
+
+  function handleImageUpload(target: "stamp" | "footer") {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        if (target === "stamp") setStampUrl(dataUrl);
+        if (target === "footer") setFooterLogoUrl(dataUrl);
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  }
 
   const modules = useMemo(() => ({
     toolbar: [
@@ -203,14 +224,14 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
           <div className="wo-page mx-auto ql-snow" style={{ width: 794, background: "white", borderRadius: 8, boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "1px solid #e5e7eb" }}>
             <div className="ql-editor" style={{ padding: "50px 50px 0", fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.7, overflowWrap: "break-word" }}
               dangerouslySetInnerHTML={{ __html: fillVariables(html) }} />
-            <SignatureAreaPreview taName={SAMPLE_DATA.TeachingArtist} date={SAMPLE_DATA.CreatedDate} />
+            <SignatureAreaPreview taName={SAMPLE_DATA.TeachingArtist} date={SAMPLE_DATA.CreatedDate} stampUrl={stampUrl} footerLogoUrl={footerLogoUrl} onUpload={handleImageUpload} />
           </div>
         ) : (
           <div className="wo-page mx-auto" style={{ width: 794, background: "white", borderRadius: 8, boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "1px solid #e5e7eb", overflow: "hidden" }}>
             <div className="wo-editor">
               <ReactQuill theme="snow" value={html} onChange={setHtml} modules={modules} />
             </div>
-            <SignatureAreaPreview taName="{{TeachingArtist}}" date="{{CreatedDate}}" />
+            <SignatureAreaPreview taName="{{TeachingArtist}}" date="{{CreatedDate}}" stampUrl={stampUrl} footerLogoUrl={footerLogoUrl} onUpload={handleImageUpload} />
           </div>
         )}
       </div>
@@ -241,7 +262,7 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
   );
 }
 
-function SignatureAreaPreview({ taName, date }: { taName: string; date: string }) {
+function SignatureAreaPreview({ taName, date, stampUrl, footerLogoUrl, onUpload }: { taName: string; date: string; stampUrl: string | null; footerLogoUrl: string | null; onUpload: (target: "stamp" | "footer") => void }) {
   return (
     <div style={{ padding: "0 50px 50px", fontFamily: "Arial, sans-serif", fontSize: 13 }}>
       {/* Divider */}
@@ -279,10 +300,14 @@ function SignatureAreaPreview({ taName, date }: { taName: string; date: string }
         {/* Company Signature */}
         <div style={{ flex: 1 }}>
           <p style={{ fontWeight: "bold", marginBottom: 4 }}>Berlin, {date}</p>
-          <div style={{ margin: "16px 0" }}>
-            <div style={{ width: 120, height: 60, border: "2px dashed #cbd5e1", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc", cursor: "pointer" }}>
-              <span style={{ fontSize: 10, color: "#94a3b8", textAlign: "center" }}>Company<br/>stamp/seal</span>
-            </div>
+          <div style={{ margin: "16px 0" }} onClick={() => onUpload("stamp")}>
+            {stampUrl ? (
+              <img src={stampUrl} alt="Company stamp" style={{ width: 120, cursor: "pointer", borderRadius: 4 }} title="Click to replace" />
+            ) : (
+              <div style={{ width: 120, height: 60, border: "2px dashed #cbd5e1", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc", cursor: "pointer" }}>
+                <span style={{ fontSize: 10, color: "#94a3b8", textAlign: "center" }}>Click to upload<br/>stamp/seal</span>
+              </div>
+            )}
           </div>
           <p style={{ fontWeight: "bold", margin: "4px 0" }}>C. Justin Beard</p>
           <p style={{ margin: "2px 0", fontSize: 12 }}>Chief Executive Officer</p>
@@ -300,8 +325,14 @@ function SignatureAreaPreview({ taName, date }: { taName: string; date: string }
 
       {/* Page footer */}
       <div style={{ borderTop: "1px solid #e5e7eb", marginTop: 24, paddingTop: 12, display: "flex", alignItems: "center", gap: 16 }}>
-        <div style={{ width: 80, height: 30, border: "1px dashed #cbd5e1", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc", flexShrink: 0 }}>
-          <span style={{ fontSize: 8, color: "#94a3b8" }}>Logo</span>
+        <div onClick={() => onUpload("footer")} style={{ flexShrink: 0, cursor: "pointer" }}>
+          {footerLogoUrl ? (
+            <img src={footerLogoUrl} alt="Logo" style={{ width: 80, borderRadius: 4 }} title="Click to replace" />
+          ) : (
+            <div style={{ width: 80, height: 30, border: "1px dashed #cbd5e1", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc" }}>
+              <span style={{ fontSize: 8, color: "#94a3b8" }}>Click to<br/>upload logo</span>
+            </div>
+          )}
         </div>
         <div style={{ fontSize: 9, color: "#999" }}>
           InterACT English gGmbH, Planufer 92B, 10967 Berlin<br />
