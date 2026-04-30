@@ -81,6 +81,22 @@ export async function PATCH(
   if (body.status === "approved" && process.env.MONDAY_API_TOKEN) {
     try {
       const { pushInvoiceToMonday } = await import("@/lib/monday");
+
+      // Get AI check results if any
+      const aiIssues = invoice.ai_check_result?.issues ||
+        (invoice.ai_check_passed === false ? ["AI check flagged issues — review manually"] : null);
+
+      // Get program type from work order
+      let programType = null;
+      if (invoice.work_order_id) {
+        const { data: wo } = await adminClient
+          .from("work_orders")
+          .select("program_type")
+          .eq("id", invoice.work_order_id)
+          .single();
+        programType = wo?.program_type || null;
+      }
+
       await pushInvoiceToMonday({
         invoiceNumber: invoice.invoice_number,
         taName,
@@ -88,6 +104,8 @@ export async function PATCH(
         amount: Number(invoice.total),
         workOrderId: invoice.work_order_id,
         pdfUrl: invoice.uploaded_pdf_url,
+        programType,
+        aiIssues,
       });
     } catch (e) {
       console.error("[MONDAY] Failed to push invoice:", e);

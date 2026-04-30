@@ -35,6 +35,10 @@ export async function POST(request: Request) {
       status: "submitted",
       submitted_at: new Date().toISOString(),
       notes: body.notes || null,
+      source: body.source || "calculator",
+      uploaded_pdf_url: body.uploaded_pdf_url || null,
+      ai_check_result: body.ai_check_result || null,
+      ai_check_passed: body.ai_check_passed ?? null,
     })
     .select()
     .single();

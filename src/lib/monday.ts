@@ -72,7 +72,7 @@ export function mapMondayItemToJob(item: MondayJobItem) {
   };
 }
 
-// Push approved invoice as a subitem on the job's Monday item
+// Push approved invoice to Monday as a subitem on the job
 export async function pushInvoiceToMonday({
   invoiceNumber,
   taName,
@@ -80,6 +80,8 @@ export async function pushInvoiceToMonday({
   amount,
   workOrderId,
   pdfUrl,
+  programType,
+  aiIssues,
 }: {
   invoiceNumber: string;
   taName: string;
@@ -87,17 +89,18 @@ export async function pushInvoiceToMonday({
   amount: number;
   workOrderId: string | null;
   pdfUrl: string | null;
+  programType: string | null;
+  aiIssues: string[] | null;
 }) {
-  // If we have a work order linked to a job with a Monday item, add as subitem
   if (!workOrderId) return;
 
   const { createAdminClient } = await import("@/lib/supabase/admin");
   const adminClient = createAdminClient();
 
-  // Get the job's Monday item ID via work order
+  // Get the job's Monday item ID and program type via work order
   const { data: wo } = await adminClient
     .from("work_orders")
-    .select("job_id, jobs(monday_item_id)")
+    .select("job_id, program_type, jobs(monday_item_id)")
     .eq("id", workOrderId)
     .single();
 
@@ -105,8 +108,15 @@ export async function pushInvoiceToMonday({
   const mondayItemId = jobs?.monday_item_id;
   if (!mondayItemId) return;
 
-  // Create a subitem on the Monday job item
-  await mondayQuery(`
+  const isCamp = (programType || wo?.program_type || "").toLowerCase().includes("camp");
+
+  // Build subitem name with flags
+  let itemName = `${invoiceNumber} — ${taName} — €${amount.toFixed(2)}`;
+  if (isCamp) itemName = `[CAMP] ${itemName}`;
+  if (aiIssues && aiIssues.length > 0) itemName = `⚠️ ${itemName}`;
+
+  // Create subitem
+  const result = await mondayQuery(`
     mutation ($parentId: ID!, $itemName: String!) {
       create_subitem(parent_item_id: $parentId, item_name: $itemName) {
         id
@@ -114,6 +124,38 @@ export async function pushInvoiceToMonday({
     }
   `, {
     parentId: mondayItemId,
-    itemName: `${invoiceNumber} — ${taName} — €${amount.toFixed(2)}`,
+    itemName,
   });
+
+  const subitemId = result?.data?.create_subitem?.id;
+  if (!subitemId) return;
+
+  // Add update/note to the subitem with details
+  const notes = [
+    `**TA:** ${taName} (${taEmail})`,
+    `**Invoice:** ${invoiceNumber}`,
+    `**Amount:** €${amount.toFixed(2)}`,
+    `**Type:** ${isCamp ? "CAMP" : "PROJECT"} — ${programType || wo?.program_type || "Unknown"}`,
+    pdfUrl ? `**PDF:** ${pdfUrl}` : null,
+    aiIssues && aiIssues.length > 0
+      ? `\n**⚠️ AI Checker Flags:**\n${aiIssues.map((i) => `• ${i}`).join("\n")}`
+      : "**✅ AI Check:** Passed",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  await mondayQuery(`
+    mutation ($itemId: ID!, $body: String!) {
+      create_update(item_id: $itemId, body: $body) {
+        id
+      }
+    }
+  `, {
+    itemId: subitemId,
+    body: notes,
+  });
+
+  // TODO: Set person column based on camp vs project
+  // Camp invoices → assign to camp manager
+  // Project invoices → assign to project manager
 }
