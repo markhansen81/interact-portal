@@ -7,6 +7,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
+import Image from "@tiptap/extension-image";
 
 interface Template {
   id: string;
@@ -38,12 +39,55 @@ const VARIABLE_TAGS = [
   { tag: "{{CreatedDate}}", label: "Created Date", group: "Admin" },
 ];
 
-const DEFAULT_TEMPLATE = `<div style="text-align: right; font-size: 12px; color: #666;">InterACT English gGmbH<br>Planufer 92B, 10967 Berlin<br>Tel. 030 20339702<br>info@interactenglish.de<br>Geschäftsführer:<br>Mark William Hansen &amp; Charles Justin Beard<br>Handelsregister - Amtsgericht Charlottenburg<br>HRB 188932 B</div><p style="text-align: right;"><strong style="color: #16a34a;">Project ID (for office use): {{ProjectID}}</strong></p><h1>WORK ORDER</h1><p>By and between</p><p><strong>InterACT English gGmbH</strong><br>(referred to in the following as "the Company")</p><p>and: <strong>{{TeachingArtist}}</strong><br>(referred to in the following as "the Contractor")</p><h3>Project Details (Location, date, project type, specific project remuneration)</h3><p>The Contractor shall be teaching on the following project (Project details are subject to change):</p><p><strong>Date of project / Time period:</strong> {{Date}}, {{Days}}<br><strong>Organisation (workplace):</strong> {{Name}}<br>{{Address}}<br>{{State}}<br><strong>Project type:</strong> {{ProjectType}}<br><strong>Special conditions:</strong> <em>{{SpecialConditions}}</em><br><strong>Co taught / Not co taught:</strong> {{CoTaught}}<br><strong>Grade:</strong> {{Grade}}<br><strong>Accommodation:</strong> {{Accommodation}}</p><h3>IMPORTANT: Before signing this work order please do and consider the following:</h3><ol><li><strong>We require all TAs to travel the day before the project</strong> if the program is outside of their home city. This has the obvious reason that we must ensure that teaching staff arrives on time to run the program. Same day travel may be organised by InterACT in some exceptions, but it remains in the companies judgment if this is warranted/possible or not. Travel the day before is included in the flat-fee paid for every program. Accommodation for the evening before is always provided. <strong>Please do not sign this work order if travel the day before is an issue.</strong></li><li>Check the address of the school/hostel you will travel to. Some projects require longer travel time. Please consider this before signing the work order.</li><li>Check the area/city/village you are traveling to. <strong>Most projects will have you arriving in the evening and often on Sunday. Finding food, or a supermarket can be difficult in rural locations. Please be prepared before you travel.</strong> This might mean packing some food, or bringing essentials.</li><li>Please CAREFULLY read the project notes prepared for you in the project folder the week before traveling. These notes have critical information that impacts the project and your travel plans.</li><li><strong>We strongly recommend that you double check all connections, transfers and your way from the train station to hotel and hotel to the school in advance of your project.</strong></li></ol><p><strong>If you like to decline this work order, but are still available and wanting to work this week,</strong> feel free to send us any reason(s) you would like to share to why you are declining the work order.</p><p>We may have open positions available and would love to find the right project for you.</p><p>We thank you for all of your input and wish you a successful projects!</p><hr><p>With this signature I accept the Work Order:</p><p><br><br></p><p><strong>{{TeachingArtist}}</strong><br><em>Teaching Artist (Contractor)</em></p><p>Berlin, {{CreatedDate}}</p><p><strong>C. Justin Beard</strong><br>Chief Executive Officer<br>InterACT English gGmbH</p><hr><p style="font-size: 11px; color: #999;">Office address: Gneisenaustr. 64, 10961 Berlin, Germany<br>Billing address: Planufer 92B, 10967 Berlin, Germany<br>Managing Directors: Mark William Hansen &amp; Charles Justin Beard<br>Handelsregister - Amtsgericht Charlottenburg - HRB 188932 B</p>`;
+const FONT_SIZES = ["11px", "12px", "13px", "14px", "16px", "18px", "20px", "24px", "28px", "32px"];
+
+const DEFAULT_TEMPLATE = `<p><img src="https://interactenglish.de/wp-content/uploads/2023/01/interact-logo.png" alt="InterACT English" style="width: 200px;" /></p>
+<p style="text-align: right; font-size: 12px; color: #666;">InterACT English gGmbH<br>Planufer 92B, 10967 Berlin<br>Tel. 030 20339702<br>info@interactenglish.de<br><br>Geschäftsführer:<br>Mark William Hansen &amp; Charles Justin Beard<br>Handelsregister - Amtsgericht Charlottenburg<br>HRB 188932 B</p>
+<p style="text-align: right;"><strong>Project ID (for office use): {{ProjectID}}</strong></p>
+<hr>
+<h1><strong>WORK ORDER</strong></h1>
+<p>By and between</p>
+<p><strong>InterACT English gGmbH</strong><br>(referred to in the following as "the Company")</p>
+<p>and: <strong>{{TeachingArtist}}</strong><br>(referred to in the following as "the Contractor")</p>
+<hr>
+<h3><strong>Project Details</strong> (Location, date, project type, specific project remuneration)</h3>
+<p>The Contractor shall be teaching on the following project (Project details are subject to change):</p>
+<p><strong>Date of project / Time period:</strong> {{Date}}, {{Days}}<br><strong>Organisation (workplace):</strong> {{Name}}<br>{{Address}}<br>{{State}}<br><strong>Project type:</strong> {{ProjectType}}<br><strong>Special conditions:</strong> <em>{{SpecialConditions}}</em><br><strong>Co taught / Not co taught:</strong> {{CoTaught}}<br><strong>Grade:</strong> {{Grade}}<br><strong>Accommodation:</strong> {{Accommodation}}</p>
+<hr>
+<h3>IMPORTANT: Before signing this work order please do and consider the following:</h3>
+<ol>
+<li><strong>We require all TAs to travel the day before the project</strong> if the program is outside of their home city. Travel the day before is included in the flat-fee. Accommodation for the evening before is always provided. <strong>Please do not sign this work order if travel the day before is an issue.</strong></li>
+<li>Check the address of the school/hostel you will travel to. Some projects require longer travel time.</li>
+<li>Check the area/city/village you are traveling to. <strong>Most projects will have you arriving in the evening and often on Sunday. Finding food can be difficult in rural locations. Please be prepared.</strong></li>
+<li>Please CAREFULLY read the project notes prepared for you in the project folder the week before traveling.</li>
+<li><strong>We strongly recommend that you double check all connections, transfers and your way from the train station to hotel and hotel to the school in advance.</strong></li>
+</ol>
+<p><strong>If you like to decline this work order, but are still available and wanting to work this week,</strong> feel free to send us any reason(s) you would like to share.</p>
+<p>We may have open positions available and would love to find the right project for you.</p>
+<p>We thank you for all of your input and wish you a successful projects!</p>
+<hr>
+<p>With this signature I accept the Work Order:</p>
+<p><br><br></p>
+<table style="width: 100%;">
+<tr>
+<td style="width: 50%; vertical-align: top;">
+<hr>
+<p><strong>{{TeachingArtist}}</strong><br><em>Teaching Artist (Contractor)</em></p>
+</td>
+<td style="width: 50%; vertical-align: top;">
+<p><strong>Berlin, {{CreatedDate}}</strong></p>
+<p><strong>C. Justin Beard</strong><br>Chief Executive Officer<br>InterACT English gGmbH</p>
+</td>
+</tr>
+</table>
+<hr>
+<p style="font-size: 11px; color: #999;">InterACT English gGmbH, Planufer 92B, 10967 Berlin<br>Tel. 030 20339702 / www.interactenglish.de / info@interactenglish.de</p>`;
 
 export function WorkOrderTemplateEditor({ template }: { template: Template | null }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [fontSize, setFontSize] = useState("14px");
   const router = useRouter();
 
   const editor = useEditor({
@@ -51,21 +95,30 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
       StarterKit,
       Underline,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
+      Image.configure({ inline: true, allowBase64: true }),
     ],
     content: template?.body_html || DEFAULT_TEMPLATE,
     editorProps: {
       attributes: {
-        class: "prose prose-sm max-w-none dark:prose-invert focus:outline-none min-h-[600px] p-6",
+        class: "focus:outline-none min-h-[700px]",
+        style: `font-family: Arial, sans-serif; font-size: ${fontSize}; line-height: 1.6; padding: 40px 60px; color: #1a1a1a;`,
       },
     },
   });
 
   const insertTag = useCallback(
     (tag: string) => {
-      editor?.chain().focus().insertContent(tag).run();
+      editor?.chain().focus().insertContent(`<strong style="background: #e0f2fe; padding: 1px 6px; border-radius: 4px; color: #0369a1;">${tag}</strong>`).run();
     },
     [editor]
   );
+
+  const insertImage = useCallback(() => {
+    const url = prompt("Image URL:");
+    if (url) {
+      editor?.chain().focus().setImage({ src: url }).run();
+    }
+  }, [editor]);
 
   async function handleSave() {
     if (!editor) return;
@@ -88,49 +141,54 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
     if (!editor) return "";
     return editor
       .getHTML()
-      .replace(/\{\{TeachingArtist\}\}/g, '<mark style="background: #dbeafe; padding: 2px 4px; border-radius: 3px;">Jane Smith</mark>')
-      .replace(/\{\{TeachingArtistEmail\}\}/g, '<mark style="background: #dbeafe; padding: 2px 4px; border-radius: 3px;">jane@example.com</mark>')
-      .replace(/\{\{ProjectID\}\}/g, '<mark style="background: #dbeafe; padding: 2px 4px; border-radius: 3px;">WO-ABC123</mark>')
-      .replace(/\{\{Date\}\}/g, '<mark style="background: #dbeafe; padding: 2px 4px; border-radius: 3px;">2026-05-18 — 2026-05-22</mark>')
-      .replace(/\{\{Days\}\}/g, '<mark style="background: #dbeafe; padding: 2px 4px; border-radius: 3px;">5 days</mark>')
-      .replace(/\{\{Name\}\}/g, '<mark style="background: #dbeafe; padding: 2px 4px; border-radius: 3px;">Realschule Maria Stern</mark>')
-      .replace(/\{\{Address\}\}/g, '<mark style="background: #dbeafe; padding: 2px 4px; border-radius: 3px;">Schulstraße 12, 86150 Augsburg</mark>')
-      .replace(/\{\{State\}\}/g, '<mark style="background: #dbeafe; padding: 2px 4px; border-radius: 3px;">BAYERN</mark>')
-      .replace(/\{\{ProjectType\}\}/g, '<mark style="background: #dbeafe; padding: 2px 4px; border-radius: 3px;">Native Speaker Week</mark>')
-      .replace(/\{\{SpecialConditions\}\}/g, '<mark style="background: #dbeafe; padding: 2px 4px; border-radius: 3px;">None</mark>')
-      .replace(/\{\{CoTaught\}\}/g, '<mark style="background: #dbeafe; padding: 2px 4px; border-radius: 3px;">Not co taught</mark>')
-      .replace(/\{\{Grade\}\}/g, '<mark style="background: #dbeafe; padding: 2px 4px; border-radius: 3px;">8. Kl.</mark>')
-      .replace(/\{\{Accommodation\}\}/g, '<mark style="background: #dbeafe; padding: 2px 4px; border-radius: 3px;">Hotel Ibis</mark>')
-      .replace(/\{\{Total\}\}/g, '<mark style="background: #dbeafe; padding: 2px 4px; border-radius: 3px;">€560.00</mark>')
-      .replace(/\{\{DailyRate\}\}/g, '<mark style="background: #dbeafe; padding: 2px 4px; border-radius: 3px;">€112.00</mark>')
-      .replace(/\{\{PayLevel\}\}/g, '<mark style="background: #dbeafe; padding: 2px 4px; border-radius: 3px;">Level 5</mark>')
-      .replace(/\{\{SignByDate\}\}/g, '<mark style="background: #dbeafe; padding: 2px 4px; border-radius: 3px;">2026-05-10</mark>')
-      .replace(/\{\{CreatedDate\}\}/g, '<mark style="background: #dbeafe; padding: 2px 4px; border-radius: 3px;">' + new Date().toLocaleDateString() + '</mark>');
+      .replace(/\{\{(\w+)\}\}/g, (_match, varName) => {
+        const sampleData: Record<string, string> = {
+          TeachingArtist: "Jane Smith",
+          TeachingArtistEmail: "jane@example.com",
+          ProjectID: "WO-ABC123",
+          Date: "18.05.2026 — 22.05.2026",
+          Days: "5 days",
+          Name: "Realschule Maria Stern Augsburg",
+          Address: "Schulstraße 12, 86150 Augsburg",
+          State: "BAYERN",
+          ProjectType: "Native Speaker Week",
+          SpecialConditions: "None",
+          CoTaught: "Not co taught",
+          Grade: "8. Kl.",
+          Accommodation: "Hotel Ibis, single room",
+          Total: "€560.00",
+          DailyRate: "€112.00",
+          PayLevel: "Level 5",
+          SignByDate: "10.05.2026",
+          CreatedDate: new Date().toLocaleDateString("de-DE"),
+        };
+        const val = sampleData[varName] || varName;
+        return `<span style="background: #dbeafe; padding: 2px 6px; border-radius: 4px; font-weight: 600;">${val}</span>`;
+      });
   }
 
   if (!editor) return null;
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
-      {/* Variable Tags Sidebar */}
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+      {/* Sidebar */}
       <div className="space-y-4">
         <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-50 mb-1">Insert Variable</h3>
-          <p className="text-[10px] text-zinc-400 mb-3">Click to insert at cursor</p>
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mb-3">Variables</h3>
           {["Project", "TA", "Pay", "Admin"].map((group) => (
             <div key={group} className="mb-3">
-              <p className="text-[10px] font-medium uppercase text-zinc-400 mb-1">{group}</p>
+              <p className="text-[10px] font-bold uppercase text-zinc-400 mb-1">{group}</p>
               <div className="space-y-0.5">
                 {VARIABLE_TAGS.filter((t) => t.group === group).map((tag) => (
                   <button
                     key={tag.tag}
                     onClick={() => insertTag(tag.tag)}
-                    className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-blue-50 dark:hover:bg-zinc-800"
                   >
-                    <span className="rounded bg-blue-100 px-1.5 py-0.5 font-mono text-[10px] text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                    <span className="shrink-0 rounded bg-blue-100 px-1.5 py-0.5 font-mono text-[10px] font-bold text-blue-700">
                       {tag.tag.replace(/\{\{|\}\}/g, "")}
                     </span>
-                    <span className="text-zinc-500">{tag.label}</span>
+                    <span className="text-zinc-500 truncate">{tag.label}</span>
                   </button>
                 ))}
               </div>
@@ -138,101 +196,113 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
           ))}
         </div>
         <Link href="/admin/work-orders" className="block text-center text-sm text-zinc-500 hover:text-zinc-700">
-          &larr; Back to Work Orders
+          &larr; Back
         </Link>
       </div>
 
       {/* Editor */}
-      <div className="lg:col-span-3 space-y-4">
+      <div className="lg:col-span-4 space-y-3">
         {/* Toolbar */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1 rounded-xl border border-zinc-200 bg-white p-1 dark:border-zinc-800 dark:bg-zinc-900">
-            <ToolBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Bold">B</ToolBtn>
-            <ToolBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} title="Italic"><em>I</em></ToolBtn>
-            <ToolBtn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} title="Underline"><u>U</u></ToolBtn>
-            <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-1" />
-            <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive("heading", { level: 1 })} title="H1">H1</ToolBtn>
-            <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive("heading", { level: 2 })} title="H2">H2</ToolBtn>
-            <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive("heading", { level: 3 })} title="H3">H3</ToolBtn>
-            <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-1" />
-            <ToolBtn onClick={() => editor.chain().focus().setTextAlign("left").run()} active={editor.isActive({ textAlign: "left" })} title="Left">L</ToolBtn>
-            <ToolBtn onClick={() => editor.chain().focus().setTextAlign("center").run()} active={editor.isActive({ textAlign: "center" })} title="Center">C</ToolBtn>
-            <ToolBtn onClick={() => editor.chain().focus().setTextAlign("right").run()} active={editor.isActive({ textAlign: "right" })} title="Right">R</ToolBtn>
-            <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-1" />
-            <ToolBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} title="Bullet list">-</ToolBtn>
-            <ToolBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} title="Numbered list">1.</ToolBtn>
-            <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-1" />
-            <ToolBtn onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Line">—</ToolBtn>
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex items-center gap-1 flex-wrap">
+            {/* Font size */}
+            <select
+              value={fontSize}
+              onChange={(e) => {
+                setFontSize(e.target.value);
+                if (editor.view.dom) {
+                  (editor.view.dom as HTMLElement).style.fontSize = e.target.value;
+                }
+              }}
+              className="rounded border border-zinc-200 px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-800"
+            >
+              {FONT_SIZES.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+            <div className="w-px h-5 bg-zinc-200 mx-1" />
+
+            {/* Format */}
+            <TB onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Bold"><strong>B</strong></TB>
+            <TB onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} title="Italic"><em>I</em></TB>
+            <TB onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} title="Underline"><u>U</u></TB>
+            <div className="w-px h-5 bg-zinc-200 mx-1" />
+
+            {/* Headings */}
+            <TB onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive("heading", { level: 1 })} title="Title">H1</TB>
+            <TB onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive("heading", { level: 2 })} title="Subtitle">H2</TB>
+            <TB onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive("heading", { level: 3 })} title="Section">H3</TB>
+            <TB onClick={() => editor.chain().focus().setParagraph().run()} active={editor.isActive("paragraph")} title="Paragraph">P</TB>
+            <div className="w-px h-5 bg-zinc-200 mx-1" />
+
+            {/* Align */}
+            <TB onClick={() => editor.chain().focus().setTextAlign("left").run()} active={editor.isActive({ textAlign: "left" })} title="Left align">
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 16 16"><path d="M2 2h12v1.5H2zm0 4h8v1.5H2zm0 4h12v1.5H2zm0 4h8v1.5H2z"/></svg>
+            </TB>
+            <TB onClick={() => editor.chain().focus().setTextAlign("center").run()} active={editor.isActive({ textAlign: "center" })} title="Center">
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 16 16"><path d="M2 2h12v1.5H2zm2 4h8v1.5H4zm-2 4h12v1.5H2zm2 4h8v1.5H4z"/></svg>
+            </TB>
+            <TB onClick={() => editor.chain().focus().setTextAlign("right").run()} active={editor.isActive({ textAlign: "right" })} title="Right align">
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 16 16"><path d="M2 2h12v1.5H2zm4 4h8v1.5H6zm-4 4h12v1.5H2zm4 4h8v1.5H6z"/></svg>
+            </TB>
+            <div className="w-px h-5 bg-zinc-200 mx-1" />
+
+            {/* Lists */}
+            <TB onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} title="Bullets">
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 16 16"><circle cx="3" cy="4" r="1.5"/><path d="M6 3h8v1.5H6z"/><circle cx="3" cy="8" r="1.5"/><path d="M6 7h8v1.5H6z"/><circle cx="3" cy="12" r="1.5"/><path d="M6 11h8v1.5H6z"/></svg>
+            </TB>
+            <TB onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} title="Numbers">1.</TB>
+            <div className="w-px h-5 bg-zinc-200 mx-1" />
+
+            {/* Insert */}
+            <TB onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Line">—</TB>
+            <TB onClick={insertImage} title="Image">IMG</TB>
           </div>
 
-          <div className="flex items-center gap-3">
-            {saved && <span className="text-sm text-green-600">Saved!</span>}
+          <div className="flex items-center gap-2">
+            {saved && <span className="text-xs text-green-600">Saved!</span>}
             <button
               onClick={() => setShowPreview(!showPreview)}
-              className={`rounded-lg px-4 py-2 text-sm font-medium ${
-                showPreview
-                  ? "bg-blue-100 text-blue-700"
-                  : "border border-zinc-300 text-zinc-600 dark:border-zinc-700"
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
+                showPreview ? "bg-blue-600 text-white" : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
               }`}
             >
-              {showPreview ? "Editing" : "Preview"}
+              {showPreview ? "Edit" : "Preview"}
             </button>
-            {template && <span className="text-xs text-zinc-400">v{template.version}</span>}
+            {template && <span className="text-[10px] text-zinc-400">v{template.version}</span>}
             <button
               onClick={handleSave}
               disabled={saving}
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+              className="rounded-lg bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 disabled:opacity-50"
             >
-              {saving ? "Saving..." : "Save"}
+              {saving ? "..." : "Save"}
             </button>
           </div>
         </div>
 
-        {/* Editor or Preview */}
-        {showPreview ? (
-          <div className="rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="border-b border-zinc-200 px-4 py-2 dark:border-zinc-800">
-              <span className="text-xs text-zinc-500">Preview — variable tags shown in <mark style={{ background: "#dbeafe", padding: "1px 4px", borderRadius: "3px", fontSize: "11px" }}>blue</mark></span>
+        {/* Document */}
+        <div className="rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900" style={{ minHeight: "900px" }}>
+          {showPreview ? (
+            <div className="p-[60px]" style={{ fontFamily: "Arial, sans-serif", fontSize, lineHeight: 1.6, color: "#1a1a1a" }}>
+              <div dangerouslySetInnerHTML={{ __html: getPreviewHtml() }} />
             </div>
-            <div className="p-8">
-              <div
-                className="prose prose-sm max-w-none dark:prose-invert"
-                dangerouslySetInnerHTML={{ __html: getPreviewHtml() }}
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          ) : (
             <EditorContent editor={editor} />
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-function ToolBtn({
-  onClick,
-  active,
-  title,
-  children,
-}: {
-  onClick: () => void;
-  active?: boolean;
-  title: string;
-  children: React.ReactNode;
+function TB({ onClick, active, title, children }: {
+  onClick: () => void; active?: boolean; title: string; children: React.ReactNode;
 }) {
   return (
-    <button
-      onClick={onClick}
-      title={title}
+    <button onClick={onClick} title={title}
       className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
-        active
-          ? "bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-50"
-          : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+        active ? "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900" : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
       }`}
-    >
-      {children}
-    </button>
+    >{children}</button>
   );
 }
