@@ -80,9 +80,10 @@ export function JobDetail({
     setLoadingRecs(false);
   }
 
-  async function createWorkOrder(taId: string) {
+  async function createAndSendWorkOrder(taId: string) {
     setCreatingWO(taId);
 
+    // Create work order from job data
     const res = await fetch("/api/admin/work-orders", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -106,6 +107,11 @@ export function JobDetail({
     });
 
     if (res.ok) {
+      const data = await res.json();
+      // Immediately send to TA
+      await fetch(`/api/admin/work-orders/${data.workOrder.id}/send`, {
+        method: "POST",
+      });
       router.refresh();
       loadRecommendations();
     }
@@ -243,11 +249,11 @@ export function JobDetail({
                       </div>
                     </div>
                     <button
-                      onClick={() => createWorkOrder(rec.ta.id)}
+                      onClick={() => createAndSendWorkOrder(rec.ta.id)}
                       disabled={creatingWO === rec.ta.id}
                       className="rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
                     >
-                      {creatingWO === rec.ta.id ? "..." : "Create Work Order"}
+                      {creatingWO === rec.ta.id ? "Sending..." : "Send Work Order"}
                     </button>
                   </div>
                 ))}
