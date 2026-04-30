@@ -20,7 +20,8 @@ interface Template {
 const VARIABLE_TAGS = [
   { tag: "{{TeachingArtist}}", label: "TA Name", group: "TA" },
   { tag: "{{TeachingArtistEmail}}", label: "TA Email", group: "TA" },
-  { tag: "{{ProjectID}}", label: "Project ID", group: "Project" },
+  { tag: "{{ProjectID}}", label: "Project ID (internal)", group: "Project" },
+  { tag: "{{MondayID}}", label: "Monday Task ID", group: "Project" },
   { tag: "{{Date}}", label: "Date Range", group: "Project" },
   { tag: "{{Days}}", label: "# Days", group: "Project" },
   { tag: "{{Name}}", label: "School Name", group: "Project" },
@@ -128,7 +129,7 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
     return html.replace(/\{\{(\w+)\}\}/g, (_match, v) => {
       const data: Record<string, string> = {
         TeachingArtist: "Jane Smith", TeachingArtistEmail: "jane@example.com",
-        ProjectID: "WO-ABC123", Date: "18.05.2026 — 22.05.2026", Days: "5 days",
+        ProjectID: "WO-ABC123", MondayID: "10037723799", Date: "18.05.2026 — 22.05.2026", Days: "5 days",
         Name: "Realschule Maria Stern Augsburg", Address: "Schulstraße 12, 86150 Augsburg",
         State: "BAYERN", ProjectType: "Native Speaker Week", SpecialConditions: "None",
         CoTaught: "Not co taught", Grade: "8. Kl.", Accommodation: "Hotel Ibis",
@@ -187,21 +188,30 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
         </div>
 
         {showPreview ? (
-          <div className="rounded-xl border border-zinc-300 bg-white shadow-lg" style={{ minHeight: 900 }}>
-            <div style={{ padding: 60, fontFamily: "Arial, sans-serif", fontSize: 14, lineHeight: 1.6 }}
+          <div className="rounded-xl border border-zinc-300 bg-white shadow-lg mx-auto" style={{ width: 794, minHeight: 1123, position: "relative" }}>
+            {/* A4 ratio: 210mm x 297mm = 794px x 1123px at 96dpi */}
+            <div style={{ padding: "60px 60px 80px", fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.6, overflowWrap: "break-word", wordWrap: "break-word" }}
               dangerouslySetInnerHTML={{ __html: getPreviewHtml() }} />
+            {/* Footer */}
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, borderTop: "1px solid #e5e7eb", padding: "12px 60px", display: "flex", alignItems: "center", gap: 12 }}>
+              <img src="https://interactenglish.de/wp-content/uploads/2023/01/interact-logo.png" alt="" style={{ width: 80 }} />
+              <div style={{ fontSize: 9, color: "#999", lineHeight: 1.4 }}>
+                InterACT English gGmbH, Planufer 92B, 10967 Berlin<br />
+                Tel. 030 20339702 / www.interactenglish.de / info@interactenglish.de
+              </div>
+            </div>
           </div>
         ) : (
-          <div className="rounded-xl border border-zinc-300 bg-white shadow-lg overflow-hidden wo-editor">
+          <div className="rounded-xl border border-zinc-300 bg-white shadow-lg overflow-hidden wo-editor mx-auto" style={{ width: 794 }}>
             <ReactQuill theme="snow" value={html} onChange={setHtml} modules={modules}
-              style={{ minHeight: 800, fontFamily: "Arial, sans-serif" }} />
+              style={{ minHeight: 1000, fontFamily: "Arial, sans-serif" }} />
           </div>
         )}
       </div>
 
       <style jsx global>{`
         .wo-editor .ql-container { font-size: 14px; font-family: Arial, sans-serif; }
-        .wo-editor .ql-editor { min-height: 800px; padding: 60px; line-height: 1.6; }
+        .wo-editor .ql-editor { min-height: 1000px; padding: 60px; line-height: 1.6; overflow-wrap: break-word; word-wrap: break-word; }
         .wo-editor .ql-toolbar { border-bottom: 1px solid #e5e7eb; padding: 8px 12px; position: sticky; top: 0; z-index: 10; background: white; }
         .wo-editor .ql-container { border: none; }
         .wo-editor .ql-toolbar.ql-snow { border: none; border-bottom: 1px solid #e5e7eb; }
