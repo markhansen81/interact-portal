@@ -105,37 +105,7 @@ const DEFAULT_TEMPLATE = `<p class="ql-align-right"><img src="https://interacten
 <p><br></p>
 <p>Reasons include: needing a project closer to your hometown, that you can only work certain days, or that you are looking for a certain type of project for the week. In some cases we may be able to provide alternative projects in this period that meet your requirements.</p>
 <p><br></p>
-<p>We thank you for all of your input and wish you a successful projects!</p>
-<p><br></p>
-<p>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
-<p><br></p>
-<p>With this signature I accept the Work Order:</p>
-<p><br></p>
-<p><br></p>
-<p><br></p>
-<p>                    ________________________                         ________________________ , ________________</p>
-<p>                    <em>Signature</em>                                                           <em>place</em>                                      <em>date</em></p>
-<p><br></p>
-<p><strong>{{TeachingArtist}}</strong></p>
-<p><em>Teaching Artist (Contractor)</em></p>
-<p><br></p>
-<p><br></p>
-<p><strong>Berlin, {{CreatedDate}}</strong></p>
-<p><br></p>
-<p><img src="https://interactenglish.de/wp-content/uploads/2023/01/interact-logo.png" width="120"></p>
-<p><br></p>
-<p><strong>C. Justin Beard</strong></p>
-<p>Chief Executive Officer</p>
-<p>InterACT English gGmbH</p>
-<p><br></p>
-<p><span class="ql-size-small" style="color: rgb(153, 153, 153);">Office address: Gneisenaustr. 64, 10961 Berlin, Germany</span></p>
-<p><span class="ql-size-small" style="color: rgb(153, 153, 153);">Billing address: Planufer 92B, 10967 Berlin, Germany</span></p>
-<p><span class="ql-size-small" style="color: rgb(153, 153, 153);">Managing Directors: Mark William Hansen &amp; Charles Justin Beard</span></p>
-<p><span class="ql-size-small" style="color: rgb(153, 153, 153);">Handelsregister - Amtsgericht Charlottenburg - HRB 188932 B</span></p>
-<p><br></p>
-<p>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
-<p class="ql-align-center"><span class="ql-size-small" style="color: rgb(153, 153, 153);">InterACT English gGmbH, Planufer 92B, 10967 Berlin</span></p>
-<p class="ql-align-center"><span class="ql-size-small" style="color: rgb(153, 153, 153);">Tel. 030 20339702 / www.interactenglish.de / info@interactenglish.de</span></p>`;
+<p>We thank you for all of your input and wish you a successful projects!</p>`;
 
 export function WorkOrderTemplateEditor({ template }: { template: Template | null }) {
   const [html, setHtml] = useState(template?.body_html || DEFAULT_TEMPLATE);
@@ -228,18 +198,24 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
           </button>
         </div>
 
-        {/* A4 Page — everything in one editor */}
+        {/* A4 Page */}
         {showPreview ? (
-          <div className="wo-page mx-auto ql-snow" style={{ width: 794, minHeight: 1123, background: "white", borderRadius: 8, boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "1px solid #e5e7eb" }}>
-            <div className="ql-editor" style={{ padding: "50px", fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.7, overflowWrap: "break-word", minHeight: 1023 }}
+          <div className="wo-page mx-auto ql-snow" style={{ width: 794, background: "white", borderRadius: 8, boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "1px solid #e5e7eb" }}>
+            <div className="ql-editor" style={{ padding: "50px 50px 0", fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.7, overflowWrap: "break-word" }}
               dangerouslySetInnerHTML={{ __html: fillVariables(html) }} />
+            <SignatureAreaPreview taName={SAMPLE_DATA.TeachingArtist} date={SAMPLE_DATA.CreatedDate} />
           </div>
         ) : (
-          <div className="wo-page wo-editor mx-auto" style={{ width: 794, background: "white", borderRadius: 8, boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "1px solid #e5e7eb", overflow: "hidden" }}>
-            <ReactQuill theme="snow" value={html} onChange={setHtml} modules={modules} />
+          <div className="wo-page mx-auto" style={{ width: 794, background: "white", borderRadius: 8, boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "1px solid #e5e7eb", overflow: "hidden" }}>
+            <div className="wo-editor">
+              <ReactQuill theme="snow" value={html} onChange={setHtml} modules={modules} />
+            </div>
+            <SignatureAreaPreview taName="{{TeachingArtist}}" date="{{CreatedDate}}" />
           </div>
         )}
       </div>
+
+      <SignatureAreaInfo />
 
       <style jsx global>{`
         .wo-editor .ql-container { font-size: 13px; font-family: Arial, sans-serif; border: none !important; }
@@ -261,6 +237,83 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
         .wo-page .ql-editor img { max-width: 100%; }
         .wo-page .ql-editor a { color: #06c; text-decoration: underline; }
       `}</style>
+    </div>
+  );
+}
+
+function SignatureAreaPreview({ taName, date }: { taName: string; date: string }) {
+  return (
+    <div style={{ padding: "0 50px 50px", fontFamily: "Arial, sans-serif", fontSize: 13 }}>
+      {/* Divider */}
+      <div style={{ borderTop: "2px solid #1a1a1a", margin: "24px 0" }} />
+
+      <p style={{ fontSize: 14, marginBottom: 24 }}>With this signature I accept the Work Order:</p>
+
+      {/* Signature fields */}
+      <div style={{ display: "flex", gap: 40, marginTop: 16 }}>
+        {/* TA Signature */}
+        <div style={{ flex: 1 }}>
+          {/* Signature box */}
+          <div style={{ border: "2px dashed #cbd5e1", borderRadius: 8, height: 80, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 8, background: "#f8fafc" }}>
+            <span style={{ color: "#94a3b8", fontSize: 12 }}>✍ Signature (draw or type)</span>
+          </div>
+
+          {/* Place + Date fields */}
+          <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ borderBottom: "1px solid #333", height: 28, display: "flex", alignItems: "flex-end" }}>
+                <span style={{ color: "#94a3b8", fontSize: 11 }}>place</span>
+              </div>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ borderBottom: "1px solid #333", height: 28, display: "flex", alignItems: "flex-end" }}>
+                <span style={{ color: "#94a3b8", fontSize: 11 }}>date</span>
+              </div>
+            </div>
+          </div>
+
+          <p style={{ fontWeight: "bold", margin: "4px 0" }}>{taName}</p>
+          <p style={{ fontStyle: "italic", color: "#666", margin: 0, fontSize: 12 }}>Teaching Artist (Contractor)</p>
+        </div>
+
+        {/* Company Signature */}
+        <div style={{ flex: 1 }}>
+          <p style={{ fontWeight: "bold", marginBottom: 4 }}>Berlin, {date}</p>
+          <div style={{ margin: "16px 0" }}>
+            <img src="https://interactenglish.de/wp-content/uploads/2023/01/interact-logo.png" alt="InterACT" style={{ width: 100, opacity: 0.7 }} />
+          </div>
+          <p style={{ fontWeight: "bold", margin: "4px 0" }}>C. Justin Beard</p>
+          <p style={{ margin: "2px 0", fontSize: 12 }}>Chief Executive Officer</p>
+          <p style={{ margin: "2px 0", fontSize: 12 }}>InterACT English gGmbH</p>
+        </div>
+      </div>
+
+      {/* Legal footer */}
+      <div style={{ borderTop: "1px solid #ddd", marginTop: 32, paddingTop: 12 }}>
+        <p style={{ fontSize: 10, color: "#999", margin: "2px 0" }}>Office address: Gneisenaustr. 64, 10961 Berlin, Germany</p>
+        <p style={{ fontSize: 10, color: "#999", margin: "2px 0" }}>Billing address: Planufer 92B, 10967 Berlin, Germany</p>
+        <p style={{ fontSize: 10, color: "#999", margin: "2px 0" }}>Managing Directors: Mark William Hansen &amp; Charles Justin Beard</p>
+        <p style={{ fontSize: 10, color: "#999", margin: "2px 0" }}>Handelsregister - Amtsgericht Charlottenburg - HRB 188932 B</p>
+      </div>
+
+      {/* Page footer */}
+      <div style={{ borderTop: "1px solid #e5e7eb", marginTop: 24, paddingTop: 12, display: "flex", alignItems: "center", gap: 16 }}>
+        <img src="https://interactenglish.de/wp-content/uploads/2023/01/interact-logo.png" alt="" style={{ width: 80 }} />
+        <div style={{ fontSize: 9, color: "#999" }}>
+          InterACT English gGmbH, Planufer 92B, 10967 Berlin<br />
+          Tel. 030 20339702 / www.interactenglish.de / info@interactenglish.de
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SignatureAreaInfo() {
+  return (
+    <div className="lg:col-span-4 lg:col-start-2 mx-auto" style={{ width: 794 }}>
+      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-700">
+        <strong>Signature area</strong> is fixed below your template content. When a TA receives the work order, they will see a signature pad (draw or type) in place of the dashed box above. Place and date fields are filled automatically.
+      </div>
     </div>
   );
 }
