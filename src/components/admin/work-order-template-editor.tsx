@@ -49,48 +49,18 @@ const SAMPLE_DATA: Record<string, string> = {
   SignByDate: "10.05.2026", CreatedDate: new Date().toLocaleDateString("de-DE"),
 };
 
-// Fixed header — not editable in the body, same on every WO
-function PageHeader({ preview }: { preview?: boolean }) {
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "40px 50px 0", fontFamily: "Arial, sans-serif" }}>
-      <div>
-        <img src="https://interactenglish.de/wp-content/uploads/2023/01/interact-logo.png" alt="InterACT English" style={{ width: 160 }} />
-      </div>
-      <div style={{ textAlign: "right", fontSize: 10, color: "#666", lineHeight: 1.5 }}>
-        InterACT English gGmbH<br />
-        Planufer 92B, 10967 Berlin<br />
-        Tel. 030 20339702<br />
-        info@interactenglish.de<br />
-        <br />
-        Geschäftsführer:<br />
-        Mark William Hansen &amp; Charles Justin Beard<br />
-        Handelsregister - Amtsgericht Charlottenburg<br />
-        HRB 188932 B
-        {preview && (
-          <>
-            <br /><br />
-            <span style={{ color: "#16a34a", fontWeight: "bold" }}>Project ID: {SAMPLE_DATA.MondayID}</span>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Fixed footer — same on every WO
-function PageFooter() {
-  return (
-    <div style={{ borderTop: "1px solid #ddd", padding: "12px 50px", display: "flex", alignItems: "center", gap: 16, fontFamily: "Arial, sans-serif" }}>
-      <img src="https://interactenglish.de/wp-content/uploads/2023/01/interact-logo.png" alt="" style={{ width: 90 }} />
-      <div style={{ fontSize: 9, color: "#999", lineHeight: 1.5 }}>
-        InterACT English gGmbH, Planufer 92B, 10967 Berlin<br />
-        Tel. 030 20339702 / www.interactenglish.de / info@interactenglish.de
-      </div>
-    </div>
-  );
-}
-
-const DEFAULT_TEMPLATE = `<h1><strong>WORK ORDER</strong></h1>
+const DEFAULT_TEMPLATE = `<p class="ql-align-right"><img src="https://interactenglish.de/wp-content/uploads/2023/01/interact-logo.png" width="180"></p>
+<p class="ql-align-right"><br></p>
+<p class="ql-align-right"><span class="ql-size-small">InterACT English gGmbH</span></p>
+<p class="ql-align-right"><span class="ql-size-small">Planufer 92B, 10967 Berlin</span></p>
+<p class="ql-align-right"><span class="ql-size-small">Tel. 030 20339702</span></p>
+<p class="ql-align-right"><span class="ql-size-small">info@interactenglish.de</span></p>
+<p class="ql-align-right"><span class="ql-size-small">Geschäftsführer: Mark William Hansen &amp; Charles Justin Beard</span></p>
+<p class="ql-align-right"><span class="ql-size-small">Handelsregister - Amtsgericht Charlottenburg - HRB 188932 B</span></p>
+<p class="ql-align-right"><br></p>
+<p class="ql-align-right"><strong>Project ID: {{MondayID}}</strong></p>
+<p><br></p>
+<h1><strong>WORK ORDER</strong></h1>
 <p><br></p>
 <p>By and between</p>
 <p><strong>InterACT English gGmbH</strong></p>
@@ -124,10 +94,10 @@ const DEFAULT_TEMPLATE = `<h1><strong>WORK ORDER</strong></h1>
 <p><strong>If you like to decline but are still available,</strong> send us your reasons. We may have alternative projects.</p>
 <p>We thank you for all of your input and wish you successful projects!</p>
 <p><br></p>
-<p>_______________________________________________</p>
 <p>With this signature I accept the Work Order:</p>
 <p><br></p>
 <p><br></p>
+<p>_______________________________________________</p>
 <p><strong>{{TeachingArtist}}</strong></p>
 <p><em>Teaching Artist (Contractor)</em></p>
 <p><br></p>
@@ -135,7 +105,10 @@ const DEFAULT_TEMPLATE = `<h1><strong>WORK ORDER</strong></h1>
 <p><br></p>
 <p><strong>C. Justin Beard</strong></p>
 <p>Chief Executive Officer</p>
-<p>InterACT English gGmbH</p>`;
+<p>InterACT English gGmbH</p>
+<p><br></p>
+<p><br></p>
+<p class="ql-align-center"><span class="ql-size-small">InterACT English gGmbH, Planufer 92B, 10967 Berlin — Tel. 030 20339702 — www.interactenglish.de — info@interactenglish.de</span></p>`;
 
 export function WorkOrderTemplateEditor({ template }: { template: Template | null }) {
   const [html, setHtml] = useState(template?.body_html || DEFAULT_TEMPLATE);
@@ -191,7 +164,7 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
       <div className="space-y-4">
         <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
           <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mb-1">Variables</h3>
-          <p className="text-[10px] text-zinc-400 mb-3">Click to copy, paste into editor (Ctrl+V)</p>
+          <p className="text-[10px] text-zinc-400 mb-3">Click to copy, then paste (Ctrl+V) into editor</p>
           {["Project", "TA", "Pay", "Admin"].map((group) => (
             <div key={group} className="mb-3">
               <p className="text-[10px] font-bold uppercase text-zinc-400 mb-1">{group}</p>
@@ -210,18 +183,11 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
             </div>
           ))}
         </div>
-
-        <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mb-2">Page Layout</h3>
-          <p className="text-[10px] text-zinc-400">Header and footer are fixed — they appear on every work order automatically. You only edit the body content above.</p>
-        </div>
-
         <Link href="/admin/work-orders" className="block text-center text-sm text-zinc-500 hover:text-zinc-700">&larr; Back</Link>
       </div>
 
       {/* Editor / Preview */}
       <div className="lg:col-span-4 space-y-3">
-        {/* Controls */}
         <div className="flex items-center justify-end gap-2">
           {saved && <span className="text-xs text-green-600">Saved!</span>}
           <button onClick={() => setShowPreview(!showPreview)}
@@ -235,33 +201,22 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
           </button>
         </div>
 
-        {/* A4 Page */}
-        <div className="wo-page mx-auto" style={{ width: 794, background: "white", borderRadius: 8, boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "1px solid #e5e7eb", overflow: "hidden" }}>
-          {/* Header — always visible */}
-          <PageHeader preview={showPreview} />
-
-          <hr style={{ margin: "12px 50px", border: "none", borderTop: "2px solid #1a1a1a" }} />
-
-          {/* Body — editor or preview */}
-          {showPreview ? (
-            <div className="ql-snow">
-              <div className="ql-editor" style={{ padding: "0 50px 20px", fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.7, overflowWrap: "break-word", minHeight: 800 }}
-                dangerouslySetInnerHTML={{ __html: fillVariables(html) }} />
-            </div>
-          ) : (
-            <div className="wo-editor">
-              <ReactQuill theme="snow" value={html} onChange={setHtml} modules={modules} />
-            </div>
-          )}
-
-          {/* Footer — always visible */}
-          <PageFooter />
-        </div>
+        {/* A4 Page — everything in one editor */}
+        {showPreview ? (
+          <div className="wo-page mx-auto ql-snow" style={{ width: 794, minHeight: 1123, background: "white", borderRadius: 8, boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "1px solid #e5e7eb" }}>
+            <div className="ql-editor" style={{ padding: "50px", fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.7, overflowWrap: "break-word", minHeight: 1023 }}
+              dangerouslySetInnerHTML={{ __html: fillVariables(html) }} />
+          </div>
+        ) : (
+          <div className="wo-page wo-editor mx-auto" style={{ width: 794, background: "white", borderRadius: 8, boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "1px solid #e5e7eb", overflow: "hidden" }}>
+            <ReactQuill theme="snow" value={html} onChange={setHtml} modules={modules} />
+          </div>
+        )}
       </div>
 
       <style jsx global>{`
         .wo-editor .ql-container { font-size: 13px; font-family: Arial, sans-serif; border: none !important; }
-        .wo-editor .ql-editor { min-height: 800px; padding: 0 50px 40px !important; line-height: 1.7; overflow-wrap: break-word; }
+        .wo-editor .ql-editor { min-height: 1023px; padding: 50px !important; line-height: 1.7; overflow-wrap: break-word; }
         .wo-editor .ql-toolbar.ql-snow { border: none !important; border-bottom: 1px solid #e5e7eb !important; padding: 8px 16px; position: sticky; top: 0; z-index: 10; background: white; }
         .wo-page .ql-editor h1 { font-size: 2em; font-weight: bold; margin: 0.5em 0; }
         .wo-page .ql-editor h2 { font-size: 1.5em; font-weight: bold; margin: 0.5em 0; }
