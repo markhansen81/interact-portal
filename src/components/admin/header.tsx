@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import { NotificationBell } from "@/components/shared/notification-bell";
 
 export function AdminHeader({ email }: { email: string }) {
   async function handleSignOut() {
@@ -13,6 +14,7 @@ export function AdminHeader({ email }: { email: string }) {
     <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-6 dark:border-zinc-800 dark:bg-zinc-900">
       <div />
       <div className="flex items-center gap-4">
+        <NotificationBell />
         <span className="text-sm text-zinc-500">{email}</span>
         <button
           onClick={handleSignOut}
