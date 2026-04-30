@@ -50,65 +50,92 @@ const SAMPLE_DATA: Record<string, string> = {
 };
 
 const DEFAULT_TEMPLATE = `<p class="ql-align-right"><img src="https://interactenglish.de/wp-content/uploads/2023/01/interact-logo.png" width="180"></p>
+<p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">InterACT English gGmbH</span></p>
+<p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">Planufer 92B, 10967 Berlin</span></p>
+<p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">Tel. 030 20339702</span></p>
+<p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">info@interactenglish.de</span></p>
+<p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">Geschäftsführer:</span></p>
+<p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">Mark William Hansen &amp; Charles Justin Beard</span></p>
+<p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">Handelsregister - Amtsgericht Charlottenburg</span></p>
+<p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">HRB 188932 B</span></p>
 <p class="ql-align-right"><br></p>
-<p class="ql-align-right"><span class="ql-size-small">InterACT English gGmbH</span></p>
-<p class="ql-align-right"><span class="ql-size-small">Planufer 92B, 10967 Berlin</span></p>
-<p class="ql-align-right"><span class="ql-size-small">Tel. 030 20339702</span></p>
-<p class="ql-align-right"><span class="ql-size-small">info@interactenglish.de</span></p>
-<p class="ql-align-right"><span class="ql-size-small">Geschäftsführer: Mark William Hansen &amp; Charles Justin Beard</span></p>
-<p class="ql-align-right"><span class="ql-size-small">Handelsregister - Amtsgericht Charlottenburg - HRB 188932 B</span></p>
-<p class="ql-align-right"><br></p>
-<p class="ql-align-right"><strong>Project ID: {{MondayID}}</strong></p>
+<p class="ql-align-right"><strong style="color: rgb(22, 163, 74);">Project ID (for office use): {{MondayID}}</strong></p>
+<p>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
 <p><br></p>
 <h1><strong>WORK ORDER</strong></h1>
 <p><br></p>
 <p>By and between</p>
+<p><br></p>
 <p><strong>InterACT English gGmbH</strong></p>
 <p><em>(referred to in the following as "the Company")</em></p>
 <p><br></p>
 <p>and: <strong>{{TeachingArtist}}</strong></p>
 <p><em>(referred to in the following as "the Contractor")</em></p>
 <p><br></p>
-<h2><strong>Project Details</strong></h2>
-<p><em>The Contractor shall be teaching on the following project (details subject to change):</em></p>
+<p>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
 <p><br></p>
-<p><strong>Date of project / Time period:</strong> {{Date}}, {{Days}}</p>
-<p><strong>Organisation (workplace):</strong> {{Name}}</p>
-<p>{{Address}}</p>
-<p>{{State}}</p>
-<p><strong>Project type:</strong> {{ProjectType}}</p>
-<p><strong>Special conditions:</strong> <em>{{SpecialConditions}}</em></p>
-<p><strong>Co taught / Not co taught:</strong> {{CoTaught}}</p>
-<p><strong>Grade:</strong> {{Grade}}</p>
-<p><strong>Accommodation:</strong> {{Accommodation}}</p>
+<h2><strong>Project Details</strong> <em>(Location, date, project type, specific project remuneration)</em></h2>
+<p>The Contractor shall be teaching on the following project (Project details are subject to change):</p>
 <p><br></p>
-<h3>IMPORTANT: Before signing this work order please do and consider the following:</h3>
+<p><strong>Date of project / Time period:</strong>   {{Date}}, {{Days}}</p>
+<p><strong>Organisation (workplace):</strong>   {{Name}}</p>
+<p>                                                          {{Address}}</p>
+<p>                                                          {{State}}</p>
+<p><strong>Project type:</strong>   {{ProjectType}}</p>
+<p><strong>Special conditions:</strong>   <em>{{SpecialConditions}}</em></p>
+<p><strong>Co taught / Not co taught:</strong>   {{CoTaught}}</p>
+<p><strong>Grade:</strong>   {{Grade}}</p>
+<p><strong>Accommodation:</strong>   {{Accommodation}}</p>
+<p><br></p>
+<p>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
+<p><br></p>
+<h3><strong>IMPORTANT:</strong> Before signing this work order please do and consider the following:</h3>
+<p><br></p>
 <ol>
-<li><strong>We require all TAs to travel the day before the project</strong> if outside their home city. Travel the day before is included in the flat-fee. Accommodation for the evening before is always provided. <strong>Please do not sign if travel the day before is an issue.</strong></li>
-<li>Check the address of the school/hostel. Some projects require longer travel time.</li>
-<li>Check the area/city/village. <strong>Most projects have you arriving in the evening, often on Sunday. Finding food can be difficult in rural locations.</strong></li>
-<li>Please CAREFULLY read the project notes the week before traveling.</li>
-<li><strong>Double check all connections, transfers and your way from train station to hotel and school.</strong></li>
+<li><strong>We require all TAs to travel the day before the project</strong> if the program is outside of their home city. This has the obvious reason that we must ensure that teaching staff arrives on time to run the program. Same day travel may be organised by InterACT in some exceptions, but it remains in the companies judgment if this is warranted/possible or not. Travel the day before is included in the flat-fee paid for every program. Accommodation for the evening before is always provided. <strong>Please do not sign this work order if travel the day before is an issue.</strong></li>
+<li>Check the address of the school/hostel you will travel to. Some projects require longer travel time. Please consider this before signing the work order.</li>
+<li>Check the area/city/village you are traveling to. <strong>Most projects will have you arriving in the evening and often on Sunday. Finding food, or a supermarket can be difficult in rural locations. Please be prepared before you travel.</strong> This might mean packing some food, or bringing essentials.</li>
+<li>Please CAREFULLY read the project notes prepared for you in the project folder the week before traveling. These notes have critical information that impacts the project and your travel plans. If anything is unclear contact the project coordinator during working hours (M-F) and we can answer your questions.</li>
+<li><strong>We strongly recommend that you double check all connections, transfers and your way from the train station to hotel and hotel to the school in advance of your project.</strong> We always endeavour to provide accurate information but mistakes do happen. You can prevent complications and frustration by double checking all details of this project before you travel.</li>
 </ol>
 <p><br></p>
-<p><strong>If you like to decline but are still available,</strong> send us your reasons. We may have alternative projects.</p>
-<p>We thank you for all of your input and wish you successful projects!</p>
+<p><strong>If you like to decline this work order, but are still available and wanting to work this week,</strong> feel free to send us any reason(s) you would like to share to why you are declining the work order.</p>
+<p><br></p>
+<p>We may have open positions available and would love to find the right project for you.</p>
+<p><br></p>
+<p>Reasons include: needing a project closer to your hometown, that you can only work certain days, or that you are looking for a certain type of project for the week. In some cases we may be able to provide alternative projects in this period that meet your requirements.</p>
+<p><br></p>
+<p>We thank you for all of your input and wish you a successful projects!</p>
+<p><br></p>
+<p>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
 <p><br></p>
 <p>With this signature I accept the Work Order:</p>
 <p><br></p>
 <p><br></p>
-<p>_______________________________________________</p>
+<p><br></p>
+<p>                    ________________________                         ________________________ , ________________</p>
+<p>                    <em>Signature</em>                                                           <em>place</em>                                      <em>date</em></p>
+<p><br></p>
 <p><strong>{{TeachingArtist}}</strong></p>
 <p><em>Teaching Artist (Contractor)</em></p>
 <p><br></p>
+<p><br></p>
 <p><strong>Berlin, {{CreatedDate}}</strong></p>
+<p><br></p>
+<p><img src="https://interactenglish.de/wp-content/uploads/2023/01/interact-logo.png" width="120"></p>
 <p><br></p>
 <p><strong>C. Justin Beard</strong></p>
 <p>Chief Executive Officer</p>
 <p>InterACT English gGmbH</p>
 <p><br></p>
+<p><span class="ql-size-small" style="color: rgb(153, 153, 153);">Office address: Gneisenaustr. 64, 10961 Berlin, Germany</span></p>
+<p><span class="ql-size-small" style="color: rgb(153, 153, 153);">Billing address: Planufer 92B, 10967 Berlin, Germany</span></p>
+<p><span class="ql-size-small" style="color: rgb(153, 153, 153);">Managing Directors: Mark William Hansen &amp; Charles Justin Beard</span></p>
+<p><span class="ql-size-small" style="color: rgb(153, 153, 153);">Handelsregister - Amtsgericht Charlottenburg - HRB 188932 B</span></p>
 <p><br></p>
-<p class="ql-align-center"><span class="ql-size-small">InterACT English gGmbH, Planufer 92B, 10967 Berlin — Tel. 030 20339702 — www.interactenglish.de — info@interactenglish.de</span></p>`;
+<p>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
+<p class="ql-align-center"><span class="ql-size-small" style="color: rgb(153, 153, 153);">InterACT English gGmbH, Planufer 92B, 10967 Berlin</span></p>
+<p class="ql-align-center"><span class="ql-size-small" style="color: rgb(153, 153, 153);">Tel. 030 20339702 / www.interactenglish.de / info@interactenglish.de</span></p>`;
 
 export function WorkOrderTemplateEditor({ template }: { template: Template | null }) {
   const [html, setHtml] = useState(template?.body_html || DEFAULT_TEMPLATE);
