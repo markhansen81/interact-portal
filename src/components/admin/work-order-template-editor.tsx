@@ -216,6 +216,25 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
         .wo-editor .ql-toolbar { border-bottom: 1px solid #e5e7eb; padding: 8px 12px; position: sticky; top: 0; z-index: 10; background: white; }
         .wo-editor .ql-container { border: none; }
         .wo-editor .ql-toolbar.ql-snow { border: none; border-bottom: 1px solid #e5e7eb; }
+
+        /* Quill content classes for preview */
+        .wo-editor .ql-editor h1 { font-size: 2em; font-weight: bold; margin: 0.67em 0; }
+        .wo-editor .ql-editor h2 { font-size: 1.5em; font-weight: bold; margin: 0.83em 0; }
+        .wo-editor .ql-editor h3 { font-size: 1.17em; font-weight: bold; margin: 1em 0; }
+        .wo-editor .ql-editor .ql-size-small { font-size: 0.75em; }
+        .wo-editor .ql-editor .ql-size-large { font-size: 1.5em; }
+        .wo-editor .ql-editor .ql-size-huge { font-size: 2.5em; }
+        .wo-editor .ql-editor .ql-align-center { text-align: center; }
+        .wo-editor .ql-editor .ql-align-right { text-align: right; }
+        .wo-editor .ql-editor .ql-align-justify { text-align: justify; }
+        .wo-editor .ql-editor .ql-indent-1 { padding-left: 3em; }
+        .wo-editor .ql-editor .ql-indent-2 { padding-left: 6em; }
+        .wo-editor .ql-editor .ql-indent-3 { padding-left: 9em; }
+        .wo-editor .ql-editor ol, .wo-editor .ql-editor ul { padding-left: 1.5em; }
+        .wo-editor .ql-editor blockquote { border-left: 4px solid #ccc; padding-left: 16px; margin: 8px 0; }
+        .wo-editor .ql-editor img { max-width: 100%; }
+        .wo-editor .ql-editor a { color: #06c; text-decoration: underline; }
+        .wo-editor .ql-editor hr { border: none; border-top: 1px solid #ccc; margin: 16px 0; }
       `}</style>
     </div>
   );
