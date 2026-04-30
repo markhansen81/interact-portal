@@ -71,3 +71,49 @@ export function mapMondayItemToJob(item: MondayJobItem) {
     status: tasNeeded > 0 ? "open" : "assigned",
   };
 }
+
+// Push approved invoice as a subitem on the job's Monday item
+export async function pushInvoiceToMonday({
+  invoiceNumber,
+  taName,
+  taEmail,
+  amount,
+  workOrderId,
+  pdfUrl,
+}: {
+  invoiceNumber: string;
+  taName: string;
+  taEmail: string;
+  amount: number;
+  workOrderId: string | null;
+  pdfUrl: string | null;
+}) {
+  // If we have a work order linked to a job with a Monday item, add as subitem
+  if (!workOrderId) return;
+
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const adminClient = createAdminClient();
+
+  // Get the job's Monday item ID via work order
+  const { data: wo } = await adminClient
+    .from("work_orders")
+    .select("job_id, jobs(monday_item_id)")
+    .eq("id", workOrderId)
+    .single();
+
+  const jobs = wo?.jobs as unknown as { monday_item_id: string } | null;
+  const mondayItemId = jobs?.monday_item_id;
+  if (!mondayItemId) return;
+
+  // Create a subitem on the Monday job item
+  await mondayQuery(`
+    mutation ($parentId: ID!, $itemName: String!) {
+      create_subitem(parent_item_id: $parentId, item_name: $itemName) {
+        id
+      }
+    }
+  `, {
+    parentId: mondayItemId,
+    itemName: `${invoiceNumber} — ${taName} — €${amount.toFixed(2)}`,
+  });
+}
