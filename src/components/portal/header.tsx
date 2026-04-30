@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import { NotificationBell } from "@/components/shared/notification-bell";
 
 interface Profile {
   first_name: string | null;
@@ -27,12 +28,15 @@ export function PortalHeader({ profile }: { profile: Profile }) {
           Level {profile.pay_level}
         </span>
       </div>
-      <button
-        onClick={handleSignOut}
-        className="rounded-lg px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-      >
-        Sign out
-      </button>
+      <div className="flex items-center gap-4">
+        <NotificationBell />
+        <button
+          onClick={handleSignOut}
+          className="rounded-lg px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+        >
+          Sign out
+        </button>
+      </div>
     </header>
   );
 }

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { notify } from "@/lib/notifications";
+import { workOrderSentEmail } from "@/lib/email";
 
 export async function POST(
   _request: Request,
@@ -30,19 +32,33 @@ export async function POST(
   const adminClient = createAdminClient();
 
   // Update status to sent
-  const { error } = await adminClient
+  const { data: wo, error } = await adminClient
     .from("work_orders")
     .update({
       status: "sent",
       sent_at: new Date().toISOString(),
     })
-    .eq("id", id);
+    .eq("id", id)
+    .select("*, profiles!work_orders_ta_id_fkey(id, first_name, last_name, email)")
+    .single();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
-  // TODO: Send notification to TA (email + in-app)
+  // Notify TA
+  const ta = wo.profiles as { id: string; first_name: string; last_name: string; email: string };
+  const taName = `${ta.first_name || ""} ${ta.last_name || ""}`.trim() || ta.email;
+  const emailTemplate = workOrderSentEmail(taName, wo.project_name, wo.sign_by);
+
+  await notify({
+    userId: ta.id,
+    type: "work_order_sent",
+    title: "New Work Order",
+    body: `You have a new work order for ${wo.project_name}`,
+    payload: { work_order_id: id },
+    email: { to: ta.email, ...emailTemplate },
+  });
 
   return NextResponse.json({ success: true });
 }
