@@ -135,8 +135,11 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
   const router = useRouter();
 
   function exec(command: string, value?: string) {
+    // Ensure editor is focused first so selection is in the right place
+    if (document.activeElement !== editorRef.current) {
+      editorRef.current?.focus();
+    }
     document.execCommand(command, false, value);
-    editorRef.current?.focus();
   }
 
   function insertTag(tag: string) {
@@ -215,7 +218,25 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
         {/* Toolbar */}
         <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
           <div className="flex items-center gap-0.5 flex-wrap">
-            <select onChange={(e) => exec("fontSize", e.target.value)} defaultValue="3"
+            <select
+              onMouseDown={() => {
+                // Save selection before dropdown steals focus
+                const sel = window.getSelection();
+                if (sel && sel.rangeCount > 0) {
+                  (window as unknown as Record<string, unknown>).__savedRange = sel.getRangeAt(0).cloneRange();
+                }
+              }}
+              onChange={(e) => {
+                // Restore selection then apply
+                const saved = (window as unknown as Record<string, unknown>).__savedRange as Range | undefined;
+                if (saved) {
+                  const sel = window.getSelection();
+                  sel?.removeAllRanges();
+                  sel?.addRange(saved);
+                }
+                exec("fontSize", e.target.value);
+              }}
+              defaultValue="3"
               className="rounded border border-zinc-200 px-1.5 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-800">
               <option value="1">Small</option>
               <option value="2">Normal-</option>
@@ -297,8 +318,14 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
 
 function TB({ onClick, title, children }: { onClick: () => void; title: string; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} title={title}
-      className="rounded px-2 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-100 active:bg-zinc-200 dark:hover:bg-zinc-800">
+    <button
+      onMouseDown={(e) => {
+        e.preventDefault(); // Prevent stealing focus from editor
+        onClick();
+      }}
+      title={title}
+      className="rounded px-2 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-100 active:bg-zinc-200 dark:hover:bg-zinc-800"
+    >
       {children}
     </button>
   );
