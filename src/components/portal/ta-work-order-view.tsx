@@ -4,9 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { SignaturePad } from "@/components/shared/signature-pad";
+import { useGenerateSignedPDF } from "@/components/shared/pdf-generator";
+import { createClient } from "@/lib/supabase/client";
 
 interface WorkOrder {
   id: string;
+  project_id_internal: string;
   project_name: string;
   school: string;
   school_address: string;
@@ -36,6 +39,8 @@ export function TAWorkOrderView({
   const router = useRouter();
   const [showSign, setShowSign] = useState(false);
   const [declining, setDeclining] = useState(false);
+  const [signing, setSigning] = useState(false);
+  const generatePDF = useGenerateSignedPDF();
 
   async function handleSign(signatureData: {
     signature_png: string;
@@ -43,11 +48,37 @@ export function TAWorkOrderView({
     typed_name?: string;
     timestamp: string;
   }) {
+    setSigning(true);
+
+    // 1. Generate signed PDF
+    const pdfBlob = await generatePDF(wo, taName, {
+      signature_png: signatureData.signature_png,
+      timestamp: signatureData.timestamp,
+    });
+
+    // 2. Upload PDF to Supabase storage
+    const supabase = createClient();
+    const fileName = `signed-work-orders/${wo.id}-${Date.now()}.pdf`;
+    const { data: uploadData } = await supabase.storage
+      .from("documents")
+      .upload(fileName, pdfBlob, { contentType: "application/pdf" });
+
+    let pdfUrl = null;
+    if (uploadData) {
+      const { data: urlData } = supabase.storage
+        .from("documents")
+        .getPublicUrl(uploadData.path);
+      pdfUrl = urlData.publicUrl;
+    }
+
+    // 3. Sign the work order with PDF URL
     await fetch(`/api/portal/work-orders/${wo.id}/sign`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(signatureData),
+      body: JSON.stringify({ ...signatureData, pdf_url: pdfUrl }),
     });
+
+    setSigning(false);
     router.push("/portal/work-orders");
     router.refresh();
   }

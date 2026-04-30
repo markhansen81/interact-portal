@@ -39,6 +39,7 @@ export async function POST(
     .update({
       status: "signed",
       signed_at: new Date().toISOString(),
+      pdf_url: body.pdf_url || null,
       signature_data: {
         signature_png: body.signature_png,
         signature_type: body.signature_type,
