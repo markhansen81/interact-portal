@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 
 export default async function TAInvoicesPage() {
   const profile = await requireAuth(["ta"]);
@@ -56,11 +57,31 @@ export default async function TAInvoicesPage() {
         </div>
       </div>
 
-      {/* Create Invoice from Signed Work Order */}
+      {/* Upload Invoice */}
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+              Upload Invoice
+            </h3>
+            <p className="mt-1 text-sm text-zinc-500">
+              Upload your own invoice PDF. Our AI will check it has all required information.
+            </p>
+          </div>
+          <Link
+            href="/portal/invoices/upload"
+            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
+          >
+            Upload PDF
+          </Link>
+        </div>
+      </div>
+
+      {/* Or use Calculator */}
       {signedWOs && signedWOs.length > 0 && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-            Create Invoice
+            Or Use Invoice Calculator
           </h3>
           <div className="space-y-2">
             {signedWOs.map((wo) => (
@@ -76,9 +97,12 @@ export default async function TAInvoicesPage() {
                     {wo.program_type} — {wo.days} days — €{Number(wo.total).toFixed(2)}
                   </p>
                 </div>
-                <button className="rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900">
+                <Link
+                  href={`/portal/invoices/new/${wo.id}`}
+                  className="rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900"
+                >
                   Create Invoice
-                </button>
+                </Link>
               </div>
             ))}
           </div>
