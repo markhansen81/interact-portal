@@ -1,6 +1,30 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+const ALLOWED_FIELDS = [
+  // Section 1 - Contact
+  "first_name", "last_name", "preferred_name", "phone", "address",
+  "date_of_birth", "nationality", "gender", "pronouns", "lgbtqia",
+  "ethnicity", "caretaker_status", "phone_consent",
+  // Section 2 - About
+  "where_from", "moved_to_germany", "likes_germany", "vacation_spot",
+  "great_at", "not_great_at", "art_type", "superpower", "comic_title",
+  "famous_last_words", "favourite_food", "bio",
+  // Section 3 - Qualifications
+  "education_level", "certifications", "art_profession", "tefl_status",
+  "german_level", "german_professional",
+  // Section 4 - Experience
+  "exp_grades_1_4", "exp_grades_5_7", "exp_grades_8_plus",
+  "exp_disabilities", "exp_disability_types", "exp_disability_description",
+  // Section 6 - Logistics
+  "dietary_restrictions", "homestay_willing", "lifeguard_cert",
+  "drivers_licence", "bahncard", "bahncard_expiry", "deutschlandticket",
+  // Section 7 - Payroll
+  "iban", "bank_name", "tax_number", "vat_number", "vat_registered",
+  // Meta
+  "photo_url", "onboarding_sections_complete",
+];
+
 export async function PATCH(request: Request) {
   const supabase = await createClient();
   const {
@@ -13,18 +37,8 @@ export async function PATCH(request: Request) {
 
   const body = await request.json();
 
-  // TAs can only update their own profile fields
-  const allowedFields = [
-    "first_name",
-    "last_name",
-    "preferred_name",
-    "phone",
-    "address",
-    "photo_url",
-  ];
-
   const updates: Record<string, unknown> = {};
-  for (const field of allowedFields) {
+  for (const field of ALLOWED_FIELDS) {
     if (field in body) {
       updates[field] = body[field];
     }
