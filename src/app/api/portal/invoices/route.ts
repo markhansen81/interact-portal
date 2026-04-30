@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -63,8 +64,48 @@ export async function POST(request: Request) {
     await supabase.from("invoice_addons").insert(addonRows);
   }
 
-  // TODO: AI validation check
-  // TODO: Send notification to admin
+  // Push to Monday immediately on submission
+  if (process.env.MONDAY_API_TOKEN) {
+    try {
+      const adminClient = createAdminClient();
+
+      // Get TA profile
+      const { data: ta } = await adminClient
+        .from("profiles")
+        .select("first_name, last_name, email")
+        .eq("id", user.id)
+        .single();
+
+      // Get work order program type
+      let programType = null;
+      if (body.work_order_id) {
+        const { data: wo } = await adminClient
+          .from("work_orders")
+          .select("program_type")
+          .eq("id", body.work_order_id)
+          .single();
+        programType = wo?.program_type || null;
+      }
+
+      const taName = ta
+        ? `${ta.first_name || ""} ${ta.last_name || ""}`.trim() || ta.email
+        : "Unknown TA";
+
+      const { pushInvoiceToMonday } = await import("@/lib/monday");
+      await pushInvoiceToMonday({
+        invoiceNumber,
+        taName,
+        taEmail: ta?.email || "",
+        amount: Number(body.total),
+        workOrderId: body.work_order_id,
+        pdfUrl: body.uploaded_pdf_url || null,
+        programType,
+        aiIssues: body.ai_check_result?.issues || null,
+      });
+    } catch (e) {
+      console.error("[MONDAY] Failed to push invoice:", e);
+    }
+  }
 
   return NextResponse.json({ success: true, invoice });
 }
