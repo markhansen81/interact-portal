@@ -49,7 +49,7 @@ const SAMPLE_DATA: Record<string, string> = {
   SignByDate: "10.05.2026", CreatedDate: new Date().toLocaleDateString("de-DE"),
 };
 
-const DEFAULT_TEMPLATE = `<p class="ql-align-right"><img src="/interact-logo.png" width="180"></p>
+const DEFAULT_TEMPLATE = `<p class="ql-align-right"><strong style="color: rgb(102, 102, 102); font-size: 18px;">INTERACT ENGLISH</strong></p>
 <p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">InterACT English gGmbH</span></p>
 <p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">Planufer 92B, 10967 Berlin</span></p>
 <p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">Tel. 030 20339702</span></p>
@@ -279,9 +279,10 @@ function SignatureAreaPreview({ taName, date }: { taName: string; date: string }
         {/* Company Signature */}
         <div style={{ flex: 1 }}>
           <p style={{ fontWeight: "bold", marginBottom: 4 }}>Berlin, {date}</p>
-          <div style={{ margin: "16px 0", position: "relative" }}>
-            <img src="/interact-logo.png" alt="InterACT" style={{ width: 100, opacity: 0.7 }} />
-            <div style={{ fontSize: 9, color: "#94a3b8", marginTop: 2 }}>Company stamp/seal</div>
+          <div style={{ margin: "16px 0" }}>
+            <div style={{ width: 120, height: 60, border: "2px dashed #cbd5e1", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc", cursor: "pointer" }}>
+              <span style={{ fontSize: 10, color: "#94a3b8", textAlign: "center" }}>Company<br/>stamp/seal</span>
+            </div>
           </div>
           <p style={{ fontWeight: "bold", margin: "4px 0" }}>C. Justin Beard</p>
           <p style={{ margin: "2px 0", fontSize: 12 }}>Chief Executive Officer</p>
@@ -299,7 +300,9 @@ function SignatureAreaPreview({ taName, date }: { taName: string; date: string }
 
       {/* Page footer */}
       <div style={{ borderTop: "1px solid #e5e7eb", marginTop: 24, paddingTop: 12, display: "flex", alignItems: "center", gap: 16 }}>
-        <img src="/interact-logo.png" alt="" style={{ width: 80 }} />
+        <div style={{ width: 80, height: 30, border: "1px dashed #cbd5e1", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc", flexShrink: 0 }}>
+          <span style={{ fontSize: 8, color: "#94a3b8" }}>Logo</span>
+        </div>
         <div style={{ fontSize: 9, color: "#999" }}>
           InterACT English gGmbH, Planufer 92B, 10967 Berlin<br />
           Tel. 030 20339702 / www.interactenglish.de / info@interactenglish.de
