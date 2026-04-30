@@ -118,18 +118,26 @@ export function TAWorkOrderView({
           </div>
         )}
 
-        {/* Important Notes */}
+        {/* Important Notes — full text */}
         <div className="border-b border-zinc-200 p-8 text-sm text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
-          <p className="font-semibold text-zinc-900 dark:text-zinc-50">
-            IMPORTANT: Before signing please consider:
+          <p className="font-bold text-zinc-900 dark:text-zinc-50">
+            IMPORTANT: Before signing this work order please do and consider the following:
           </p>
-          <ol className="mt-3 list-decimal space-y-2 pl-5">
-            <li>Travel the day before is required if outside your home city.</li>
-            <li>Check the school/hostel address and travel time.</li>
-            <li>Rural locations may have limited food options — pack accordingly.</li>
-            <li>Read project notes carefully the week before traveling.</li>
-            <li>Double check all connections and transfers in advance.</li>
+          <ol className="mt-3 list-decimal space-y-3 pl-5">
+            <li><strong>We require all TAs to travel the day before the project</strong> if the program is outside of their home city. This has the obvious reason that we must ensure that teaching staff arrives on time to run the program. Same day travel may be organised by InterACT in some exceptions, but it remains in the companies judgment if this is warranted/possible or not. Travel the day before is included in the flat-fee paid for every program. Accommodation for the evening before is always provided. <strong>Please do not sign this work order if travel the day before is an issue.</strong></li>
+            <li>Check the address of the school/hostel you will travel to. Some projects require longer travel time. Please consider this before signing the work order.</li>
+            <li>Check the area/city/village you are traveling to. <strong>Most projects will have you arriving in the evening and often on Sunday. Finding food, or a supermarket can be difficult in rural locations. Please be prepared before you travel.</strong> This might mean packing some food, or bringing essentials.</li>
+            <li>Please CAREFULLY read the project notes prepared for you in the project folder <u>the week before traveling</u>. These notes have critical information that impacts the project and your travel plans. If anything is unclear contact the project coordinator during working hours (M-F) and we can answer your questions.</li>
+            <li><strong>We strongly recommend that you double check all connections, transfers and your way from the train station to hotel and hotel to the school in advance of your project.</strong> We always endeavour to provide accurate information but mistakes do happen. You can prevent complications and frustration by double checking all details of this project before you travel. Details can be found in your project notes.</li>
           </ol>
+        </div>
+
+        {/* Decline note */}
+        <div className="border-b border-zinc-200 p-8 text-sm text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
+          <p><strong>If you like to decline this work order, but are still available and wanting to work this week,</strong> feel free to send us any reason(s) you would like to share to why you are declining the work order.</p>
+          <p className="mt-3">We may have open positions available and would love to find the right project for you.</p>
+          <p className="mt-3">Reasons include: needing a project closer to your hometown, that you can only work certain days, or that you are looking for a certain type of project for the week. In some cases we may be able to provide alternative projects in this period that meet your requirements.</p>
+          <p className="mt-3">We thank you for all of your input and wish you a successful projects!</p>
         </div>
 
         {/* Signature / Actions */}

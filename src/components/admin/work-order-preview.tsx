@@ -282,76 +282,86 @@ export function WorkOrderPreview({ workOrder: initialWO }: { workOrder: WorkOrde
           )}
         </div>
 
-        {/* Work Order Conditions */}
-        <div className="border-b border-zinc-200 p-8 dark:border-zinc-800">
-          <h3 className="text-lg font-black text-zinc-900 dark:text-zinc-50 mb-4">WORK ORDER CONDITIONS</h3>
-          <div className="grid grid-cols-2 gap-8 text-sm text-zinc-600 dark:text-zinc-400">
-            <div className="space-y-4">
-              <div>
-                <p className="font-semibold text-zinc-900 dark:text-zinc-50">§ 1 Tätigkeit</p>
-                <p>Der Auftragnehmer wird für den Auftraggeber als Teaching Artist tätig.</p>
-              </div>
-              <div>
-                <p className="font-semibold text-zinc-900 dark:text-zinc-50">§ 2 Bezahlung</p>
-                <p>Der Auftragnehmer verpflichtet sich die Rechnung gemäß der Vergütungstabelle sowie seinem entsprechenden Vergütungslevel zu stellen. Die angegebene Vergütung versteht sich einschließlich der geltenden Umsatzsteuer.</p>
-                <p className="mt-2">Krankentage werden nicht vergütet.</p>
-              </div>
-              <div>
-                <p className="font-semibold text-zinc-900 dark:text-zinc-50">§ 3 Reisekosten</p>
-                <p>Der Auftraggeber übernimmt die anfallenden Fahrtkosten und Übernachtungskosten. Weitere Reisekosten werden nicht übernommen.</p>
-              </div>
-              <div>
-                <p className="font-semibold text-zinc-900 dark:text-zinc-50">§ 4 Rücktritt</p>
-                <p>Vertragsstrafe von EUR 300,00 bei nicht genehmigtem Rücktritt.</p>
-              </div>
-              <div>
-                <p className="font-semibold text-zinc-900 dark:text-zinc-50">§ 6 Lehrvereinbarung</p>
-                <p>Dieser Auftrag unterliegt der Lehrvereinbarung.</p>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <p className="font-semibold text-zinc-900 dark:text-zinc-50">§ 1 Occupation</p>
-                <p>The Contractor shall be occupied by the Company as a Teaching Artist.</p>
-              </div>
-              <div>
-                <p className="font-semibold text-zinc-900 dark:text-zinc-50">§ 2 Remuneration</p>
-                <p>The Contractor will use the remuneration tables and their Level to determine the appropriate remuneration. All remuneration includes VAT.</p>
-                <p className="mt-2">Sick days are not compensated.</p>
-              </div>
-              <div>
-                <p className="font-semibold text-zinc-900 dark:text-zinc-50">§ 3 Travel expenses</p>
-                <p>The Company shall bear necessary travel and accommodation expenses, except food allowances.</p>
-              </div>
-              <div>
-                <p className="font-semibold text-zinc-900 dark:text-zinc-50">§ 4 Work Order cancellation</p>
-                <p>Contractual penalty of EUR 300.00 for unauthorized cancellation.</p>
-              </div>
-              <div>
-                <p className="font-semibold text-zinc-900 dark:text-zinc-50">§ 6 Teaching Agreement</p>
-                <p>This work order is under the terms of the Teaching Agreement.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Important Notes */}
+        {/* IMPORTANT Notes — before conditions */}
         <div className="border-b border-zinc-200 p-8 text-sm text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
-          <p className="font-semibold text-zinc-900 dark:text-zinc-50">
-            IMPORTANT: Before signing this work order please consider:
+          <p className="font-bold text-zinc-900 dark:text-zinc-50">
+            IMPORTANT: Before signing this work order please do and consider the following:
           </p>
-          <ol className="mt-3 list-decimal space-y-2 pl-5">
-            <li><strong>Travel the day before is required</strong> if outside your home city. Please do not sign if this is an issue.</li>
-            <li>Check the address of the school/hostel. Some projects require longer travel time.</li>
-            <li>Check the area/city/village. <strong>Finding food can be difficult in rural locations.</strong> Be prepared.</li>
-            <li>Please <u>CAREFULLY read the project notes</u> the week before traveling.</li>
-            <li><strong>Double check all connections, transfers and your way from the train station.</strong></li>
+          <ol className="mt-3 list-decimal space-y-3 pl-5">
+            <li><strong>We require all TAs to travel the day before the project</strong> if the program is outside of their home city. This has the obvious reason that we must ensure that teaching staff arrives on time to run the program. Same day travel may be organised by InterACT in some exceptions, but it remains in the companies judgment if this is warranted/possible or not. Travel the day before is included in the flat-fee paid for every program. Accommodation for the evening before is always provided. <strong>Please do not sign this work order if travel the day before is an issue.</strong></li>
+            <li>Check the address of the school/hostel you will travel to. Some projects require longer travel time. Please consider this before signing the work order.</li>
+            <li>Check the area/city/village you are traveling to. <strong>Most projects will have you arriving in the evening and often on Sunday. Finding food, or a supermarket can be difficult in rural locations. Please be prepared before you travel.</strong> This might mean packing some food, or bringing essentials.</li>
+            <li>Please CAREFULLY read the project notes prepared for you in the project folder <u>the week before traveling</u>. These notes have critical information that impacts the project and your travel plans. If anything is unclear contact the project coordinator during working hours (M-F) and we can answer your questions.</li>
+            <li><strong>We strongly recommend that you double check all connections, transfers and your way from the train station to hotel and hotel to the school in advance of your project.</strong> We always endeavour to provide accurate information but mistakes do happen. You can prevent complications and frustration by double checking all details of this project before you travel. Details can be found in your project notes.</li>
           </ol>
         </div>
 
         {/* Decline note */}
         <div className="border-b border-zinc-200 p-8 text-sm text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
-          <p><strong>If you like to decline this work order, but are still available,</strong> feel free to send us your reasons. We may have alternative projects available.</p>
+          <p><strong>If you like to decline this work order, but are still available and wanting to work this week,</strong> feel free to send us any reason(s) you would like to share to why you are declining the work order.</p>
+          <p className="mt-3">We may have open positions available and would love to find the right project for you.</p>
+          <p className="mt-3">Reasons include: needing a project closer to your hometown, that you can only work certain days, or that you are looking for a certain type of project for the week. In some cases we may be able to provide alternative projects in this period that meet your requirements.</p>
+          <p className="mt-3">We thank you for all of your input and wish you a successful projects!</p>
+        </div>
+
+        {/* Work Order Conditions — full bilingual */}
+        <div className="border-b border-zinc-200 p-8 dark:border-zinc-800">
+          <h3 className="text-lg font-black text-zinc-900 dark:text-zinc-50 mb-6">WORK ORDER CONDITIONS</h3>
+          <div className="grid grid-cols-2 gap-8 text-sm text-zinc-600 dark:text-zinc-400">
+            {/* German */}
+            <div className="space-y-5">
+              <h4 className="text-base font-bold text-zinc-900 dark:text-zinc-50">AUFTRAG</h4>
+              <div>
+                <p className="font-bold text-zinc-900 dark:text-zinc-50">§ 1 Tätigkeit</p>
+                <p>Der Auftragnehmer wird für den Auftraggeber als Teaching Artist tätig.</p>
+              </div>
+              <div>
+                <p className="font-bold text-zinc-900 dark:text-zinc-50">§ 2 Bezahlung</p>
+                <p>Der Auftragnehmer verpflichtet sich die Rechnung gemäß der Vergütungstabelle sowie seinem entsprechenden Vergütungslevel von Seite 3 und 4 stellen, sofern nicht anders in § 2 erwähnt. Es liegt in der Verantwortung des Auftragnehmers das persönliche Vergütungslevel zu erfassen. Die angegebene Vergütung versteht sich einschließlich der geltenden Umsatzsteuer.</p>
+                <p className="mt-2">Der Auftraggeber verpflichtet sich die Rechnung innerhalb von 30 Tagen nach Rechnungsdatum zu begleichen.</p>
+                <p className="mt-2">Krankentage werden nicht vergütet</p>
+              </div>
+              <div>
+                <p className="font-bold text-zinc-900 dark:text-zinc-50">§ 3 Reisekosten</p>
+                <p>Der Auftraggeber übernimmt die anfallenden Fahrtkosten und Übernachtungskosten für das oben genannte Projekt. Weitere Reisekosten, wie Verpflegungspauschalen o.Ä., werden nicht übernommen.</p>
+              </div>
+              <div>
+                <p className="font-bold text-zinc-900 dark:text-zinc-50">§ 4 Rücktritt</p>
+                <p>Wie in der Lehrvereinbarung § 10 (2) beschlossen, verpflichtet sich der Auftragnehmer bei Nichtaufnahme des Projekts oder bei Vertragsrücktritt aufgrund von anderen Gründen als Krankheit oder (vom Arbeitgeber genehmigten) speziellen Umständen eine Vertragsstrafe von EURO 300,00 an den Auftraggeber zu bezahlen.</p>
+              </div>
+              <div>
+                <p className="font-bold text-zinc-900 dark:text-zinc-50">§ 6 Lehrvereinbarung</p>
+                <p>Dieser Auftrag unterliegt der Lehrvereinbarung, welche zuvor von beiden Parteien unterzeichnet wurde.</p>
+              </div>
+            </div>
+            {/* English */}
+            <div className="space-y-5">
+              <h4 className="text-base font-bold text-zinc-900 dark:text-zinc-50">WORK ORDER</h4>
+              <div>
+                <p className="font-bold text-zinc-900 dark:text-zinc-50">§ 1 Occupation</p>
+                <p>The Contractor shall be occupied by the Company as a Teaching Artist.</p>
+              </div>
+              <div>
+                <p className="font-bold text-zinc-900 dark:text-zinc-50">§ 2 Remuneration</p>
+                <p>Unless specified above, the Contractor will use the remuneration tables on page 3 and 4 and their Level to determine the appropriate remuneration and invoice accordingly. It is the responsibility of the Contractor to track their Level and invoice accurately. All remuneration includes VAT.</p>
+                <p className="mt-2">The company shall within 30 days of the invoice issue date.</p>
+                <p className="mt-2">Sick days are not compensated</p>
+              </div>
+              <div>
+                <p className="font-bold text-zinc-900 dark:text-zinc-50">§ 3 Travel expenses</p>
+                <p>The Company shall bear the Contractor&apos;s necessary travel and accommodation expenses, except food allowances.</p>
+              </div>
+              <div>
+                <p className="font-bold text-zinc-900 dark:text-zinc-50">§ 4 Work Order cancellation</p>
+                <p>The Company reserves the right to cancel this work order on any date prior to the project.</p>
+                <p className="mt-2">The Contractor may only cancel this work order (Section §10 (2) of the Teaching Agreement) due to sickness or special circumstances (To be signed off by the Company). If the Contractor terminates the work order for reasons other than stated, then they are liable for a contractual penalty amounting to EUR 300.00.</p>
+              </div>
+              <div>
+                <p className="font-bold text-zinc-900 dark:text-zinc-50">§ 6 Teaching Agreement</p>
+                <p>This work order is under the terms of the &apos;Teaching Agreement&apos; previously signed by both parties and may include new amendments.</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Signature Area */}
