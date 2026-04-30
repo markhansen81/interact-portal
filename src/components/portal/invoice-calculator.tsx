@@ -216,6 +216,28 @@ export function InvoiceCalculator({
         : []),
     ];
 
+    // Run AI check first
+    const checkRes = await fetch("/api/portal/invoices/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        work_order: wo,
+        profile: {
+          name: `${profile.first_name} ${profile.last_name}`,
+          address: profile.address,
+          tax_number: (profile as unknown as Record<string, unknown>).tax_number,
+          iban: (profile as unknown as Record<string, unknown>).iban,
+          vat_registered: (profile as unknown as Record<string, unknown>).vat_registered,
+        },
+        invoice_data: {
+          base_amount: baseRate,
+          addons: allAddons,
+          total: grandTotal,
+        },
+      }),
+    });
+    const aiCheck = await checkRes.json();
+
     const res = await fetch("/api/portal/invoices", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -226,6 +248,8 @@ export function InvoiceCalculator({
         addons_total: grandTotal - baseRate,
         total: grandTotal,
         notes,
+        ai_check_result: aiCheck,
+        ai_check_passed: aiCheck.passed,
       }),
     });
 
