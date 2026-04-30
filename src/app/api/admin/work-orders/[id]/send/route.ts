@@ -60,5 +60,15 @@ export async function POST(
     email: { to: ta.email, ...emailTemplate },
   });
 
+  const { logActivity } = await import("@/lib/activity-log");
+  await logActivity({
+    jobId: wo.job_id,
+    workOrderId: id,
+    taId: ta.id,
+    action: "work_order_sent",
+    details: `Sent to ${taName}`,
+    performedBy: user.id,
+  });
+
   return NextResponse.json({ success: true });
 }

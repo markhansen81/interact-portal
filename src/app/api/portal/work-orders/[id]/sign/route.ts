@@ -21,7 +21,7 @@ export async function POST(
   // Verify this work order belongs to the TA and is in "sent" status
   const { data: wo } = await supabase
     .from("work_orders")
-    .select("id, ta_id, status")
+    .select("id, ta_id, status, job_id")
     .eq("id", id)
     .eq("ta_id", user.id)
     .eq("status", "sent")
@@ -54,7 +54,24 @@ export async function POST(
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
-  // TODO: Generate signed PDF, notify admin
+  // Log activity
+  const { logActivity } = await import("@/lib/activity-log");
+  await logActivity({
+    jobId: wo.job_id,
+    workOrderId: id,
+    taId: user.id,
+    action: "work_order_signed",
+    details: "TA signed the work order",
+    performedBy: user.id,
+  });
+
+  // Notify admins
+  const { notifyAdmins } = await import("@/lib/notifications");
+  await notifyAdmins({
+    type: "work_order_signed",
+    title: "Work Order Signed",
+    body: `Work order ${id.slice(0, 8)} has been signed`,
+  });
 
   return NextResponse.json({ success: true });
 }
