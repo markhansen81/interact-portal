@@ -49,21 +49,7 @@ const SAMPLE_DATA: Record<string, string> = {
   SignByDate: "10.05.2026", CreatedDate: new Date().toLocaleDateString("de-DE"),
 };
 
-const DEFAULT_TEMPLATE = `<p><em style="color: rgb(153, 153, 153);">[Use the image button ⬆ in the toolbar to insert your logo here]</em></p>
-<p><br></p>
-<p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">InterACT English gGmbH</span></p>
-<p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">Planufer 92B, 10967 Berlin</span></p>
-<p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">Tel. 030 20339702</span></p>
-<p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">info@interactenglish.de</span></p>
-<p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">Geschäftsführer:</span></p>
-<p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">Mark William Hansen &amp; Charles Justin Beard</span></p>
-<p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">Handelsregister - Amtsgericht Charlottenburg</span></p>
-<p class="ql-align-right"><span class="ql-size-small" style="color: rgb(102, 102, 102);">HRB 188932 B</span></p>
-<p class="ql-align-right"><br></p>
-<p class="ql-align-right"><strong style="color: rgb(22, 163, 74);">Project ID (for office use): {{MondayID}}</strong></p>
-<p>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
-<p><br></p>
-<h1><strong>WORK ORDER</strong></h1>
+const DEFAULT_TEMPLATE = `<h1><strong>WORK ORDER</strong></h1>
 <p><br></p>
 <p>By and between</p>
 <p><br></p>
@@ -114,11 +100,12 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
   const [saved, setSaved] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [headerLogoUrl, setHeaderLogoUrl] = useState<string | null>(null);
   const [stampUrl, setStampUrl] = useState<string | null>(null);
   const [footerLogoUrl, setFooterLogoUrl] = useState<string | null>(null);
   const router = useRouter();
 
-  function handleImageUpload(target: "stamp" | "footer") {
+  function handleImageUpload(target: "header" | "stamp" | "footer") {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
@@ -128,6 +115,7 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
       const reader = new FileReader();
       reader.onload = () => {
         const dataUrl = reader.result as string;
+        if (target === "header") setHeaderLogoUrl(dataUrl);
         if (target === "stamp") setStampUrl(dataUrl);
         if (target === "footer") setFooterLogoUrl(dataUrl);
       };
@@ -222,12 +210,14 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
         {/* A4 Page */}
         {showPreview ? (
           <div className="wo-page mx-auto ql-snow" style={{ width: 794, background: "white", borderRadius: 8, boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "1px solid #e5e7eb" }}>
-            <div className="ql-editor" style={{ padding: "50px 50px 0", fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.7, overflowWrap: "break-word" }}
+            <PageHeader logoUrl={headerLogoUrl} onUpload={() => handleImageUpload("header")} projectId={SAMPLE_DATA.MondayID} />
+            <div className="ql-editor" style={{ padding: "0 50px", fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.7, overflowWrap: "break-word" }}
               dangerouslySetInnerHTML={{ __html: fillVariables(html) }} />
             <SignatureAreaPreview taName={SAMPLE_DATA.TeachingArtist} date={SAMPLE_DATA.CreatedDate} stampUrl={stampUrl} footerLogoUrl={footerLogoUrl} onUpload={handleImageUpload} />
           </div>
         ) : (
           <div className="wo-page mx-auto" style={{ width: 794, background: "white", borderRadius: 8, boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "1px solid #e5e7eb", overflow: "hidden" }}>
+            <PageHeader logoUrl={headerLogoUrl} onUpload={() => handleImageUpload("header")} projectId="{{MondayID}}" />
             <div className="wo-editor">
               <ReactQuill theme="snow" value={html} onChange={setHtml} modules={modules} />
             </div>
@@ -258,6 +248,44 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
         .wo-page .ql-editor img { max-width: 100%; }
         .wo-page .ql-editor a { color: #06c; text-decoration: underline; }
       `}</style>
+    </div>
+  );
+}
+
+function PageHeader({ logoUrl, onUpload, projectId }: { logoUrl: string | null; onUpload: () => void; projectId: string }) {
+  return (
+    <div style={{ padding: "40px 50px 0", fontFamily: "Arial, sans-serif" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        {/* Logo — left */}
+        <div onClick={onUpload} style={{ cursor: "pointer" }}>
+          {logoUrl ? (
+            <img src={logoUrl} alt="Logo" style={{ width: 180, borderRadius: 4 }} title="Click to replace" />
+          ) : (
+            <div style={{ width: 180, height: 70, border: "2px dashed #cbd5e1", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc" }}>
+              <span style={{ fontSize: 12, color: "#94a3b8", textAlign: "center" }}>Click to upload<br/>company logo</span>
+            </div>
+          )}
+        </div>
+
+        {/* Company info — right */}
+        <div style={{ textAlign: "right", fontSize: 11, color: "#666", lineHeight: 1.6 }}>
+          InterACT English gGmbH<br />
+          Planufer 92B, 10967 Berlin<br />
+          Tel. 030 20339702<br />
+          info@interactenglish.de<br />
+          <br />
+          Geschäftsführer:<br />
+          Mark William Hansen &amp; Charles Justin Beard<br />
+          Handelsregister - Amtsgericht Charlottenburg<br />
+          HRB 188932 B
+        </div>
+      </div>
+
+      <div style={{ textAlign: "right", marginTop: 12 }}>
+        <span style={{ color: "#16a34a", fontWeight: "bold", fontSize: 12 }}>Project ID (for office use): {projectId}</span>
+      </div>
+
+      <div style={{ borderTop: "2px solid #1a1a1a", marginTop: 12, marginBottom: 0 }} />
     </div>
   );
 }
