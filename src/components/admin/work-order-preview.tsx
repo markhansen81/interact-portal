@@ -38,6 +38,8 @@ export function WorkOrderPreview({ workOrder: initialWO }: { workOrder: WorkOrde
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
   const [wo, setWO] = useState(initialWO);
 
   const ta = wo.profiles;
@@ -100,21 +102,62 @@ export function WorkOrderPreview({ workOrder: initialWO }: { workOrder: WorkOrde
               Sign by: {wo.sign_by}
             </span>
           )}
-          {wo.status === "draft" && !editing && (
+          {wo.status !== "cancelled" && wo.status !== "declined" && !editing && (
             <>
-              <button
-                onClick={() => setEditing(true)}
-                className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
-              >
-                Edit
-              </button>
-              <button
-                onClick={handleSend}
-                disabled={loading}
-                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
-              >
-                {loading ? "Sending..." : "Send to TA"}
-              </button>
+              {wo.status === "draft" && (
+                <button
+                  onClick={() => setEditing(true)}
+                  className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
+                >
+                  Edit
+                </button>
+              )}
+              {wo.status === "draft" && (
+                <button
+                  onClick={handleSend}
+                  disabled={loading}
+                  className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+                >
+                  {loading ? "Sending..." : "Send to TA"}
+                </button>
+              )}
+              {!cancelling ? (
+                <button
+                  onClick={() => setCancelling(true)}
+                  className="rounded-lg border border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                >
+                  Cancel
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <input
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    placeholder="Reason (optional)"
+                    className="rounded-lg border border-red-300 px-3 py-1.5 text-sm w-48"
+                  />
+                  <button
+                    onClick={async () => {
+                      setLoading(true);
+                      await fetch(`/api/admin/work-orders/${wo.id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ status: "cancelled", previous_status: wo.status, reason: cancelReason }),
+                      });
+                      setLoading(false);
+                      router.push("/admin/work-orders");
+                      router.refresh();
+                    }}
+                    disabled={loading}
+                    className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                  >
+                    {loading ? "..." : "Confirm"}
+                  </button>
+                  <button onClick={() => setCancelling(false)} className="text-sm text-zinc-500">
+                    Back
+                  </button>
+                </div>
+              )}
             </>
           )}
           {editing && (
