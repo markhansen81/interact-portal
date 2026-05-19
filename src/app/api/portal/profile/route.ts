@@ -4,10 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 const ALLOWED_FIELDS = [
   // Section 1 - Contact
   "first_name", "last_name", "preferred_name", "phone", "address",
+  "street", "city", "postal_code", "country",
   "date_of_birth", "nationality", "gender", "pronouns", "lgbtqia",
   "ethnicity", "caretaker_status", "phone_consent",
   // Section 2 - About
-  "where_from", "moved_to_germany", "likes_germany", "vacation_spot",
+  "where_from", "hometown_city", "hometown_country", "moved_to_germany", "likes_germany", "vacation_spot",
   "great_at", "not_great_at", "art_type", "superpower", "comic_title",
   "famous_last_words", "favourite_food", "bio",
   // Section 3 - Qualifications
@@ -17,12 +18,12 @@ const ALLOWED_FIELDS = [
   "exp_grades_1_4", "exp_grades_5_7", "exp_grades_8_plus",
   "exp_disabilities", "exp_disability_types", "exp_disability_description",
   // Section 6 - Logistics
-  "dietary_restrictions", "homestay_willing", "lifeguard_cert",
+  "dietary_restrictions", "dietary_options", "homestay_willing", "lifeguard_cert",
   "drivers_licence", "bahncard", "bahncard_expiry", "deutschlandticket",
   // Section 7 - Payroll
   "iban", "bank_name", "tax_number", "vat_number", "vat_registered",
   // Meta
-  "photo_url", "onboarding_sections_complete",
+  "photo_url", "school_photo_url", "onboarding_sections_complete", "onboarding_status",
 ];
 
 export async function PATCH(request: Request) {

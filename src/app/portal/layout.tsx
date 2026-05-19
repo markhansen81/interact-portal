@@ -14,6 +14,11 @@ export default async function PortalLayout({
     redirect("/auth/login");
   }
 
+  // Gate: redirect to onboarding if still pending (never started)
+  if (profile.onboarding_status === "pending" || !profile.onboarding_status) {
+    redirect("/onboarding");
+  }
+
   return (
     <div className="flex h-screen bg-zinc-50 dark:bg-zinc-950">
       <PortalSidebar profile={profile} />

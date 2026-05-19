@@ -23,11 +23,15 @@ export function NotificationBell() {
   }, []);
 
   async function fetchNotifications() {
-    const res = await fetch("/api/notifications");
-    if (res.ok) {
-      const data = await res.json();
-      setNotifications(data.notifications);
-      setUnread(data.unread);
+    try {
+      const res = await fetch("/api/notifications");
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data.notifications);
+        setUnread(data.unread);
+      }
+    } catch {
+      // Network error — silently ignore, will retry on next poll
     }
   }
 
