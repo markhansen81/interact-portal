@@ -11,7 +11,7 @@ interface Profile {
 
 const navItems = [
   { href: "/portal", label: "Dashboard", icon: "home" },
-  { href: "/portal/onboarding", label: "Onboarding", icon: "clipboard" },
+  { href: "/portal/profile", label: "My Profile", icon: "user" },
   { href: "/portal/documents", label: "Documents", icon: "folder" },
   { href: "/portal/work-orders", label: "Work Orders", icon: "file-text" },
   { href: "/portal/invoices", label: "Invoices", icon: "receipt" },
@@ -28,6 +28,7 @@ const iconPaths: Record<string, React.ReactNode> = {
   receipt: <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1zM16 8H8M16 12H8M16 16H8" />,
   calendar: <path d="M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM16 2v4M8 2v4M3 10h18" />,
   message: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
+  user: <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />,
   "credit-card": <path d="M1 4h22v16H1zM1 10h22" />,
 };
 
@@ -68,10 +69,6 @@ export function PortalSidebar({ profile }: { profile: Profile }) {
                 {iconPaths[item.icon]}
               </svg>
               {item.label}
-              {item.href === "/portal/onboarding" &&
-                profile.onboarding_status !== "ready" && (
-                  <span className="ml-auto h-2 w-2 rounded-full bg-yellow-400" />
-                )}
             </Link>
           );
         })}

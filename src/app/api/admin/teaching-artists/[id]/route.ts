@@ -90,15 +90,32 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // Soft delete — deactivate rather than remove
   const adminClient = createAdminClient();
-  const { error } = await adminClient
+
+  // Delete related records first (foreign key constraints)
+  await adminClient.from("documents").delete().eq("ta_id", id);
+  await adminClient.from("ta_program_preferences").delete().eq("ta_id", id);
+  await adminClient.from("availability").delete().eq("ta_id", id);
+  await adminClient.from("notifications").delete().eq("user_id", id);
+  await adminClient.from("messages").delete().eq("from_user_id", id);
+  await adminClient.from("messages").delete().eq("to_user_id", id);
+  await adminClient.from("activity_log").delete().eq("ta_id", id);
+
+  // Delete profile
+  const { error: profileError } = await adminClient
     .from("profiles")
-    .update({ is_active: false })
+    .delete()
     .eq("id", id);
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+  if (profileError) {
+    return NextResponse.json({ error: profileError.message }, { status: 400 });
+  }
+
+  // Delete auth user
+  const { error: authError } = await adminClient.auth.admin.deleteUser(id);
+
+  if (authError) {
+    return NextResponse.json({ error: authError.message }, { status: 400 });
   }
 
   return NextResponse.json({ success: true });
