@@ -27,8 +27,8 @@ const FORM_TASKS = [
   },
   {
     id: "programs_logistics",
-    title: "InterACT Programs & Logistics",
-    desc: "Learn about our programs, homestays, dietary needs, and transport",
+    title: "Working with InterACT",
+    desc: "Programs, homestays, dietary needs, certifications, and logistics",
     icon: "star",
     fields: ["homestay_willing"],
     // Completion also requires all 29 programs answered — handled separately

@@ -24,10 +24,10 @@ interface Preference {
 // ---------------------------------------------------------------------------
 
 const NATIONALITY_OPTIONS = [
-  { value: "German", label: "German" },
   { value: "American", label: "American" }, { value: "Australian", label: "Australian" },
   { value: "British", label: "British" }, { value: "Canadian", label: "Canadian" },
   { value: "Irish", label: "Irish" }, { value: "New Zealander", label: "New Zealander" },
+  { value: "German", label: "German" },
   { value: "South African", label: "South African" },
   { value: "Afghan", label: "Afghan" }, { value: "Albanian", label: "Albanian" },
   { value: "Algerian", label: "Algerian" }, { value: "Argentinian", label: "Argentinian" },
@@ -335,7 +335,7 @@ const TABS = [
   { id: "personal", label: "Personal" },
   { id: "quals", label: "Qualifications" },
   { id: "payroll", label: "Payroll" },
-  { id: "programs", label: "Programs" },
+  { id: "programs", label: "Working with InterACT" },
   { id: "school", label: "School Profile" },
 ];
 
@@ -398,7 +398,16 @@ export function ProfileEditor({
     await fetch("/api/portal/profile", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ program_preferences: prefs, homestay_willing: hw }),
+      body: JSON.stringify({
+        program_preferences: prefs,
+        homestay_willing: hw,
+        lifeguard_cert: data.lifeguard_cert ?? null,
+        drivers_licence: data.drivers_licence ?? null,
+        dietary_options: data.dietary_options ?? [],
+        dietary_restrictions: data.dietary_restrictions ?? null,
+        exp_disabilities: data.exp_disabilities ?? false,
+        exp_disability_description: data.exp_disability_description ?? null,
+      }),
     });
     setSaving(null);
     router.refresh();
@@ -431,7 +440,7 @@ export function ProfileEditor({
           onSave={() => saveFields("contact", [
             "photo_url", "school_photo_url", "first_name", "last_name", "preferred_name", "phone", "phone_consent",
             "street", "postal_code", "city", "country", "date_of_birth",
-            "nationality", "gender", "pronouns", "lgbtqia", "ethnicity", "caretaker_status", "dietary_options", "dietary_restrictions",
+            "nationality", "gender", "pronouns", "lgbtqia", "ethnicity", "caretaker_status",
           ])}>
           <PhotoUpload
             label="Profile photo"
@@ -460,7 +469,19 @@ export function ProfileEditor({
             <Field label="Postal code" value={v("postal_code")} onChange={(val) => set("postal_code", val)} half />
             <Field label="City" value={v("city")} onChange={(val) => set("city", val)} half />
           </div>
-          <Field label="Country" value={v("country")} onChange={(val) => set("country", val)} />
+          <Field label="Country" value={v("country")} options={[
+            { value: "Germany", label: "Germany" },
+            { value: "Austria", label: "Austria" }, { value: "Switzerland", label: "Switzerland" },
+            { value: "United Kingdom", label: "United Kingdom" }, { value: "United States", label: "United States" },
+            { value: "Australia", label: "Australia" }, { value: "Canada", label: "Canada" },
+            { value: "Ireland", label: "Ireland" }, { value: "New Zealand", label: "New Zealand" },
+            { value: "South Africa", label: "South Africa" }, { value: "France", label: "France" },
+            { value: "Netherlands", label: "Netherlands" }, { value: "Belgium", label: "Belgium" },
+            { value: "Denmark", label: "Denmark" }, { value: "Italy", label: "Italy" },
+            { value: "Spain", label: "Spain" }, { value: "Poland", label: "Poland" },
+            { value: "Czech Republic", label: "Czech Republic" }, { value: "Sweden", label: "Sweden" },
+            { value: "Other", label: "Other" },
+          ]} onChange={(val) => set("country", val)} />
           <Field label="Date of birth" value={v("date_of_birth")} type="date" onChange={(val) => set("date_of_birth", val)} />
           <Field label="Nationality" value={v("nationality")} options={NATIONALITY_OPTIONS} onChange={(val) => set("nationality", val)} />
           <div className="flex gap-4">
@@ -472,12 +493,6 @@ export function ProfileEditor({
             <Field label="Ethnicity" value={v("ethnicity")} options={ETHNICITY_OPTIONS} onChange={(val) => set("ethnicity", val)} half />
           </div>
           <Field label="Caretaker status" value={v("caretaker_status")} options={YES_NO_PREFER} onChange={(val) => set("caretaker_status", val)} />
-          <DietaryField
-            options={(data.dietary_options as string[]) || []}
-            other={v("dietary_restrictions")}
-            onChangeOptions={(val) => set("dietary_options", val)}
-            onChangeOther={(val) => set("dietary_restrictions", val)}
-          />
         </Section>
       )}
 
@@ -487,9 +502,7 @@ export function ProfileEditor({
             "education_level", "tefl_status", "german_level", "german_professional",
             "art_profession", "certifications",
             "exp_grades_1_4", "exp_grades_5_7", "exp_grades_8_plus",
-            "exp_disabilities", "exp_disability_description",
-            "lifeguard_cert", "drivers_licence",
-          ])}>
+                      ])}>
           <div className="flex gap-4">
             <Field label="Education" value={v("education_level")} options={EDUCATION_OPTIONS} onChange={(val) => set("education_level", val)} half />
             <Field label="TEFL / TESL / TESOL" value={v("tefl_status")} options={TEFL_OPTIONS} onChange={(val) => set("tefl_status", val)} half />
@@ -509,14 +522,6 @@ export function ProfileEditor({
               <Checkbox label="Grades 5-7 (ages 10-12)" checked={b("exp_grades_5_7")} onChange={(val) => set("exp_grades_5_7", val)} />
               <Checkbox label="Grades 8+ (ages 13+)" checked={b("exp_grades_8_plus")} onChange={(val) => set("exp_grades_8_plus", val)} />
             </div>
-          </div>
-          <Checkbox label="Experience with children with disabilities" checked={b("exp_disabilities")} onChange={(val) => set("exp_disabilities", val)} />
-          {b("exp_disabilities") && (
-            <Field label="Describe your experience" value={v("exp_disability_description")} onChange={(val) => set("exp_disability_description", val)} textarea />
-          )}
-          <div className="flex gap-4">
-            <Field label="Lifeguard cert" value={v("lifeguard_cert")} options={CERT_OPTIONS} onChange={(val) => set("lifeguard_cert", val)} half />
-            <Field label="Driver's licence" value={v("drivers_licence")} options={CERT_OPTIONS} onChange={(val) => set("drivers_licence", val)} half />
           </div>
         </Section>
       )}
@@ -548,8 +553,27 @@ export function ProfileEditor({
       )}
 
       {tab === "programs" && (
-        <Section title="Program Preferences" saving={saving === "programs"} onSave={savePrograms}>
+        <Section title="Working with InterACT" saving={saving === "programs"} onSave={savePrograms}>
           <Field label="Homestay" value={String(data.homestay_willing ?? "")} options={HOMESTAY_OPTIONS} onChange={(val) => set("homestay_willing", val)} />
+          <div className="flex gap-4">
+            <Field label="Lifeguard cert" value={v("lifeguard_cert")} options={CERT_OPTIONS} onChange={(val) => set("lifeguard_cert", val)} half />
+            <Field label="Driver's licence" value={v("drivers_licence")} options={CERT_OPTIONS} onChange={(val) => set("drivers_licence", val)} half />
+          </div>
+          <DietaryField
+            options={(data.dietary_options as string[]) || []}
+            other={v("dietary_restrictions")}
+            onChangeOptions={(val) => set("dietary_options", val)}
+            onChangeOther={(val) => set("dietary_restrictions", val)}
+          />
+          <div>
+            <label className="mb-2 block text-[13px] font-medium text-zinc-600 dark:text-zinc-400">Experience with disabilities</label>
+            <Checkbox label="Experience working with children with disabilities" checked={b("exp_disabilities")} onChange={(val) => set("exp_disabilities", val)} />
+            {b("exp_disabilities") && (
+              <div className="mt-3">
+                <Field label="Describe your experience" value={v("exp_disability_description")} onChange={(val) => set("exp_disability_description", val)} textarea />
+              </div>
+            )}
+          </div>
           <p className="text-sm text-zinc-500 mb-4">Select your experience level for each program.</p>
           {Object.entries(PROGRAMS).map(([group, items]) => (
             <div key={group} className="mb-6">
