@@ -30,12 +30,18 @@ export default async function OnboardingPage({
     .select("*")
     .eq("ta_id", profile.id);
 
+  const { data: formContent } = await supabase
+    .from("form_content")
+    .select("*")
+    .eq("form_id", "programs");
+
   return (
     <OnboardingWizard
       profile={profile}
       documents={documents || []}
       preferences={preferences || []}
       initialTask={task}
+      formContent={formContent || []}
     />
   );
 }
