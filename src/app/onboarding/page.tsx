@@ -3,12 +3,18 @@ import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingWizard } from "@/components/portal/onboarding-wizard";
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ task?: string }>;
+}) {
   const profile = await requireAuth(["ta"]);
   if (!profile) redirect("/auth/login");
 
-  // If already onboarded, go to portal
-  if (profile.onboarding_status === "ready") {
+  const { task } = await searchParams;
+
+  // No task specified — go to portal dashboard (it has the task list)
+  if (!task) {
     redirect("/portal");
   }
 
@@ -29,6 +35,7 @@ export default async function OnboardingPage() {
       profile={profile}
       documents={documents || []}
       preferences={preferences || []}
+      initialTask={task}
     />
   );
 }

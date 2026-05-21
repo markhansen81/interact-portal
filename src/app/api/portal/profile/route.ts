@@ -8,7 +8,7 @@ const ALLOWED_FIELDS = [
   "date_of_birth", "nationality", "gender", "pronouns", "lgbtqia",
   "ethnicity", "caretaker_status", "phone_consent",
   // Section 2 - About
-  "where_from", "hometown_city", "hometown_country", "moved_to_germany", "likes_germany", "vacation_spot",
+  "where_from", "hometown_city", "hometown_country", "moved_to_germany", "moved_to_germany_year", "likes_germany", "vacation_spot",
   "great_at", "not_great_at", "art_type", "superpower", "comic_title",
   "famous_last_words", "favourite_food", "bio",
   // Section 3 - Qualifications
@@ -45,13 +45,45 @@ export async function PATCH(request: Request) {
     }
   }
 
-  const { error } = await supabase
-    .from("profiles")
-    .update(updates)
-    .eq("id", user.id);
+  if (Object.keys(updates).length > 0) {
+    const { error } = await supabase
+      .from("profiles")
+      .update(updates)
+      .eq("id", user.id);
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+  }
+
+  // Handle program preferences (stored in separate table)
+  if (body.program_preferences && typeof body.program_preferences === "object") {
+    const prefs = body.program_preferences as Record<string, string>;
+
+    // Delete existing preferences
+    await supabase
+      .from("ta_program_preferences")
+      .delete()
+      .eq("ta_id", user.id);
+
+    // Insert new ones (only non-empty values)
+    const rows = Object.entries(prefs)
+      .filter(([, v]) => v && v.length > 0)
+      .map(([program_type, preference]) => ({
+        ta_id: user.id,
+        program_type,
+        preference,
+      }));
+
+    if (rows.length > 0) {
+      const { error: prefError } = await supabase
+        .from("ta_program_preferences")
+        .insert(rows);
+
+      if (prefError) {
+        return NextResponse.json({ error: prefError.message }, { status: 400 });
+      }
+    }
   }
 
   return NextResponse.json({ success: true });

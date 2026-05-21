@@ -174,12 +174,12 @@ function Field({ label, value, type = "text", options, onChange, half, textarea 
   label: string; value: string; type?: string; options?: Opt[];
   onChange: (v: string) => void; half?: boolean; textarea?: boolean;
 }) {
-  const cls = "block w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100";
+  const cls = "block w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-2.5 text-sm text-zinc-900 transition-colors focus:border-zinc-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-100 dark:focus:bg-zinc-800";
 
   if (options) {
     return (
       <div className={half ? "flex-1" : ""}>
-        <label className="mb-1 block text-xs font-medium text-zinc-500">{label}</label>
+        <label className="mb-1.5 block text-[13px] font-medium text-zinc-600 dark:text-zinc-400">{label}</label>
         <select value={value} onChange={(e) => onChange(e.target.value)} className={cls}>
           <option value="">Select...</option>
           {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -191,7 +191,7 @@ function Field({ label, value, type = "text", options, onChange, half, textarea 
   if (textarea) {
     return (
       <div>
-        <label className="mb-1 block text-xs font-medium text-zinc-500">{label}</label>
+        <label className="mb-1.5 block text-[13px] font-medium text-zinc-600 dark:text-zinc-400">{label}</label>
         <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={3} className={cls + " resize-none"} />
       </div>
     );
@@ -199,7 +199,7 @@ function Field({ label, value, type = "text", options, onChange, half, textarea 
 
   return (
     <div className={half ? "flex-1" : ""}>
-      <label className="mb-1 block text-xs font-medium text-zinc-500">{label}</label>
+      <label className="mb-1.5 block text-[13px] font-medium text-zinc-600 dark:text-zinc-400">{label}</label>
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)} className={cls} />
     </div>
   );
@@ -207,7 +207,7 @@ function Field({ label, value, type = "text", options, onChange, half, textarea 
 
 function Checkbox({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <label className="flex items-center gap-2 cursor-pointer text-sm text-zinc-700 dark:text-zinc-300">
+    <label className="flex items-center gap-2.5 cursor-pointer text-sm text-zinc-700 dark:text-zinc-300">
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)}
         className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500 dark:border-zinc-600" />
       {label}
@@ -314,15 +314,15 @@ function Section({ title, children, onSave, saving }: {
   title: string; children: React.ReactNode; onSave: () => void; saving: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">{title}</h3>
+    <div className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="flex items-center justify-between border-b border-zinc-100 px-7 py-5 dark:border-zinc-800">
+        <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{title}</h3>
         <button onClick={onSave} disabled={saving}
-          className="rounded-lg bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900">
-          {saving ? "Saving..." : "Save"}
+          className="rounded-lg bg-zinc-900 px-5 py-2 text-[13px] font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200">
+          {saving ? "Saving..." : "Save changes"}
         </button>
       </div>
-      <div className="space-y-4">{children}</div>
+      <div className="space-y-5 px-7 py-6">{children}</div>
     </div>
   );
 }
@@ -409,12 +409,12 @@ export function ProfileEditor({
   return (
     <div>
       {/* Tabs */}
-      <div className="mb-6 flex gap-1 overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-50 p-1 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="mb-8 flex gap-1 overflow-x-auto rounded-xl border border-zinc-200/80 bg-zinc-100/50 p-1 dark:border-zinc-800 dark:bg-zinc-900">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            className={`whitespace-nowrap rounded-lg px-5 py-2.5 text-[13px] font-medium transition-all ${
               tab === t.id
                 ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-50"
                 : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400"
