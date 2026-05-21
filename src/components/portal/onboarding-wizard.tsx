@@ -75,13 +75,13 @@ interface OnboardingTask {
 }
 
 const NATIONALITY_OPTIONS = [
-  { value: "German", label: "German" },
   { value: "American", label: "American" },
   { value: "Australian", label: "Australian" },
   { value: "British", label: "British" },
   { value: "Canadian", label: "Canadian" },
   { value: "Irish", label: "Irish" },
   { value: "New Zealander", label: "New Zealander" },
+  { value: "German", label: "German" },
   { value: "South African", label: "South African" },
   { value: "Afghan", label: "Afghan" },
   { value: "Albanian", label: "Albanian" },
@@ -234,7 +234,19 @@ const TASKS: OnboardingTask[] = [
           { field: "street", label: "Street & house number", placeholder: "e.g. Planufer 92B" },
           { field: "postal_code", label: "Postal code", placeholder: "e.g. 10967", half: true },
           { field: "city", label: "City", placeholder: "e.g. Berlin", half: true },
-          { field: "country", label: "Country", placeholder: "Germany" },
+          { field: "country", label: "Country", options: [
+            { value: "Germany", label: "Germany" },
+            { value: "Austria", label: "Austria" }, { value: "Switzerland", label: "Switzerland" },
+            { value: "United Kingdom", label: "United Kingdom" }, { value: "United States", label: "United States" },
+            { value: "Australia", label: "Australia" }, { value: "Canada", label: "Canada" },
+            { value: "Ireland", label: "Ireland" }, { value: "New Zealand", label: "New Zealand" },
+            { value: "South Africa", label: "South Africa" }, { value: "France", label: "France" },
+            { value: "Netherlands", label: "Netherlands" }, { value: "Belgium", label: "Belgium" },
+            { value: "Denmark", label: "Denmark" }, { value: "Italy", label: "Italy" },
+            { value: "Spain", label: "Spain" }, { value: "Poland", label: "Poland" },
+            { value: "Czech Republic", label: "Czech Republic" }, { value: "Sweden", label: "Sweden" },
+            { value: "Other", label: "Other" },
+          ] },
         ],
       },
       {
@@ -387,15 +399,6 @@ const TASKS: OnboardingTask[] = [
           { field: "exp_grades_8_plus", label: "Grades 8+ (ages 13+)" },
         ],
       },
-      {
-        id: "disabilities",
-        type: "checkbox-with-text",
-        title: "Do you have experience working with children with disabilities?",
-        fields: [
-          { field: "exp_disabilities", label: "Yes, I have experience", checkbox: true },
-          { field: "exp_disability_description", label: "Tell us about your experience", placeholder: "Types of disabilities, settings, duration...", conditionalField: "exp_disabilities" },
-        ],
-      },
     ],
   },
 
@@ -449,14 +452,32 @@ const TASKS: OnboardingTask[] = [
     ],
   },
 
-  // --- Form 3: InterACT Programs & Logistics ---
+  // --- Form 3: Working with InterACT ---
   {
     id: "programs_logistics",
-    title: "InterACT Programs & Logistics",
-    description: "Learn about our programs, homestays, dietary needs, and transport",
+    title: "Working with InterACT",
+    description: "Programs, homestays, dietary needs, certifications, and logistics",
     icon: "star",
     type: "form",
     steps: [
+      {
+        id: "disabilities",
+        type: "select",
+        title: "Do you have experience working with children with disabilities?",
+        field: "exp_disabilities",
+        options: [
+          { value: "true", label: "Yes" },
+          { value: "false", label: "No" },
+        ],
+      },
+      {
+        id: "disability_desc",
+        type: "textarea",
+        title: "Tell us about your experience with disabilities",
+        subtitle: "What types of disabilities, in what settings, and for how long?",
+        field: "exp_disability_description",
+        placeholder: "Types of disabilities, settings, duration...",
+      },
       {
         id: "homestay",
         type: "select",
@@ -900,13 +921,42 @@ function FormFlow({
   onComplete: () => void;
   onBack: () => void;
 }) {
-  const [current, setCurrent] = useState(0);
+  const steps = task.steps!;
+
+  // Find first unanswered step to start at
+  function findFirstUnanswered(): number {
+    for (let i = 0; i < steps.length; i++) {
+      const s = steps[i];
+      if (s.field) {
+        const val = data[s.field];
+        if (val === null || val === undefined || val === "") return i;
+      }
+      if (s.fields) {
+        const allFilled = s.fields.every((f) => {
+          if (f.checkbox) return true; // checkboxes default to false, that's fine
+          if (f.options) {
+            const val = data[f.field];
+            return val !== null && val !== undefined && val !== "";
+          }
+          return true; // text fields are optional within multi-text
+        });
+        if (!allFilled) return i;
+      }
+    }
+    return 0; // all answered, start from beginning
+  }
+
+  const [current, setCurrent] = useState(findFirstUnanswered);
   const [saving, setSaving] = useState(false);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const containerRef = useRef<HTMLDivElement>(null);
-  const steps = task.steps!;
+  const dataRef = useRef(data);
+  dataRef.current = data; // always keep ref in sync
+  const prefsRef = useRef(prefs);
+  prefsRef.current = prefs;
+
   const step = steps[current];
-  const isLast = current === steps.length - 1;
+  const isLast = nextIndex(current) >= steps.length;
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -922,27 +972,28 @@ function FormFlow({
 
   async function saveStep() {
     setSaving(true);
+    const d = dataRef.current; // always read latest
     const stepData: Record<string, unknown> = {};
 
     if (step.type === "programs") {
       await fetch("/api/portal/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ program_preferences: prefs }),
+        body: JSON.stringify({ program_preferences: prefsRef.current }),
       });
       setSaving(false);
       return;
     }
 
     if (step.field) {
-      let val = data[step.field];
+      let val = d[step.field];
       if (val === "true") val = true;
       if (val === "false") val = false;
       stepData[step.field] = val ?? null;
     }
     if (step.fields) {
       for (const f of step.fields) {
-        stepData[f.field] = data[f.field] ?? null;
+        stepData[f.field] = d[f.field] ?? null;
       }
     }
     if (Object.keys(stepData).length > 0) {
@@ -955,24 +1006,47 @@ function FormFlow({
     setSaving(false);
   }
 
+  // Skip logic: skip disability description if they said No
+  function shouldSkip(stepIndex: number): boolean {
+    const s = steps[stepIndex];
+    if (s?.id === "disability_desc" && dataRef.current.exp_disabilities !== "true" && dataRef.current.exp_disabilities !== true) {
+      return true;
+    }
+    return false;
+  }
+
+  function nextIndex(from: number): number {
+    let next = from + 1;
+    while (next < steps.length && shouldSkip(next)) next++;
+    return next;
+  }
+
+  function prevIndex(from: number): number {
+    let prev = from - 1;
+    while (prev >= 0 && shouldSkip(prev)) prev--;
+    return prev;
+  }
+
   async function goNext() {
     await saveStep();
-    if (isLast) {
+    const next = nextIndex(current);
+    if (next >= steps.length) {
       onComplete();
       return;
     }
     setDirection("forward");
-    setCurrent((c) => c + 1);
+    setCurrent(next);
     containerRef.current?.scrollTo({ top: 0 });
   }
 
   function goBack() {
-    if (current === 0) {
+    const prev = prevIndex(current);
+    if (prev < 0) {
       onBack();
       return;
     }
     setDirection("back");
-    setCurrent((c) => c - 1);
+    setCurrent(prev);
     containerRef.current?.scrollTo({ top: 0 });
   }
 
