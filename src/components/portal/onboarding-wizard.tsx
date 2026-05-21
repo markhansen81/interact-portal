@@ -519,41 +519,41 @@ const TASKS: OnboardingTask[] = [
         subtitle: "Here are the programs we run in schools. Tell us which ones you'd be comfortable leading — don't worry, you'll get training before your first project!",
         programs: {
           "Workshops & Weekly Programs": [
-            { name: "Native Speaker Week", desc: "A week-long immersive English program in schools — you lead fun, interactive lessons as a native speaker role model." },
-            { name: "Theatre Week", desc: "Students create and perform a short play in English over 5 days. You direct and facilitate." },
-            { name: "Art in Action Week", desc: "Visual arts meets English — students create artwork while practising language skills." },
-            { name: "Media Week", desc: "Students produce media content (podcasts, videos, blogs) in English." },
-            { name: "Film Week", desc: "Students write, shoot, and edit a short film in English." },
-            { name: "Kids Space Adventure", desc: "Space-themed English week for younger students (grades 1-4) with crafts, games, and storytelling." },
-            { name: "Monster Parade", desc: "Creative week for younger students — they design monsters and tell their stories in English." },
-            { name: "Shakespeare Workshop", desc: "Older students explore Shakespeare through performance and modern adaptation." },
-            { name: "Test Prep Workshop", desc: "Exam preparation sessions for students facing English language tests." },
-            { name: "Job & Presentation Skills", desc: "Practical workshop helping older students with interviews, CVs, and presenting in English." },
-            { name: "Global Speaker Week", desc: "Students explore global topics and practice public speaking in English." },
-            { name: "Debate Workshop", desc: "Students learn structured debate techniques and argue topics in English." },
+            { name: "Native Speaker Week", desc: "You'll spend a full week embedded in a school as a native English speaker role model. Each day you lead interactive, creative sessions — think games, storytelling, discussions, and group activities — all designed to get students excited about using English in real life. No textbooks, no grammar drills. Just authentic conversation and cultural exchange. You'll typically work with one or two classes across the week and build real connections with the students." },
+            { name: "Theatre Week", desc: "Over five days, you guide a class from first read-through to final performance. Students write, rehearse, and perform a short play entirely in English. You'll direct, coach, and bring out the best in every student — from the confident performers to the shy ones finding their voice. The week ends with a live performance for the school. Theatre experience is a plus, but enthusiasm and the ability to lead a room are what matter most." },
+            { name: "Art in Action Week", desc: "A week where visual arts and English come together. Students create artwork — painting, sculpture, collage, mixed media — while learning and practising English throughout the process. You'll facilitate creative workshops, guide discussions about art and culture, and help students present their work in English at the end of the week. Great for TAs with a background in visual arts or design." },
+            { name: "Media Week", desc: "Students become journalists, podcasters, and content creators for the week. They produce real media — podcasts, video reports, blog posts, or social media content — all in English. You'll guide them through brainstorming, scripting, production, and editing. The final output is something they can actually share. You should be comfortable with basic media tools and enjoy working with technology." },
+            { name: "Film Week", desc: "The class writes, shoots, and edits a short film in English over five days. You'll lead them through the full filmmaking process — from storyboarding and scriptwriting to directing, acting, and post-production. The week culminates in a screening for the school. Film or video production experience is helpful, but strong facilitation skills and creativity are key." },
+            { name: "Kids Space Adventure", desc: "A space-themed English week designed for younger students in grades 1-4 (ages 6-9). Think rocket building, alien storytelling, planet exploration, and cosmic crafts — all in English. The week is high-energy, creative, and playful. You'll need to bring imagination and patience, as these are some of our youngest learners. If you love working with little kids and can make learning feel like an adventure, this one's for you." },
+            { name: "Monster Parade", desc: "Another one for the younger students (grades 1-4). Over the week, kids design their own monsters — giving them names, backstories, and personalities — all in English. The week ends with a Monster Parade where they present their creations. It's creative, silly, and incredibly fun. You'll facilitate the craft sessions, help with storytelling, and keep the energy high." },
+            { name: "Shakespeare Workshop", desc: "Designed for older students (grades 8+), this workshop brings Shakespeare to life through modern performance. Students explore a play — often Romeo & Juliet, A Midsummer Night's Dream, or Macbeth — and adapt scenes for contemporary audiences. You'll lead rehearsals, help students understand the language, and direct a final performance. Theatre background is strongly preferred." },
+            { name: "Test Prep Workshop", desc: "A focused, practical workshop for students preparing for English language exams (Cambridge, IELTS, or school-leaving exams). You'll lead structured sessions covering speaking, listening, reading, and writing skills. Less creative than our other programs, but hugely valuable for the students. Best suited for TAs with TEFL experience or a strong background in English language teaching." },
+            { name: "Job & Presentation Skills", desc: "Older students (grades 9+) learn practical English skills for the working world — writing CVs, preparing for job interviews, delivering presentations, and professional communication. You'll run mock interviews, coach presentations, and facilitate group exercises. This is one of our most impactful programs for students about to enter the job market. Real-world work experience is a huge asset here." },
+            { name: "Global Speaker Week", desc: "Students explore global issues — climate change, migration, human rights, technology — and develop their public speaking skills in English. Each day focuses on a different topic with research, discussion, and debate. The week ends with student presentations to the school. You'll facilitate discussions, coach speaking skills, and help students form and articulate their opinions." },
+            { name: "Debate Workshop", desc: "Students learn the art of structured debate in English. You'll teach them how to build arguments, use evidence, rebut opponents, and speak persuasively. The workshop format varies — sometimes a single intense day, sometimes spread across a week. The final session is a formal debate tournament. You should be comfortable facilitating fast-paced discussions and keeping energy levels high." },
           ],
           "Kulturtag (Culture Day)": [
-            { name: "Kulturtag Theatre", desc: "A single-day theatre workshop in a school — students rehearse and perform a short piece." },
-            { name: "Kulturtag Dance", desc: "A one-day dance workshop combining movement and English language." },
-            { name: "Kulturtag Music", desc: "A one-day music workshop — songwriting, rhythm, and performance in English." },
-            { name: "Kulturtag Art", desc: "A one-day visual arts workshop where students create and present in English." },
+            { name: "Kulturtag Theatre", desc: "A single action-packed day of theatre in a school. Students warm up, learn theatre techniques, rehearse scenes, and perform — all in English — within about 4-5 hours. It's intense but incredibly rewarding. You'll need to be confident leading a room, keeping energy high, and bringing a performance together quickly. These are typically booked by schools as a cultural enrichment day." },
+            { name: "Kulturtag Dance", desc: "A one-day dance workshop combining movement, rhythm, and English language. Students learn choreography, explore different dance styles, and perform at the end of the day. You'll lead warm-ups, teach routines, and facilitate English communication throughout. Dance experience is essential — you should be comfortable teaching movement to beginners while keeping the focus on language." },
+            { name: "Kulturtag Music", desc: "A single-day music workshop where students write lyrics, learn rhythms, and perform songs in English. You'll guide them through songwriting, basic music-making (often with percussion or body percussion), and a final performance. Musical ability is important — you should be able to lead a group musically while keeping the English language focus front and centre." },
+            { name: "Kulturtag Art", desc: "A one-day visual arts workshop in English. Students create artwork around a theme — identity, culture, community — while practising their English throughout the process. The day ends with a gallery walk where students present their work in English. You'll facilitate the creative process, lead discussions, and help students articulate their ideas. Visual arts experience is a plus." },
           ],
           "Holiday Camps": [
-            { name: "Camp General", desc: "Multi-day English camp during school holidays — games, activities, and immersion in a fun setting." },
-            { name: "Camp Amazing Me", desc: "Self-expression camp — students explore identity, confidence, and creativity in English." },
-            { name: "Camp Media", desc: "Holiday camp focused on media production — video, photography, and storytelling." },
-            { name: "Camp Music & Songwriting", desc: "Campers write and record original songs in English." },
-            { name: "Camp Nature & Climate", desc: "Outdoor camp combining nature exploration with English language and climate topics." },
-            { name: "Camp Theatre", desc: "Intensive theatre camp — students develop and perform a full production." },
-            { name: "Camp Dance", desc: "Dance camp combining choreography workshops with English communication." },
+            { name: "Camp General", desc: "Our flagship holiday camp format. Over 3-5 days during school holidays, students (usually ages 8-14) join an English-immersion camp packed with games, activities, workshops, and adventures. You'll lead group activities, facilitate English conversation, and create a fun, safe environment. Camps typically run full days (9am-4pm) and may include outdoor activities, sports, and creative workshops. High energy and strong group management skills are essential." },
+            { name: "Camp Amazing Me", desc: "A self-expression and confidence-building camp in English. Over several days, students explore identity, creativity, and self-confidence through workshops on storytelling, art, movement, and performance. The camp culminates in each student sharing something about themselves — a performance, a piece of art, a story. You'll facilitate deeply personal creative work while keeping things fun and supportive." },
+            { name: "Camp Media", desc: "A holiday camp focused on media production. Students create real content — short films, podcasts, photo essays, or social media campaigns — all in English. You'll teach basic production skills, guide creative direction, and help teams produce polished final pieces. The camp is hands-on and project-based. Comfort with media tools (cameras, editing software, audio recording) is important." },
+            { name: "Camp Music & Songwriting", desc: "Campers write, compose, and record original songs in English over several days. You'll lead songwriting sessions, help with melody and lyrics, facilitate recording, and prepare for a final performance or listening party. Musical skills are essential — ideally you play an instrument or have production experience. The camp blends creative expression with English language practice." },
+            { name: "Camp Nature & Climate", desc: "An outdoor camp combining nature exploration, environmental education, and English language. Activities include nature hikes, habitat studies, sustainability workshops, and creative projects — all conducted in English. Camps may take place in parks, forests, or rural settings outside Berlin. You should be comfortable outdoors, knowledgeable about environmental topics, and able to engage young people with nature." },
+            { name: "Camp Theatre", desc: "An intensive multi-day theatre camp where students develop and perform a full production in English. From casting to costumes to opening night, you'll guide the entire process. The camp runs full days and demands high energy and strong direction. Theatre experience is strongly preferred. This is one of our most ambitious camp formats and produces incredible results." },
+            { name: "Camp Dance", desc: "A dance-focused holiday camp combining choreography workshops, freestyle sessions, and English communication. Students learn routines across different styles, develop their own moves, and perform at the end of the camp. You'll lead classes, manage group dynamics, and keep the English flowing throughout. Strong dance ability and teaching experience are essential." },
           ],
           "Class Trips": [
-            { name: "Class Trip Theatre", desc: "Multi-day class trip with a theatre focus — students travel, stay in homestays, and create a performance." },
-            { name: "Class Trip English Team Building", desc: "Team-building class trip — outdoor activities and challenges, all in English." },
-            { name: "Class Trip Media", desc: "Students travel and produce media content — documentaries, vlogs, or podcasts." },
-            { name: "Class Trip Music & Songwriting", desc: "Musical class trip — students write and perform songs together." },
-            { name: "Class Trip Nature & Climate", desc: "Outdoor class trip focused on nature, sustainability, and English." },
-            { name: "Class Trip Dance", desc: "Dance-focused class trip with workshops and a final performance." },
+            { name: "Class Trip Theatre", desc: "A multi-day class trip (typically 3-5 days) with a theatre focus. A school class travels to a location outside their city — often a youth hostel or retreat centre — and spends the trip creating and rehearsing a theatre production in English. You'll travel with them, stay in the accommodation (often a homestay), lead daily workshops, and direct the final performance. It's immersive, intensive, and deeply rewarding. Travel and overnight stays are part of the deal." },
+            { name: "Class Trip English Team Building", desc: "An outdoor team-building class trip where everything happens in English. Students participate in group challenges, trust exercises, problem-solving activities, and adventure tasks — orienteering, raft building, cooking challenges — all facilitated in English. You'll lead the activities, manage group dynamics, and create an environment where students naturally use English. Outdoor experience and high energy are essential." },
+            { name: "Class Trip Media", desc: "Students travel and create media content together — documentaries about the local area, vlogs, podcasts, or photo stories. You'll guide the production process from concept to final edit, all in English. Class trips are typically 3-5 days and involve overnight stays. You should be comfortable with media production tools and able to manage creative projects with teenagers." },
+            { name: "Class Trip Music & Songwriting", desc: "A musical class trip where students write and perform original songs in English. Over several days, you'll lead songwriting workshops, facilitate band/group formation, and prepare for a final concert or recording session. The setting is usually a retreat centre or youth hostel. Musical skills and the ability to work with groups of varying ability levels are essential." },
+            { name: "Class Trip Nature & Climate", desc: "An outdoor class trip focused on nature, sustainability, and English. Students explore natural habitats, conduct field studies, and engage with environmental topics — all in English. Trips are typically in rural settings and involve hiking, camping, or stays in eco-lodges. You should love the outdoors, have knowledge of environmental topics, and be comfortable leading groups in nature." },
+            { name: "Class Trip Dance", desc: "A dance-focused class trip where students travel, learn choreography, develop their own pieces, and perform. You'll lead daily dance workshops across different styles, facilitate creative collaboration, and direct a final showcase. The trip typically lasts 3-5 days with overnight stays. Strong dance ability and experience teaching groups are essential." },
           ],
         },
       },
@@ -579,10 +579,19 @@ const TASKS: OnboardingTask[] = [
       },
       {
         id: "moved_to_germany",
-        type: "textarea",
+        type: "multi-text",
         title: "When did you move to Germany, and why?",
-        field: "moved_to_germany",
-        placeholder: "Tell us your story...",
+        fields: [
+          {
+            field: "moved_to_germany_year",
+            label: "Year you moved",
+            options: Array.from({ length: 40 }, (_, i) => {
+              const y = String(new Date().getFullYear() - i);
+              return { value: y, label: y };
+            }),
+          },
+          { field: "moved_to_germany", label: "Why did you move?", placeholder: "Tell us your story..." },
+        ],
       },
       {
         id: "likes_germany",
@@ -712,13 +721,15 @@ export function OnboardingWizard({
   documents,
   preferences: initialPrefs,
   embedded = false,
+  initialTask,
 }: {
   profile: Profile;
   documents: Document[];
   preferences: Preference[];
   embedded?: boolean;
+  initialTask?: string;
 }) {
-  const [activeTask, setActiveTask] = useState<string | null>(null);
+  const [activeTask, setActiveTask] = useState<string | null>(initialTask || null);
   const [data, setData] = useState<Record<string, unknown>>(() => {
     const d: Record<string, unknown> = {};
     for (const key of Object.keys(initialProfile)) {
@@ -800,7 +811,7 @@ export function OnboardingWizard({
             });
           }}
           onBack={() => {
-            setActiveTask(null);
+            router.push("/portal");
             router.refresh();
           }}
         />
@@ -816,116 +827,19 @@ export function OnboardingWizard({
         onChange={(field, value) => setData((prev) => ({ ...prev, [field]: value }))}
         onComplete={() => {
           markTaskComplete(task.id);
-          setActiveTask(null);
+          router.push("/portal");
+          router.refresh();
         }}
-        onBack={() => setActiveTask(null)}
+        onBack={() => {
+          router.push("/portal");
+          router.refresh();
+        }}
       />
     );
   }
 
-  // Dashboard view
-  return (
-    <div className={`flex flex-col ${embedded ? "min-h-full" : "fixed inset-0 bg-white dark:bg-zinc-950"}`}>
-      {/* Header */}
-      <div className={embedded ? "pb-4" : "border-b border-zinc-100 px-6 py-4 dark:border-zinc-900"}>
-        <div className="mx-auto max-w-3xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-                Welcome to InterACT!
-              </h1>
-              <p className="mt-1 text-sm text-zinc-500">
-                Complete these tasks to finish your onboarding.
-              </p>
-            </div>
-            <div className="text-right">
-              <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">{completedCount}/{totalTasks}</span>
-              <p className="text-xs text-zinc-400">tasks done</p>
-            </div>
-          </div>
-          <div className="mt-4 h-2 w-full rounded-full bg-zinc-100 dark:bg-zinc-800">
-            <div
-              className="h-2 rounded-full bg-green-500 transition-all duration-500"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Task cards */}
-      <div className="flex-1 overflow-y-auto px-6 py-8">
-        <div className="mx-auto max-w-3xl space-y-3">
-          {TASKS.map((task) => {
-            const isComplete = isTaskComplete(task);
-
-            return (
-              <button
-                key={task.id}
-                onClick={() => setActiveTask(task.id)}
-                className={`flex w-full items-center gap-4 rounded-xl border-2 p-5 text-left transition-all ${
-                  isComplete
-                    ? "border-green-200 bg-green-50/50 dark:border-green-800/50 dark:bg-green-900/10"
-                    : "border-zinc-200 hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
-                }`}
-              >
-                {/* Icon */}
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-                  isComplete
-                    ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-                    : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
-                }`}>
-                  {isComplete ? (
-                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                    </svg>
-                  ) : (
-                    <TaskIcon type={task.icon} />
-                  )}
-                </div>
-
-                {/* Content */}
-                <div className="flex-1">
-                  <h3 className={`font-semibold ${
-                    isComplete ? "text-green-700 dark:text-green-400" : "text-zinc-900 dark:text-zinc-50"
-                  }`}>
-                    {task.title}
-                  </h3>
-                  <p className="mt-0.5 text-sm text-zinc-500">{task.description}</p>
-                </div>
-
-                {/* Arrow */}
-                <svg className="h-5 w-5 shrink-0 text-zinc-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                </svg>
-              </button>
-            );
-          })}
-
-          {/* Finish button — only on initial onboarding */}
-          {allDone && !embedded && (
-            <div className="mt-8 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                <svg className="h-8 w-8 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">All done!</h2>
-              <p className="mt-1 text-sm text-zinc-500">Your onboarding is complete. Welcome to the team!</p>
-              <button
-                onClick={handleFinishOnboarding}
-                className="mt-6 inline-flex items-center gap-2 rounded-xl bg-green-600 px-8 py-3 text-base font-semibold text-white transition-colors hover:bg-green-700"
-              >
-                Go to Dashboard
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                </svg>
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+  // No active task — redirect to portal dashboard
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -1516,51 +1430,165 @@ function CheckboxWithTextStep({ step, data, onChange }: { step: Step; data: Reco
 }
 
 function ProgramsStep({ step, prefs, setPrefs }: { step: Step; prefs: Record<string, string>; setPrefs: React.Dispatch<React.SetStateAction<Record<string, string>>> }) {
-  const [expanded, setExpanded] = useState<string | null>(null);
+  // Flatten all programs into a single list for paging
+  const allPrograms: { name: string; desc: string; group: string }[] = [];
+  for (const [group, items] of Object.entries(step.programs!)) {
+    for (const prog of items) {
+      allPrograms.push({ ...prog, group });
+    }
+  }
+
+  const [idx, setIdx] = useState(0);
+  const prog = allPrograms[idx];
+  const currentPref = prefs[prog.name] || "";
+  const answeredCount = allPrograms.filter((p) => prefs[p.name]).length;
+
+  const handleSelect = (opt: string) => {
+    setPrefs((p) => ({ ...p, [prog.name]: p[prog.name] === opt ? "" : opt }));
+    // Auto-advance after short delay
+    if (idx < allPrograms.length - 1) {
+      setTimeout(() => setIdx((i) => i + 1), 400);
+    }
+  };
+
+  // Category colors
+  const groupColors: Record<string, string> = {
+    "Workshops & Weekly Programs": "bg-blue-500",
+    "Kulturtag (Culture Day)": "bg-purple-500",
+    "Holiday Camps": "bg-green-500",
+    "Class Trips": "bg-amber-500",
+  };
+
   return (
-    <div>
-      <StepHeader step={step} />
-      <div className="space-y-8">
-        {Object.entries(step.programs!).map(([group, items]) => (
-          <div key={group}>
-            <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-zinc-400">{group}</h3>
-            <div className="space-y-1">
-              {items.map((prog) => (
-                <div key={prog.name} className="rounded-lg border border-zinc-100 dark:border-zinc-800">
-                  <div className="flex items-center justify-between px-3 py-2.5">
-                    <button
-                      onClick={() => setExpanded(expanded === prog.name ? null : prog.name)}
-                      className="flex items-center gap-2 text-left"
-                    >
-                      <svg className={`h-3.5 w-3.5 shrink-0 text-zinc-400 transition-transform ${expanded === prog.name ? "rotate-90" : ""}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                      </svg>
-                      <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{prog.name}</span>
-                    </button>
-                    <div className="flex gap-1">
-                      {(["no", "yes", "pro"] as const).map((opt) => (
-                        <button key={opt}
-                          onClick={() => setPrefs((p) => ({ ...p, [prog.name]: p[prog.name] === opt ? "" : opt }))}
-                          className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
-                            prefs[prog.name] === opt
-                              ? opt === "pro" ? "bg-green-600 text-white" : opt === "yes" ? "bg-blue-600 text-white" : "bg-zinc-600 text-white"
-                              : "text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                          }`}>
-                          {opt === "pro" ? "Pro" : opt === "yes" ? "Can do" : "No"}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  {expanded === prog.name && (
-                    <div className="border-t border-zinc-100 px-3 py-2.5 dark:border-zinc-800">
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">{prog.desc}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
+    <div className="-mx-6 -my-12">
+      {/* Progress */}
+      <div className="flex items-center justify-between px-6 py-3">
+        <span className="text-xs text-zinc-400">{idx + 1} of {allPrograms.length} programs</span>
+        <span className="text-xs text-zinc-400">{answeredCount} answered</span>
+      </div>
+      <div className="flex gap-0.5 px-6 mb-6">
+        {allPrograms.map((p, i) => (
+          <div
+            key={p.name}
+            className={`h-1 flex-1 rounded-full cursor-pointer transition-all ${
+              i === idx ? "bg-zinc-900 dark:bg-zinc-100" :
+              prefs[p.name] ? "bg-green-400" : "bg-zinc-200 dark:bg-zinc-800"
+            }`}
+            onClick={() => setIdx(i)}
+          />
+        ))}
+      </div>
+
+      {/* Two-column layout */}
+      <div key={idx} className="grid grid-cols-1 gap-8 px-6 lg:grid-cols-2 animate-slide-in-right">
+        {/* Left — description */}
+        <div className="flex flex-col justify-center">
+          <div className="mb-4 flex items-center gap-2">
+            <span className={`h-2 w-2 rounded-full ${groupColors[prog.group] || "bg-zinc-400"}`} />
+            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">{prog.group}</span>
+          </div>
+          <h2 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+            {prog.name}
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-zinc-500 dark:text-zinc-400">
+            {prog.desc}
+          </p>
+          {/* Placeholder for future image/video */}
+          <div className="mt-6 flex h-40 items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="text-center">
+              <svg className="mx-auto h-8 w-8 text-zinc-300 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91M3.75 21h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v13.5A1.5 1.5 0 003.75 21z" />
+              </svg>
+              <p className="mt-1 text-xs text-zinc-400">Image or video coming soon</p>
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* Right — answer */}
+        <div className="flex flex-col justify-center">
+          <p className="mb-5 text-sm font-medium text-zinc-600 dark:text-zinc-400">
+            Can you lead this program?
+          </p>
+          <div className="space-y-3">
+            {([
+              { value: "pro", label: "Pro", sublabel: "I've done this before and I'm confident", color: "green" },
+              { value: "yes", label: "Can do", sublabel: "I'm willing and able to learn", color: "blue" },
+              { value: "no", label: "Not for me", sublabel: "Not interested or not suitable", color: "zinc" },
+            ] as const).map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => handleSelect(opt.value)}
+                className={`flex w-full items-center gap-4 rounded-2xl border-2 px-6 py-5 text-left transition-all ${
+                  currentPref === opt.value
+                    ? opt.color === "green"
+                      ? "border-green-500 bg-green-50 dark:border-green-600 dark:bg-green-900/20"
+                      : opt.color === "blue"
+                        ? "border-blue-500 bg-blue-50 dark:border-blue-600 dark:bg-blue-900/20"
+                        : "border-zinc-500 bg-zinc-50 dark:border-zinc-500 dark:bg-zinc-800"
+                    : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600"
+                }`}
+              >
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                  currentPref === opt.value
+                    ? opt.color === "green"
+                      ? "bg-green-500 text-white"
+                      : opt.color === "blue"
+                        ? "bg-blue-500 text-white"
+                        : "bg-zinc-500 text-white"
+                    : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800"
+                }`}>
+                  {opt.value === "pro" && (
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                    </svg>
+                  )}
+                  {opt.value === "yes" && (
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                  )}
+                  {opt.value === "no" && (
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  )}
+                </div>
+                <div>
+                  <p className={`text-base font-semibold ${
+                    currentPref === opt.value ? "text-zinc-900 dark:text-zinc-50" : "text-zinc-700 dark:text-zinc-300"
+                  }`}>
+                    {opt.label}
+                  </p>
+                  <p className="text-sm text-zinc-500">{opt.sublabel}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Nav */}
+          <div className="mt-8 flex items-center justify-between">
+            <button
+              onClick={() => setIdx(Math.max(0, idx - 1))}
+              disabled={idx === 0}
+              className="flex items-center gap-1 rounded-lg px-4 py-2 text-sm text-zinc-500 hover:bg-zinc-100 disabled:opacity-30 dark:hover:bg-zinc-800"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+              Previous
+            </button>
+            <button
+              onClick={() => setIdx(Math.min(allPrograms.length - 1, idx + 1))}
+              disabled={idx === allPrograms.length - 1}
+              className="flex items-center gap-1 rounded-lg bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-30 dark:bg-zinc-100 dark:text-zinc-900"
+            >
+              Next
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

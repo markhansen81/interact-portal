@@ -12,10 +12,5 @@ export default async function Home() {
     redirect("/admin");
   }
 
-  // TAs who haven't started onboarding go straight there
-  if (profile.onboarding_status === "pending" || !profile.onboarding_status) {
-    redirect("/onboarding");
-  }
-
   redirect("/portal");
 }
