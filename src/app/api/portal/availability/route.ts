@@ -19,7 +19,7 @@ export async function GET() {
   return NextResponse.json({ availability: data || [] });
 }
 
-export async function POST(request: Request) {
+export async function PATCH(request: Request) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -29,21 +29,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { date, status } = await request.json();
+  const { dates, status } = await request.json() as { dates: string[]; status: string };
 
-  // Upsert — toggle availability
   if (status === "available") {
-    // Remove entry (available is the default)
+    // Remove entries (available is the default)
     await supabase
       .from("availability")
       .delete()
       .eq("ta_id", user.id)
-      .eq("date", date);
+      .in("date", dates);
   } else {
-    await supabase.from("availability").upsert(
-      { ta_id: user.id, date, status },
-      { onConflict: "ta_id,date" }
-    );
+    const rows = dates.map((date) => ({ ta_id: user.id, date, status }));
+    await supabase.from("availability").upsert(rows, { onConflict: "ta_id,date" });
   }
 
   return NextResponse.json({ success: true });

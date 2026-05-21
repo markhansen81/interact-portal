@@ -73,6 +73,13 @@ export default async function PortalDashboard() {
     .select("*", { count: "exact", head: true })
     .eq("ta_id", profile.id);
 
+  // Count availability entries (available days set)
+  const { count: availabilityCount } = await supabase
+    .from("availability")
+    .select("*", { count: "exact", head: true })
+    .eq("ta_id", profile.id)
+    .eq("status", "available");
+
   const p = profile as Record<string, unknown>;
   const hasValue = (field: string) => p[field] !== null && p[field] !== undefined && p[field] !== "";
   const countFilled = (fields: string[]) => fields.filter(hasValue).length;
@@ -120,6 +127,16 @@ export default async function PortalDashboard() {
     icon: "camera",
     done: hasPhoto,
     href: hasPhoto ? "/portal/profile" : "/onboarding?task=photo_upload",
+  });
+
+  const hasAvailability = (availabilityCount ?? 0) > 0;
+  tasks.push({
+    id: "availability",
+    title: "Set Your Availability",
+    desc: "Mark the days you're available to work so we can match you to projects",
+    icon: "calendar",
+    done: hasAvailability,
+    href: "/portal/availability",
   });
 
   for (const doc of REQUIRED_DOCS) {
@@ -282,6 +299,8 @@ function TaskIcon({ type }: { type: string }) {
       return <svg className={cls} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" /><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" /></svg>;
     case "upload":
       return <svg className={cls} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" /></svg>;
+    case "calendar":
+      return <svg className={cls} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>;
     default:
       return null;
   }
