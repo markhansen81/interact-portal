@@ -743,13 +743,20 @@ export function OnboardingWizard({
   preferences: initialPrefs,
   embedded = false,
   initialTask,
+  formContent = [],
 }: {
   profile: Profile;
   documents: Document[];
   preferences: Preference[];
   embedded?: boolean;
   initialTask?: string;
+  formContent?: { step_id: string; field: string; value: string | null }[];
 }) {
+  // Build a lookup for admin-edited content
+  const contentMap = new Map<string, string>();
+  for (const c of formContent) {
+    if (c.value) contentMap.set(`${c.step_id}:${c.field}`, c.value);
+  }
   const [activeTask, setActiveTask] = useState<string | null>(initialTask || null);
   const [data, setData] = useState<Record<string, unknown>>(() => {
     const d: Record<string, unknown> = {};
@@ -845,6 +852,7 @@ export function OnboardingWizard({
         prefs={prefs}
         setPrefs={setPrefs}
         embedded={embedded}
+        contentMap={contentMap}
         onChange={(field, value) => setData((prev) => ({ ...prev, [field]: value }))}
         onComplete={() => {
           markTaskComplete(task.id);
@@ -908,6 +916,7 @@ function FormFlow({
   prefs,
   setPrefs,
   embedded = false,
+  contentMap,
   onChange,
   onComplete,
   onBack,
@@ -917,6 +926,7 @@ function FormFlow({
   prefs: Record<string, string>;
   setPrefs: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   embedded?: boolean;
+  contentMap?: Map<string, string>;
   onChange: (field: string, value: unknown) => void;
   onComplete: () => void;
   onBack: () => void;
@@ -1110,7 +1120,7 @@ function FormFlow({
             <CheckboxWithTextStep step={step} data={data} onChange={onChange} />
           )}
           {step.type === "programs" && (
-            <ProgramsStep step={step} prefs={prefs} setPrefs={setPrefs} />
+            <ProgramsStep step={step} prefs={prefs} setPrefs={setPrefs} contentMap={contentMap} />
           )}
         </div>
       </div>
@@ -1503,7 +1513,7 @@ function CheckboxWithTextStep({ step, data, onChange }: { step: Step; data: Reco
   );
 }
 
-function ProgramsStep({ step, prefs, setPrefs }: { step: Step; prefs: Record<string, string>; setPrefs: React.Dispatch<React.SetStateAction<Record<string, string>>> }) {
+function ProgramsStep({ step, prefs, setPrefs, contentMap }: { step: Step; prefs: Record<string, string>; setPrefs: React.Dispatch<React.SetStateAction<Record<string, string>>>; contentMap?: Map<string, string> }) {
   // Flatten all programs into a single list for paging
   const allPrograms: { name: string; desc: string; group: string }[] = [];
   for (const [group, items] of Object.entries(step.programs!)) {
@@ -1514,6 +1524,19 @@ function ProgramsStep({ step, prefs, setPrefs }: { step: Step; prefs: Record<str
 
   const [idx, setIdx] = useState(0);
   const prog = allPrograms[idx];
+
+  // Helper to generate step_id from program name
+  const toStepId = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/_+$/, "");
+
+  // Get content with admin overrides
+  const getContent = (name: string, field: string, fallback: string) => {
+    if (!contentMap) return fallback;
+    return contentMap.get(`${toStepId(name)}:${field}`) || fallback;
+  };
+
+  const progName = getContent(prog.name, "name", prog.name);
+  const progDesc = getContent(prog.name, "description", prog.desc);
+  const progImage = contentMap?.get(`${toStepId(prog.name)}:image_url`) || "";
   const currentPref = prefs[prog.name] || "";
   const answeredCount = allPrograms.filter((p) => prefs[p.name]).length;
 
@@ -1562,20 +1585,23 @@ function ProgramsStep({ step, prefs, setPrefs }: { step: Step; prefs: Record<str
             <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">{prog.group}</span>
           </div>
           <h2 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            {prog.name}
+            {progName}
           </h2>
           <p className="mt-4 text-base leading-relaxed text-zinc-500 dark:text-zinc-400">
-            {prog.desc}
+            {progDesc}
           </p>
-          {/* Placeholder for future image/video */}
-          <div className="mt-6 flex h-40 items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="text-center">
-              <svg className="mx-auto h-8 w-8 text-zinc-300 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91M3.75 21h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v13.5A1.5 1.5 0 003.75 21z" />
-              </svg>
-              <p className="mt-1 text-xs text-zinc-400">Image or video coming soon</p>
+          {progImage ? (
+            <img src={progImage} alt={progName} className="mt-6 h-48 w-full rounded-xl object-cover" />
+          ) : (
+            <div className="mt-6 flex h-40 items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="text-center">
+                <svg className="mx-auto h-8 w-8 text-zinc-300 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91M3.75 21h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v13.5A1.5 1.5 0 003.75 21z" />
+                </svg>
+                <p className="mt-1 text-xs text-zinc-400">Image coming soon</p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Right — answer */}
