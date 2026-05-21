@@ -127,7 +127,13 @@ export function AvailabilityCalendar({ initialData }: { initialData: Availabilit
               return (
                 <tr key={wi} className="border-b border-zinc-50 last:border-0 dark:border-zinc-800/50">
                   <td className="px-4 py-1">
-                    <span className="text-xs font-semibold text-zinc-400">KW {weekNum}</span>
+                    <div className="text-xs">
+                      <span className="font-semibold text-zinc-500">Week {weekNum}</span>
+                      <br />
+                      <span className="text-[10px] text-zinc-400">
+                        {week.start.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                      </span>
+                    </div>
                   </td>
                   {week.dates.map((date) => {
                     const dateStr = formatDate(date);
