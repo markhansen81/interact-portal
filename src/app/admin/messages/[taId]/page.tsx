@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth";
 import { ChatThread } from "@/components/shared/chat-thread";
@@ -9,7 +9,7 @@ export default async function AdminChatPage({
   params: Promise<{ taId: string }>;
 }) {
   const profile = await requireAuth(["admin"]);
-  if (!profile) notFound();
+  if (!profile) redirect("/auth/admin");
 
   const { taId } = await params;
   const supabase = await createClient();
@@ -41,26 +41,13 @@ export default async function AdminChatPage({
     : ta.email;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        {ta.photo_url ? (
-          <img src={ta.photo_url} alt="" className="h-10 w-10 rounded-full object-cover" />
-        ) : (
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-200 text-sm font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
-            {(ta.first_name?.[0] || ta.email[0]).toUpperCase()}
-          </div>
-        )}
-        <div>
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">{taName}</h2>
-          <p className="text-xs text-zinc-500">{ta.email}</p>
-        </div>
-      </div>
-      <ChatThread
-        messages={messages || []}
-        currentUserId={profile.id}
-        otherUserId={taId}
-        backHref="/admin/messages"
-      />
-    </div>
+    <ChatThread
+      messages={messages || []}
+      currentUserId={profile.id}
+      otherUserId={taId}
+      otherName={taName}
+      otherPhoto={ta.photo_url}
+      backHref="/admin/messages"
+    />
   );
 }

@@ -9,10 +9,9 @@ export default async function TAMessagesPage() {
 
   const supabase = await createClient();
 
-  // Get admin to chat with (first admin found)
   const { data: admins } = await supabase
     .from("profiles")
-    .select("id, first_name, last_name, email")
+    .select("id, first_name, last_name, email, photo_url")
     .eq("role", "admin")
     .limit(1);
 
@@ -21,8 +20,8 @@ export default async function TAMessagesPage() {
   if (!admin) {
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Messages</h2>
-        <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-12 text-center dark:border-zinc-700 dark:bg-zinc-900">
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Messages</h1>
+        <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-12 text-center dark:border-zinc-700 dark:bg-zinc-900">
           <p className="text-zinc-500">No admin available to message.</p>
         </div>
       </div>
@@ -48,16 +47,13 @@ export default async function TAMessagesPage() {
     : admin.email;
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-        Chat with {adminName}
-      </h2>
-      <ChatThread
-        messages={messages || []}
-        currentUserId={profile.id}
-        otherUserId={admin.id}
-        backHref="/portal"
-      />
-    </div>
+    <ChatThread
+      messages={messages || []}
+      currentUserId={profile.id}
+      otherUserId={admin.id}
+      otherName={`InterACT Team (${adminName})`}
+      otherPhoto={admin.photo_url}
+      backHref="/portal"
+    />
   );
 }
