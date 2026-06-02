@@ -24,7 +24,7 @@ export function ServicesTable({ services }: { services: Service[] }) {
       <div className="flex justify-end">
         <button
           onClick={() => setShowAdd(true)}
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900"
+          className="rounded-xl bg-zinc-900 px-5 py-2 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900"
         >
           Add Service
         </button>
@@ -39,23 +39,23 @@ export function ServicesTable({ services }: { services: Service[] }) {
         />
       )}
 
-      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-zinc-200 dark:border-zinc-800">
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
+            <tr className="border-b border-zinc-100 dark:border-zinc-800">
+              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
                 Service
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
+              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
                 Fee
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
+              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
                 Type
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
+              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
                 Trigger
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
+              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
                 Status
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-zinc-500">
@@ -63,7 +63,7 @@ export function ServicesTable({ services }: { services: Service[] }) {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+          <tbody className="divide-y divide-zinc-50 dark:divide-zinc-800/50">
             {services.map((service) =>
               editingId === service.id ? (
                 <ServiceEditRow
