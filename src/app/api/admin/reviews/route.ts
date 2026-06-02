@@ -27,6 +27,25 @@ export async function GET(request: Request) {
     .eq("status", status)
     .order("created_at", { ascending: false });
 
+  // For document reviews, attach the actual document info
+  if (data) {
+    const docReviews = data.filter((r) => r.type === "document_upload");
+    if (docReviews.length > 0) {
+      const { data: docs } = await supabase
+        .from("documents")
+        .select("ta_id, type, file_url, status, uploaded_at, issue_date, expiry_date");
+
+      const docMap = new Map<string, typeof docs extends (infer T)[] | null ? T : never>();
+      (docs || []).forEach((d) => docMap.set(`${d.ta_id}:${d.type}`, d));
+
+      for (const review of data) {
+        if (review.type === "document_upload" && review.reference_id) {
+          (review as Record<string, unknown>).document = docMap.get(`${review.ta_id}:${review.reference_id}`) || null;
+        }
+      }
+    }
+  }
+
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   return NextResponse.json({ reviews: data || [] });
