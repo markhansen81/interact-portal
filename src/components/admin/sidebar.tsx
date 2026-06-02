@@ -12,6 +12,7 @@ const navItems = [
   { href: "/admin/invoices", label: "Invoices", icon: "receipt" },
   { href: "/admin/availability", label: "Availability", icon: "calendar" },
   { href: "/admin/services", label: "Services & Rates", icon: "settings" },
+  { href: "/admin/training", label: "Training", icon: "briefcase" },
   { href: "/admin/messages", label: "Messages", icon: "message-circle" },
   { href: "/admin/forms/programs", label: "Form Editor", icon: "pen-tool" },
 ];
