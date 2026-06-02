@@ -20,7 +20,7 @@ export default async function AdminAvailabilityPage() {
   // Get all availability for next 6 months
   const today = new Date();
   const sixMonths = new Date(today);
-  sixMonths.setMonth(today.getMonth() + 6);
+  sixMonths.setMonth(today.getMonth() + 12);
 
   const { data: availability } = await supabase
     .from("availability")
