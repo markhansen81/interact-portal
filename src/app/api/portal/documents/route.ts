@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { notifyAdmins } from "@/lib/notifications";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -76,6 +77,14 @@ export async function POST(request: Request) {
     reference_id: body.type,
     title: `${docLabel} uploaded`,
     description: `${taName} uploaded their ${docLabel}. Review and verify.`,
+  });
+
+  // Notify admins
+  await notifyAdmins({
+    type: "document_uploaded",
+    title: `${docLabel} uploaded`,
+    body: `${taName} uploaded their ${docLabel}. Review and verify.`,
+    payload: { link: "/admin", ta_id: user.id },
   });
 
   return NextResponse.json({ success: true });

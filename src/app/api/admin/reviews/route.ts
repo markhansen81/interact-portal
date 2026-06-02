@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { notify } from "@/lib/notifications";
 
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -80,20 +81,54 @@ export async function PATCH(request: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-  // If approving a document, update the document status to verified
-  if (status === "approved") {
-    const { data: task } = await supabase
-      .from("admin_review_tasks")
-      .select("type, ta_id, reference_id")
-      .eq("id", id)
-      .single();
+  // Get task details for notifications
+  const { data: task } = await supabase
+    .from("admin_review_tasks")
+    .select("type, ta_id, reference_id, title")
+    .eq("id", id)
+    .single();
 
-    if (task?.type === "document_upload" && task.reference_id) {
-      await supabase
-        .from("documents")
-        .update({ status: "verified", verified_by: user.id, verified_at: new Date().toISOString() })
-        .eq("ta_id", task.ta_id)
-        .eq("type", task.reference_id);
+  if (task) {
+    const docLabels: Record<string, string> = {
+      right_to_work: "Right to Work",
+      police_check: "Police Check",
+      measles: "Measles Vaccination",
+      first_aid: "First Aid Certificate",
+    };
+    const docLabel = docLabels[task.reference_id || ""] || task.reference_id || "";
+
+    if (status === "approved") {
+      // Update document status to verified
+      if (task.type === "document_upload" && task.reference_id) {
+        await supabase
+          .from("documents")
+          .update({ status: "verified", verified_by: user.id, verified_at: new Date().toISOString() })
+          .eq("ta_id", task.ta_id)
+          .eq("type", task.reference_id);
+      }
+
+      // Notify TA
+      await notify({
+        userId: task.ta_id,
+        type: "review_approved",
+        title: task.type === "document_upload" ? `${docLabel} verified` : "Profile approved",
+        body: task.type === "document_upload"
+          ? `Your ${docLabel} has been reviewed and verified.`
+          : "Your onboarding profile has been reviewed and approved.",
+        payload: { link: "/portal/documents" },
+      });
+    }
+
+    if (status === "rejected") {
+      await notify({
+        userId: task.ta_id,
+        type: "review_rejected",
+        title: task.type === "document_upload" ? `${docLabel} rejected` : "Profile needs changes",
+        body: notes || (task.type === "document_upload"
+          ? `Your ${docLabel} was not accepted. Please upload a new one.`
+          : "Your profile needs some changes. Please review the notes."),
+        payload: { link: "/portal/documents" },
+      });
     }
   }
 
