@@ -21,6 +21,12 @@ interface ReviewTask {
     email: string;
     photo_url: string | null;
   };
+  document?: {
+    file_url: string | null;
+    uploaded_at: string | null;
+    issue_date: string | null;
+    expiry_date: string | null;
+  } | null;
 }
 
 const TYPE_ICONS: Record<string, React.ReactNode> = {
@@ -44,6 +50,7 @@ const TYPE_COLORS: Record<string, string> = {
 export function ReviewQueue({ reviews }: { reviews: ReviewTask[] }) {
   const [items, setItems] = useState(reviews);
   const [actionId, setActionId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const router = useRouter();
 
@@ -114,16 +121,35 @@ export function ReviewQueue({ reviews }: { reviews: ReviewTask[] }) {
                       <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">{taName}</span>
                     </Link>
 
-                    {/* Document link */}
-                    {review.type === "document_upload" && (
-                      <Link
-                        href={`/admin/teaching-artists/${ta.id}`}
-                        className="ml-2 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400"
+                    {/* View doc button */}
+                    {review.type === "document_upload" && review.document?.file_url && (
+                      <button
+                        onClick={() => setExpandedId(expandedId === review.id ? null : review.id)}
+                        className="ml-2 rounded-md bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400"
                       >
-                        View document
-                      </Link>
+                        {expandedId === review.id ? "Hide document" : "View document"}
+                      </button>
                     )}
                   </div>
+
+                  {/* Document preview */}
+                  {expandedId === review.id && review.document?.file_url && (
+                    <div className="mt-3 overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700">
+                      {review.document.file_url.match(/\.pdf/i) ? (
+                        <iframe src={review.document.file_url} className="h-[400px] w-full" />
+                      ) : (
+                        <img src={review.document.file_url} alt="Document" className="max-h-[400px] w-full object-contain bg-zinc-50 dark:bg-zinc-800" />
+                      )}
+                      <div className="flex items-center gap-4 border-t border-zinc-100 px-4 py-2 text-xs text-zinc-400 dark:border-zinc-800">
+                        {review.document.uploaded_at && <span>Uploaded {new Date(review.document.uploaded_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>}
+                        {review.document.issue_date && <span>Issued {review.document.issue_date}</span>}
+                        {review.document.expiry_date && <span>Expires {review.document.expiry_date}</span>}
+                        <a href={review.document.file_url} target="_blank" rel="noopener noreferrer" className="ml-auto text-blue-500 hover:text-blue-700">
+                          Open full size
+                        </a>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Action buttons */}
                   {!isExpanded ? (

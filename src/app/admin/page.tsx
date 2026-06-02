@@ -49,7 +49,24 @@ export default async function AdminDashboard() {
     .eq("status", "pending")
     .order("created_at", { ascending: false });
 
-  const reviewCount = pendingReviews?.length || 0;
+  // Get documents for doc reviews
+  const { data: allDocs } = await supabase
+    .from("documents")
+    .select("ta_id, type, file_url, status, uploaded_at, issue_date, expiry_date")
+    .eq("status", "uploaded");
+
+  const docMap = new Map<string, { file_url: string | null; uploaded_at: string | null; issue_date: string | null; expiry_date: string | null }>();
+  (allDocs || []).forEach((d) => docMap.set(`${d.ta_id}:${d.type}`, d));
+
+  // Attach docs to reviews
+  const reviewsWithDocs = (pendingReviews || []).map((r) => ({
+    ...r,
+    document: r.type === "document_upload" && r.reference_id
+      ? docMap.get(`${r.ta_id}:${r.reference_id}`) || null
+      : null,
+  }));
+
+  const reviewCount = reviewsWithDocs.length;
 
   return (
     <div className="space-y-8">
@@ -85,7 +102,7 @@ export default async function AdminDashboard() {
             )}
           </div>
         </div>
-        <ReviewQueue reviews={pendingReviews || []} />
+        <ReviewQueue reviews={reviewsWithDocs} />
       </div>
 
       {/* Quick links */}
