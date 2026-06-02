@@ -71,7 +71,7 @@ export function AdminAvailabilityView({
   lastUpdates: Record<string, string>;
 }) {
   const today = new Date();
-  const weeks = generateWeeks(26); // 6 months
+  const weeks = generateWeeks(52); // 12 months
 
   // Build availability lookup
   const availMap = new Map<string, Map<string, string>>();

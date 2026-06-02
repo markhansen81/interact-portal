@@ -59,7 +59,7 @@ export function AvailabilityCalendar({ initialData }: { initialData: Availabilit
 
   const today = new Date();
   const todayStr = formatDate(today);
-  const weeks = generateWeeks(16);
+  const weeks = generateWeeks(52);
 
   function isAvailable(date: string): boolean {
     return availableDates.has(date);
