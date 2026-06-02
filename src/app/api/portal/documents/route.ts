@@ -44,5 +44,39 @@ export async function POST(request: Request) {
     });
   }
 
+  // Create admin review task
+  const docLabels: Record<string, string> = {
+    right_to_work: "Right to Work",
+    police_check: "Police Check",
+    measles: "Measles Vaccination",
+    first_aid: "First Aid Certificate",
+  };
+
+  const { data: ta } = await supabase
+    .from("profiles")
+    .select("first_name, last_name")
+    .eq("id", user.id)
+    .single();
+
+  const taName = ta ? `${ta.first_name} ${ta.last_name}` : "A TA";
+  const docLabel = docLabels[body.type] || body.type;
+
+  // Remove any existing pending review for same doc
+  await supabase
+    .from("admin_review_tasks")
+    .delete()
+    .eq("ta_id", user.id)
+    .eq("reference_id", body.type)
+    .eq("type", "document_upload")
+    .eq("status", "pending");
+
+  await supabase.from("admin_review_tasks").insert({
+    type: "document_upload",
+    ta_id: user.id,
+    reference_id: body.type,
+    title: `${docLabel} uploaded`,
+    description: `${taName} uploaded their ${docLabel}. Review and verify.`,
+  });
+
   return NextResponse.json({ success: true });
 }

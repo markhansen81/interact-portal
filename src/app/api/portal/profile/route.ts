@@ -54,6 +54,24 @@ export async function PATCH(request: Request) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
+
+    // Create review task when onboarding status changes to ready
+    if (updates.onboarding_status === "ready") {
+      const { data: ta } = await supabase
+        .from("profiles")
+        .select("first_name, last_name")
+        .eq("id", user.id)
+        .single();
+      const taName = ta ? `${ta.first_name} ${ta.last_name}` : "A TA";
+
+      await supabase.from("admin_review_tasks").insert({
+        type: "profile_complete",
+        ta_id: user.id,
+        reference_id: "onboarding",
+        title: "Onboarding completed",
+        description: `${taName} has completed their onboarding profile. Review their details.`,
+      });
+    }
   }
 
   // Handle program preferences (stored in separate table)
