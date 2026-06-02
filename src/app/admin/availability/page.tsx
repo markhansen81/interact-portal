@@ -12,7 +12,7 @@ export default async function AdminAvailabilityPage() {
   // Get all active TAs
   const { data: tas } = await supabase
     .from("profiles")
-    .select("id, first_name, last_name, email, photo_url, category, pay_level")
+    .select("id, first_name, last_name, email, photo_url, category, pay_level, updated_at")
     .eq("role", "ta")
     .eq("is_active", true)
     .order("first_name");
@@ -28,6 +28,19 @@ export default async function AdminAvailabilityPage() {
     .gte("date", today.toISOString().split("T")[0])
     .lte("date", sixMonths.toISOString().split("T")[0]);
 
+  // Get last availability update per TA (most recent date they set)
+  const { data: lastUpdates } = await supabase
+    .from("availability")
+    .select("ta_id, date")
+    .order("date", { ascending: false });
+
+  const lastUpdateMap = new Map<string, string>();
+  for (const entry of lastUpdates || []) {
+    if (!lastUpdateMap.has(entry.ta_id)) {
+      lastUpdateMap.set(entry.ta_id, entry.date);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -41,6 +54,7 @@ export default async function AdminAvailabilityPage() {
       <AdminAvailabilityView
         tas={tas || []}
         availability={availability || []}
+        lastUpdates={Object.fromEntries(lastUpdateMap)}
       />
     </div>
   );

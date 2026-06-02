@@ -7,7 +7,7 @@ export function AdminHeader({ email }: { email: string }) {
   async function handleSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    window.location.href = "/auth/login";
+    window.location.href = "/auth/admin";
   }
 
   return (
