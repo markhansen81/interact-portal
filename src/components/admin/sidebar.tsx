@@ -14,7 +14,7 @@ const navItems = [
   { href: "/admin/services", label: "Services & Rates", icon: "settings" },
   { href: "/admin/training", label: "Training", icon: "briefcase" },
   { href: "/admin/messages", label: "Messages", icon: "message-circle" },
-  { href: "/admin/forms/programs", label: "Form Editor", icon: "pen-tool" },
+  { href: "/admin/templates", label: "Templates", icon: "pen-tool" },
 ];
 
 const iconPaths: Record<string, React.ReactNode> = {
