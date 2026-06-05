@@ -72,24 +72,33 @@ export function TAWorkOrderView({
     }
 
     // 3. Sign the work order with PDF URL
-    await fetch(`/api/portal/work-orders/${wo.id}/sign`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...signatureData, pdf_url: pdfUrl }),
-    });
+    try {
+      await fetch(`/api/portal/work-orders/${wo.id}/sign`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...signatureData, pdf_url: pdfUrl }),
+      });
 
+      router.push("/portal/work-orders");
+      router.refresh();
+    } catch {
+      alert("Failed to sign work order. Please try again.");
+    }
     setSigning(false);
-    router.push("/portal/work-orders");
-    router.refresh();
   }
 
   async function handleDecline() {
     setDeclining(true);
-    await fetch(`/api/portal/work-orders/${wo.id}/decline`, {
-      method: "POST",
-    });
-    router.push("/portal/work-orders");
-    router.refresh();
+    try {
+      await fetch(`/api/portal/work-orders/${wo.id}/decline`, {
+        method: "POST",
+      });
+      router.push("/portal/work-orders");
+      router.refresh();
+    } catch {
+      alert("Failed to decline work order. Please try again.");
+    }
+    setDeclining(false);
   }
 
   return (

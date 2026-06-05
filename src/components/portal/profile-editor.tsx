@@ -381,13 +381,17 @@ export function ProfileEditor({
       if (val === "false") val = false;
       body[f] = val;
     }
-    await fetch("/api/portal/profile", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+    try {
+      await fetch("/api/portal/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      router.refresh();
+    } catch {
+      alert("Failed to save. Please try again.");
+    }
     setSaving(null);
-    router.refresh();
   }
 
   async function savePrograms() {
@@ -395,22 +399,26 @@ export function ProfileEditor({
     let hw: unknown = data.homestay_willing ?? null;
     if (hw === "true") hw = true;
     if (hw === "false") hw = false;
-    await fetch("/api/portal/profile", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        program_preferences: prefs,
-        homestay_willing: hw,
-        lifeguard_cert: data.lifeguard_cert ?? null,
-        drivers_licence: data.drivers_licence ?? null,
-        dietary_options: data.dietary_options ?? [],
-        dietary_restrictions: data.dietary_restrictions ?? null,
-        exp_disabilities: data.exp_disabilities ?? false,
-        exp_disability_description: data.exp_disability_description ?? null,
-      }),
-    });
+    try {
+      await fetch("/api/portal/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          program_preferences: prefs,
+          homestay_willing: hw,
+          lifeguard_cert: data.lifeguard_cert ?? null,
+          drivers_licence: data.drivers_licence ?? null,
+          dietary_options: data.dietary_options ?? [],
+          dietary_restrictions: data.dietary_restrictions ?? null,
+          exp_disabilities: data.exp_disabilities ?? false,
+          exp_disability_description: data.exp_disability_description ?? null,
+        }),
+      });
+      router.refresh();
+    } catch {
+      alert("Failed to save. Please try again.");
+    }
     setSaving(null);
-    router.refresh();
   }
 
   const docsByType = new Map(documents.map((d) => [d.type, d]));

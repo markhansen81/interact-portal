@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 
 const FROM_EMAIL = process.env.FROM_EMAIL || "InterACT Portal <noreply@interactenglish.de>";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
 
 function getResend() {
   if (!process.env.RESEND_API_KEY) return null;
@@ -18,7 +19,6 @@ export async function sendEmail({
 }) {
   const resend = getResend();
   if (!resend) {
-    console.log("[EMAIL] Skipped (no API key):", { to, subject });
     return;
   }
 
@@ -45,7 +45,7 @@ export function workOrderSentEmail(taName: string, projectName: string, signByDa
         <p>Hi ${taName},</p>
         <p>You have a new work order for <strong>${projectName}</strong> waiting for your signature.</p>
         ${signByDate ? `<p style="color: #b45309; font-weight: bold;">Please sign by ${signByDate}</p>` : ""}
-        <p><a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/portal/work-orders" style="display: inline-block; background: #18181b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">View Work Order</a></p>
+        <p><a href="${APP_URL}/portal/work-orders" style="display: inline-block; background: #18181b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">View Work Order</a></p>
         <p style="color: #71717a; font-size: 14px;">InterACT English gGmbH</p>
       </div>
     `,
@@ -59,7 +59,7 @@ export function invoiceSubmittedEmail(taName: string, invoiceNumber: string, tot
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #18181b;">Invoice Submitted</h2>
         <p><strong>${taName}</strong> has submitted invoice <strong>${invoiceNumber}</strong> for <strong>€${total.toFixed(2)}</strong>.</p>
-        <p><a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/admin/invoices" style="display: inline-block; background: #18181b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">Review Invoice</a></p>
+        <p><a href="${APP_URL}/admin/invoices" style="display: inline-block; background: #18181b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">Review Invoice</a></p>
       </div>
     `,
   };
@@ -74,7 +74,7 @@ export function documentExpiringEmail(taName: string, docType: string, expiryDat
         <p>Hi ${taName},</p>
         <p>Your <strong>${docType}</strong> expires on <strong>${expiryDate}</strong>.</p>
         <p>Please upload a renewed document as soon as possible.</p>
-        <p><a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/portal/documents" style="display: inline-block; background: #18181b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">Update Documents</a></p>
+        <p><a href="${APP_URL}/portal/documents" style="display: inline-block; background: #18181b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">Update Documents</a></p>
         <p style="color: #71717a; font-size: 14px;">InterACT English gGmbH</p>
       </div>
     `,
@@ -89,7 +89,7 @@ export function nudgeEmail(taName: string, item: string, message: string) {
         <h2 style="color: #18181b;">Reminder</h2>
         <p>Hi ${taName},</p>
         <p>${message}</p>
-        <p><a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/portal" style="display: inline-block; background: #18181b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">Go to Portal</a></p>
+        <p><a href="${APP_URL}/portal" style="display: inline-block; background: #18181b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">Go to Portal</a></p>
         <p style="color: #71717a; font-size: 14px;">InterACT English gGmbH</p>
       </div>
     `,
@@ -104,7 +104,7 @@ export function newMessageEmail(recipientName: string, senderName: string) {
         <h2 style="color: #18181b;">New Message</h2>
         <p>Hi ${recipientName},</p>
         <p>You have a new message from <strong>${senderName}</strong>.</p>
-        <p><a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/portal/messages" style="display: inline-block; background: #18181b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">Read Message</a></p>
+        <p><a href="${APP_URL}/portal/messages" style="display: inline-block; background: #18181b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">Read Message</a></p>
         <p style="color: #71717a; font-size: 14px;">InterACT English gGmbH</p>
       </div>
     `,
