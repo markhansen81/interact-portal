@@ -11,7 +11,7 @@ export default async function AdminLayout({
   const profile = await requireAuth(["admin"]);
 
   if (!profile) {
-    redirect("/auth/login");
+    redirect("/auth/admin");
   }
 
   return (

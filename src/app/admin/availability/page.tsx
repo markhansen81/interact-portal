@@ -5,7 +5,7 @@ import { AdminAvailabilityView } from "@/components/admin/admin-availability-vie
 
 export default async function AdminAvailabilityPage() {
   const profile = await requireAuth(["admin"]);
-  if (!profile) redirect("/auth/login");
+  if (!profile) redirect("/auth/admin");
 
   const supabase = await createClient();
 
