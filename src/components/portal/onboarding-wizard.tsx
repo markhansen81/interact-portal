@@ -494,6 +494,7 @@ const TASKS: OnboardingTask[] = [
         type: "multi-checkbox",
         title: "Any dietary restrictions or allergies?",
         subtitle: "We need this for camps, class trips, and any catered events. Select all that apply.",
+        field: "dietary_options",
         fields: [
           { field: "_dietary_vegetarian", label: "Vegetarian" },
           { field: "_dietary_vegan", label: "Vegan" },
@@ -765,6 +766,20 @@ export function OnboardingWizard({
         d[key] = initialProfile[key];
       }
     }
+    // Hydrate _dietary_* checkbox fields from dietary_options array
+    const dietaryLabels: Record<string, string> = {
+      "Vegetarian": "_dietary_vegetarian", "Vegan": "_dietary_vegan",
+      "Pescatarian": "_dietary_pescatarian", "Lactose intolerant": "_dietary_lactose",
+      "Gluten intolerant": "_dietary_gluten", "Nut allergy": "_dietary_nut",
+      "Shellfish allergy": "_dietary_shellfish", "Halal": "_dietary_halal",
+      "Kosher": "_dietary_kosher", "No pork": "_dietary_nopork",
+    };
+    if (Array.isArray(d.dietary_options)) {
+      for (const label of d.dietary_options as string[]) {
+        const field = dietaryLabels[label];
+        if (field) d[field] = true;
+      }
+    }
     return d;
   });
   const [prefs, setPrefs] = useState<Record<string, string>>(() => {
@@ -996,12 +1011,19 @@ function FormFlow({
     }
 
     if (step.field) {
-      let val = d[step.field];
-      if (val === "true") val = true;
-      if (val === "false") val = false;
-      stepData[step.field] = val ?? null;
-    }
-    if (step.fields) {
+      // If step has both field and fields with _ prefix, collect checked ones into an array
+      if (step.fields && step.fields.every((f) => f.field.startsWith("_"))) {
+        const selected = step.fields
+          .filter((f) => d[f.field])
+          .map((f) => f.label);
+        stepData[step.field] = selected;
+      } else {
+        let val = d[step.field];
+        if (val === "true") val = true;
+        if (val === "false") val = false;
+        stepData[step.field] = val ?? null;
+      }
+    } else if (step.fields) {
       for (const f of step.fields) {
         stepData[f.field] = d[f.field] ?? null;
       }

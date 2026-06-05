@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export default async function MessagesPage() {
   const profile = await requireAuth(["admin"]);
-  if (!profile) redirect("/auth/login");
+  if (!profile) redirect("/auth/admin");
 
   const supabase = await createClient();
 

@@ -68,6 +68,7 @@ export function AvailabilityCalendar({ initialData }: { initialData: Availabilit
   async function toggleDay(dateStr: string) {
     const wasAvailable = isAvailable(dateStr);
     const newStatus: Status = wasAvailable ? "unavailable" : "available";
+    const previousDates = new Set(availableDates);
 
     setAvailableDates((prev) => {
       const s = new Set(prev);
@@ -76,16 +77,23 @@ export function AvailabilityCalendar({ initialData }: { initialData: Availabilit
       return s;
     });
 
-    await fetch("/api/portal/availability", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ dates: [dateStr], status: newStatus }),
-    });
+    try {
+      const res = await fetch("/api/portal/availability", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dates: [dateStr], status: newStatus }),
+      });
+      if (!res.ok) throw new Error("Failed to save");
+    } catch {
+      // Revert on failure
+      setAvailableDates(previousDates);
+    }
   }
 
   async function setWeek(dates: Date[], status: Status) {
     const futureDates = dates.filter((d) => formatDate(d) >= todayStr);
     const dateStrs = futureDates.map(formatDate);
+    const previousDates = new Set(availableDates);
 
     setAvailableDates((prev) => {
       const s = new Set(prev);
@@ -96,11 +104,17 @@ export function AvailabilityCalendar({ initialData }: { initialData: Availabilit
       return s;
     });
 
-    await fetch("/api/portal/availability", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ dates: dateStrs, status }),
-    });
+    try {
+      const res = await fetch("/api/portal/availability", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dates: dateStrs, status }),
+      });
+      if (!res.ok) throw new Error("Failed to save");
+    } catch {
+      // Revert on failure
+      setAvailableDates(previousDates);
+    }
   }
 
   return (

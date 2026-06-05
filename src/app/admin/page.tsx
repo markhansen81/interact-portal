@@ -6,7 +6,7 @@ import { ReviewQueue } from "@/components/admin/review-queue";
 
 export default async function AdminDashboard() {
   const profile = await requireAuth(["admin"]);
-  if (!profile) redirect("/auth/login");
+  if (!profile) redirect("/auth/admin");
 
   const supabase = await createClient();
 

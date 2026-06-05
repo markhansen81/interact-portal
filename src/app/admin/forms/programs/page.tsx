@@ -5,7 +5,7 @@ import { ProgramFormEditor } from "@/components/admin/program-form-editor";
 
 export default async function AdminProgramsFormPage() {
   const profile = await requireAuth(["admin"]);
-  if (!profile) redirect("/auth/login");
+  if (!profile) redirect("/auth/admin");
 
   const supabase = await createClient();
   const { data: content } = await supabase
