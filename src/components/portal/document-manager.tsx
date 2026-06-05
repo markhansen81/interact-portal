@@ -209,32 +209,36 @@ function DocCard({
     const url = pendingUrl || doc?.file_url;
     if (!url) return;
 
-    await fetch("/api/portal/documents", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      await fetch("/api/portal/documents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: req.type,
+          file_url: url,
+          issue_date: issueDate || null,
+          expiry_date: expiryDate || null,
+        }),
+      });
+
+      onUploaded({
+        id: doc?.id || "",
         type: req.type,
         file_url: url,
+        status: "uploaded",
+        uploaded_at: new Date().toISOString(),
         issue_date: issueDate || null,
         expiry_date: expiryDate || null,
-      }),
-    });
+        verified_at: null,
+        notes: null,
+      });
 
-    onUploaded({
-      id: doc?.id || "",
-      type: req.type,
-      file_url: url,
-      status: "uploaded",
-      uploaded_at: new Date().toISOString(),
-      issue_date: issueDate || null,
-      expiry_date: expiryDate || null,
-      verified_at: null,
-      notes: null,
-    });
-
-    setPendingUrl(null);
-    setExtracted(null);
-    setVerification(null);
+      setPendingUrl(null);
+      setExtracted(null);
+      setVerification(null);
+    } catch {
+      alert("Failed to save document. Please try again.");
+    }
   }
 
   // Show extraction/confirmation panel

@@ -85,23 +85,27 @@ export function InvoiceUploader({
     setChecking(true);
     const wo = workOrders.find((w) => w.id === selectedWO);
 
-    const res = await fetch("/api/portal/invoices/check", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        file_url: urlData.publicUrl,
-        work_order: wo,
-        profile: {
-          name: `${profile.first_name} ${profile.last_name}`,
-          email: profile.email,
-          address: profile.address,
-          pay_level: profile.pay_level,
-        },
-      }),
-    });
+    try {
+      const res = await fetch("/api/portal/invoices/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          file_url: urlData.publicUrl,
+          work_order: wo,
+          profile: {
+            name: `${profile.first_name} ${profile.last_name}`,
+            email: profile.email,
+            address: profile.address,
+            pay_level: profile.pay_level,
+          },
+        }),
+      });
 
-    const result = await res.json();
-    setCheckResult(result);
+      const result = await res.json();
+      setCheckResult(result);
+    } catch {
+      alert("Failed to check invoice. Please try again.");
+    }
     setChecking(false);
   }
 
@@ -110,24 +114,28 @@ export function InvoiceUploader({
 
     setSubmitting(true);
 
-    const res = await fetch("/api/portal/invoices", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        work_order_id: selectedWO,
-        base_amount: workOrders.find((w) => w.id === selectedWO)?.total || 0,
-        addons_total: 0,
-        total: workOrders.find((w) => w.id === selectedWO)?.total || 0,
-        source: "upload",
-        uploaded_pdf_url: uploadedUrl,
-        ai_check_result: checkResult,
-        ai_check_passed: checkResult?.passed,
-      }),
-    });
+    try {
+      const res = await fetch("/api/portal/invoices", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          work_order_id: selectedWO,
+          base_amount: workOrders.find((w) => w.id === selectedWO)?.total || 0,
+          addons_total: 0,
+          total: workOrders.find((w) => w.id === selectedWO)?.total || 0,
+          source: "upload",
+          uploaded_pdf_url: uploadedUrl,
+          ai_check_result: checkResult,
+          ai_check_passed: checkResult?.passed,
+        }),
+      });
 
-    if (res.ok) {
-      router.push("/portal/invoices");
-      router.refresh();
+      if (res.ok) {
+        router.push("/portal/invoices");
+        router.refresh();
+      }
+    } catch {
+      alert("Failed to submit invoice. Please try again.");
     }
     setSubmitting(false);
   }

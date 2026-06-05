@@ -819,21 +819,29 @@ export function OnboardingWizard({
     const sections: Record<string, boolean> = {};
     updated.forEach((id) => (sections[id] = true));
 
-    await fetch("/api/portal/profile", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ onboarding_sections_complete: sections }),
-    });
+    try {
+      await fetch("/api/portal/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ onboarding_sections_complete: sections }),
+      });
+    } catch {
+      // Silently ignore — section completion is best-effort
+    }
   }
 
   async function handleFinishOnboarding() {
-    await fetch("/api/portal/profile", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ onboarding_status: "ready" }),
-    });
-    router.push("/portal");
-    router.refresh();
+    try {
+      await fetch("/api/portal/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ onboarding_status: "ready" }),
+      });
+      router.push("/portal");
+      router.refresh();
+    } catch {
+      alert("Failed to complete onboarding. Please try again.");
+    }
   }
 
   // If a task is active, show the form/upload flow
@@ -1000,40 +1008,44 @@ function FormFlow({
     const d = dataRef.current; // always read latest
     const stepData: Record<string, unknown> = {};
 
-    if (step.type === "programs") {
-      await fetch("/api/portal/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ program_preferences: prefsRef.current }),
-      });
-      setSaving(false);
-      return;
-    }
+    try {
+      if (step.type === "programs") {
+        await fetch("/api/portal/profile", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ program_preferences: prefsRef.current }),
+        });
+        setSaving(false);
+        return;
+      }
 
-    if (step.field) {
-      // If step has both field and fields with _ prefix, collect checked ones into an array
-      if (step.fields && step.fields.every((f) => f.field.startsWith("_"))) {
-        const selected = step.fields
-          .filter((f) => d[f.field])
-          .map((f) => f.label);
-        stepData[step.field] = selected;
-      } else {
-        let val = d[step.field];
-        if (val === "true") val = true;
-        if (val === "false") val = false;
-        stepData[step.field] = val ?? null;
+      if (step.field) {
+        // If step has both field and fields with _ prefix, collect checked ones into an array
+        if (step.fields && step.fields.every((f) => f.field.startsWith("_"))) {
+          const selected = step.fields
+            .filter((f) => d[f.field])
+            .map((f) => f.label);
+          stepData[step.field] = selected;
+        } else {
+          let val = d[step.field];
+          if (val === "true") val = true;
+          if (val === "false") val = false;
+          stepData[step.field] = val ?? null;
+        }
+      } else if (step.fields) {
+        for (const f of step.fields) {
+          stepData[f.field] = d[f.field] ?? null;
+        }
       }
-    } else if (step.fields) {
-      for (const f of step.fields) {
-        stepData[f.field] = d[f.field] ?? null;
+      if (Object.keys(stepData).length > 0) {
+        await fetch("/api/portal/profile", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(stepData),
+        });
       }
-    }
-    if (Object.keys(stepData).length > 0) {
-      await fetch("/api/portal/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(stepData),
-      });
+    } catch {
+      // Silently ignore — saving is best-effort during step navigation
     }
     setSaving(false);
   }
@@ -1225,25 +1237,29 @@ function UploadFlow({
       .from("documents")
       .getPublicUrl(data.path);
 
-    if (isPhoto) {
-      // Save photo URL to profile
-      await fetch("/api/portal/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ photo_url: urlData.publicUrl, school_photo_url: urlData.publicUrl }),
-      });
-    } else {
-      await fetch("/api/portal/documents", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: task.docType,
-          file_url: urlData.publicUrl,
-        }),
-      });
-    }
+    try {
+      if (isPhoto) {
+        // Save photo URL to profile
+        await fetch("/api/portal/profile", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ photo_url: urlData.publicUrl, school_photo_url: urlData.publicUrl }),
+        });
+      } else {
+        await fetch("/api/portal/documents", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: task.docType,
+            file_url: urlData.publicUrl,
+          }),
+        });
+      }
 
-    onUploaded({ type: task.docType!, status: "uploaded", file_url: urlData.publicUrl });
+      onUploaded({ type: task.docType!, status: "uploaded", file_url: urlData.publicUrl });
+    } catch {
+      // Silently ignore — file was uploaded to storage successfully
+    }
     setUploading(false);
   }
 
