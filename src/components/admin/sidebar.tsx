@@ -7,6 +7,7 @@ const navItems = [
   { href: "/admin", label: "Dashboard", icon: "grid" },
   { href: "/admin/jobs", label: "Jobs", icon: "briefcase" },
   { href: "/admin/teaching-artists", label: "Teaching Artists", icon: "users" },
+  { href: "/admin/onboarding", label: "Onboarding", icon: "users" },
   { href: "/admin/work-orders", label: "Work Orders", icon: "file-text" },
   { href: "/admin/contracts", label: "Contracts", icon: "pen-tool" },
   { href: "/admin/invoices", label: "Invoices", icon: "receipt" },
