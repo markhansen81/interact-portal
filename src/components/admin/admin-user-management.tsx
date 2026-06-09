@@ -9,6 +9,7 @@ interface Admin {
   first_name: string | null;
   last_name: string | null;
   created_at: string;
+  is_super_admin: boolean;
 }
 
 export function AdminUserManagement({ admins, currentUserId }: { admins: Admin[]; currentUserId: string }) {
@@ -157,6 +158,7 @@ export function AdminUserManagement({ admins, currentUserId }: { admins: Admin[]
               <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">User</th>
               <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Email</th>
               <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Added</th>
+              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Role</th>
               <th className="px-5 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-zinc-400"></th>
             </tr>
           </thead>
@@ -172,10 +174,19 @@ export function AdminUserManagement({ admins, currentUserId }: { admins: Admin[]
                 <td className="px-5 py-3 text-sm text-zinc-400">
                   {new Date(admin.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                 </td>
-                <td className="px-5 py-3 text-right">
-                  {admin.id === currentUserId && (
-                    <span className="text-[11px] text-zinc-400">You</span>
+                <td className="px-5 py-3">
+                  {admin.is_super_admin && (
+                    <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-1 text-[11px] font-medium text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-400">
+                      Super Admin
+                    </span>
                   )}
+                </td>
+                <td className="px-5 py-3 text-right">
+                  {admin.id === currentUserId ? (
+                    <span className="text-[11px] text-zinc-400">You</span>
+                  ) : !admin.is_super_admin ? (
+                    <RemoveAdminButton id={admin.id} name={admin.first_name ? `${admin.first_name} ${admin.last_name}` : admin.email} />
+                  ) : null}
                 </td>
               </tr>
             ))}
@@ -183,5 +194,44 @@ export function AdminUserManagement({ admins, currentUserId }: { admins: Admin[]
         </table>
       </div>
     </div>
+  );
+}
+
+function RemoveAdminButton({ id, name }: { id: string; name: string }) {
+  const [confirming, setConfirming] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  async function handleRemove() {
+    setLoading(true);
+    try {
+      await fetch(`/api/admin/teaching-artists/${id}`, { method: "DELETE" });
+    } catch {
+      // ignore
+    }
+    setLoading(false);
+    setConfirming(false);
+    router.refresh();
+  }
+
+  if (confirming) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-red-600">Remove {name}?</span>
+        <button onClick={handleRemove} disabled={loading}
+          className="rounded px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-50">
+          {loading ? "..." : "Yes"}
+        </button>
+        <button onClick={() => setConfirming(false)}
+          className="rounded px-2 py-1 text-xs text-zinc-500 hover:bg-zinc-100">No</button>
+      </div>
+    );
+  }
+
+  return (
+    <button onClick={() => setConfirming(true)}
+      className="rounded px-2 py-1 text-xs text-red-500 hover:bg-red-50 hover:text-red-700">
+      Remove
+    </button>
   );
 }
