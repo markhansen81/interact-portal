@@ -16,7 +16,7 @@ const FORM_TASKS = [
     title: "Personal Details & Qualifications",
     desc: "Contact info, identity, education, and teaching experience",
     icon: "user",
-    fields: ["first_name", "last_name", "phone", "date_of_birth", "nationality", "street", "city", "postal_code", "gender", "pronouns"],
+    fields: ["phone", "date_of_birth", "nationality", "street", "city", "postal_code", "gender", "pronouns"],
   },
   {
     id: "payroll",
