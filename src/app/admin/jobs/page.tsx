@@ -14,9 +14,9 @@ export default async function JobsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Jobs</h2>
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Projects</h2>
           <p className="mt-1 text-sm text-zinc-500">
-            Synced from Monday. Click a job to assign TAs and send work orders.
+            Synced from Monday. Click a project to assign TAs and send work orders.
           </p>
         </div>
         <div className="flex gap-3">

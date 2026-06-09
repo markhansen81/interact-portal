@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: "grid" },
-  { href: "/admin/jobs", label: "Jobs", icon: "briefcase" },
+  { href: "/admin/jobs", label: "Projects", icon: "briefcase" },
   { href: "/admin/teaching-artists", label: "Teaching Artists", icon: "users" },
   { href: "/admin/onboarding", label: "Onboarding", icon: "users" },
   { href: "/admin/work-orders", label: "Work Orders", icon: "file-text" },
@@ -16,6 +16,7 @@ const navItems = [
   { href: "/admin/training", label: "Training", icon: "briefcase" },
   { href: "/admin/messages", label: "Messages", icon: "message-circle" },
   { href: "/admin/templates", label: "Templates", icon: "pen-tool" },
+  { href: "/admin/users", label: "Admin Users", icon: "settings" },
 ];
 
 const iconPaths: Record<string, React.ReactNode> = {
