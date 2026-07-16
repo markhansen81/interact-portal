@@ -875,8 +875,8 @@ export async function handleCRMEvent(
       return actions;
     }
 
-    // Stage → Won → create Project + upgrade church to project source
-    if (columnId === "deal_stage" && newLabel === "Won") {
+    // Stage → any "Won" stage → create Project + upgrade church to project source
+    if (columnId === "deal_stage" && newLabel && (newLabel === "Won" || newLabel.startsWith("Won -"))) {
       return handleOppWon(itemId, adminClient);
     }
 
