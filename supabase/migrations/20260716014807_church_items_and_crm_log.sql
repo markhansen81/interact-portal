@@ -81,19 +81,19 @@ alter table church_ta_slots enable row level security;
 alter table crm_automation_log enable row level security;
 
 create policy "admin_church_items" on church_items for all
-  using (exists (select 1 from profiles where id = auth.uid() and role in ('admin', 'super_admin')));
+  using (exists (select 1 from profiles where id = auth.uid() and role in ('admin')));
 create policy "service_church_items" on church_items for all
   using (auth.role() = 'service_role');
 
 create policy "admin_church_ta_slots" on church_ta_slots for all
-  using (exists (select 1 from profiles where id = auth.uid() and role in ('admin', 'super_admin')));
+  using (exists (select 1 from profiles where id = auth.uid() and role in ('admin')));
 create policy "service_church_ta_slots" on church_ta_slots for all
   using (auth.role() = 'service_role');
 create policy "ta_own_slots" on church_ta_slots for select
   using (ta_id = auth.uid());
 
 create policy "admin_crm_log" on crm_automation_log for select
-  using (exists (select 1 from profiles where id = auth.uid() and role in ('admin', 'super_admin')));
+  using (exists (select 1 from profiles where id = auth.uid() and role in ('admin')));
 create policy "service_crm_log" on crm_automation_log for all
   using (auth.role() = 'service_role');
 

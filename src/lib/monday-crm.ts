@@ -552,6 +552,211 @@ async function setChurchStatus(boardId: string, itemId: string, label: string) {
   );
 }
 
+// Lead → Contact/Opp field mapping (fields Monday doesn't auto-copy)
+const LEAD_TO_CONTACT_MAP: Record<string, string> = {
+  text_mm26h7f1: "contact_street",      // Address → Street
+  lead_postcode: "contact_postcode",
+  lead_city: "contact_city",
+  lead_bundesland: "contact_state",      // State dropdown
+  contact_first_name: "first_name",
+  contact_last_name: "last_name",
+};
+
+const LEAD_TO_OPP_MAP: Record<string, string> = {
+  text_mm26h7f1: "opp_street",           // Address → Street
+  lead_postcode: "opp_postcode",
+  lead_city: "opp_city",
+  lead_bundesland: "opp_state",           // State dropdown
+  dropdown_mktdq9nn: "opp_program_type",  // Program Type
+  dropdown_mktdrem4: "opp_grade_level",   // Grade Level
+  numeric_mktd9yve: "opp_num_students",   // Students
+  numeric_mktdm7w5: "opp_num_groups",     // Groups
+  numeric_mktd4bet: "opp_num_days",       // Days
+  dropdown_mktdk7xc: "opp_school_year",   // School Year
+  dropdown_mktdrcn0: "opp_school_type",   // School Type
+  dropdown_mktdmbbk: "opp_lead_source",   // Lead Source
+  preferred_dates: "opp_alt_dates",       // Preferred dates
+};
+
+const LEAD_TO_ORG_MAP: Record<string, string> = {
+  text_mm26h7f1: "org_street",
+  lead_postcode: "org_postcode",
+  lead_city: "org_city",
+  lead_bundesland: "org_state",
+  dropdown_mktdrcn0: "org_school_type",
+};
+
+/**
+ * Handle: Lead status changed to "Qualified"
+ * Monday auto-creates Contact + Deal, but doesn't copy custom fields.
+ * This handler finds the newly created Contact/Deal and copies missing fields.
+ * Also creates/links Org.
+ */
+export async function handleLeadQualified(
+  leadItemId: string,
+  adminClient: ReturnType<typeof import("@/lib/supabase/admin").createAdminClient>
+): Promise<CRMAction[]> {
+  const actions: CRMAction[] = [];
+  const now = new Date().toISOString();
+
+  // Wait a moment for Monday's auto-qualify to finish creating Contact + Deal
+  await new Promise((r) => setTimeout(r, 3000));
+
+  const lead = await fetchItem(leadItemId);
+  if (!lead) return actions;
+
+  const schoolName = lead.name.replace(/^LIVE TEST - /, "").replace(/^TEST - /, "");
+  const firstName = getCol(lead, "contact_first_name");
+  const lastName = getCol(lead, "contact_last_name");
+  const email = getCol(lead, "lead_email");
+
+  // Find the Contact Monday just created (match by email)
+  const contactResult = await mondayQuery(
+    `{ boards(ids: [${BOARDS.contacts}]) { items_page(limit: 10, query_params: {rules: [{column_id: "contact_email", compare_value: ["${email}"], operator: contains_text}]}) { items { id name column_values { id text value } } } } }`
+  );
+  const contacts = contactResult?.data?.boards?.[0]?.items_page?.items || [];
+  const contact = contacts[0];
+
+  // Find the Deal Monday just created (match by name containing school name)
+  const oppResult = await mondayQuery(
+    `{ boards(ids: [${BOARDS.opportunities}]) { items_page(limit: 10, query_params: {rules: [{column_id: "name", compare_value: ["${schoolName}"], operator: contains_text}], order_by: [{column_id: "__creation_log__", direction: desc}]}}) { items { id name column_values { id text value } } } } }`
+  );
+  const opps = oppResult?.data?.boards?.[0]?.items_page?.items || [];
+  const opp = opps[0];
+
+  // Copy fields to Contact
+  if (contact) {
+    const contactCols: Record<string, unknown> = {};
+    for (const [leadCol, contactCol] of Object.entries(LEAD_TO_CONTACT_MAP)) {
+      const text = getCol(lead, leadCol);
+      if (!text) continue;
+      const rawVal = getColValue(lead, leadCol);
+      if (rawVal && typeof rawVal === "object" && "ids" in (rawVal as Record<string, unknown>)) {
+        contactCols[contactCol] = { labels: [text] };
+      } else {
+        contactCols[contactCol] = text;
+      }
+    }
+
+    if (Object.keys(contactCols).length > 0) {
+      await mondayQuery(
+        `mutation ($b: ID!, $i: ID!, $c: JSON!) { change_multiple_column_values(board_id: $b, item_id: $i, column_values: $c, create_labels_if_missing: true) { id } }`,
+        { b: BOARDS.contacts, i: contact.id, c: JSON.stringify(contactCols) }
+      );
+      actions.push({
+        action: "contact_fields_copied",
+        source_board: "leads", source_item: leadItemId,
+        target_board: "contacts", target_item: contact.id,
+        details: `Copied ${Object.keys(contactCols).length} fields from Lead to Contact`,
+        timestamp: now,
+      });
+    }
+  }
+
+  // Copy fields to Opp
+  if (opp) {
+    const oppCols: Record<string, unknown> = {};
+    oppCols.opp_school_name = schoolName;
+    oppCols.opp_email = email;
+    const phone = getCol(lead, "lead_phone");
+    if (phone) oppCols.opp_phone = phone;
+
+    for (const [leadCol, oppCol] of Object.entries(LEAD_TO_OPP_MAP)) {
+      const text = getCol(lead, leadCol);
+      if (!text) continue;
+      const rawVal = getColValue(lead, leadCol);
+      if (rawVal && typeof rawVal === "object" && "ids" in (rawVal as Record<string, unknown>)) {
+        oppCols[oppCol] = { labels: [text] };
+      } else if (oppCol.includes("num_")) {
+        oppCols[oppCol] = text;
+      } else {
+        oppCols[oppCol] = text;
+      }
+    }
+
+    oppCols.opp_new_returning = { labels: ["New Client"] };
+    oppCols.opp_primary_contact = `${firstName} ${lastName}`.trim();
+
+    if (Object.keys(oppCols).length > 0) {
+      await mondayQuery(
+        `mutation ($b: ID!, $i: ID!, $c: JSON!) { change_multiple_column_values(board_id: $b, item_id: $i, column_values: $c, create_labels_if_missing: true) { id } }`,
+        { b: BOARDS.opportunities, i: opp.id, c: JSON.stringify(oppCols) }
+      );
+      actions.push({
+        action: "opp_fields_copied",
+        source_board: "leads", source_item: leadItemId,
+        target_board: "opportunities", target_item: opp.id,
+        details: `Copied ${Object.keys(oppCols).length} fields from Lead to Opp`,
+        timestamp: now,
+      });
+    }
+  }
+
+  // Create or find Org
+  const orgResult = await mondayQuery(
+    `{ boards(ids: [${BOARDS.organizations}]) { items_page(limit: 5, query_params: {rules: [{column_id: "name", compare_value: ["${schoolName}"], operator: contains_text}]}) { items { id name } } } }`
+  );
+  const existingOrgs = orgResult?.data?.boards?.[0]?.items_page?.items || [];
+
+  let orgId: string;
+  if (existingOrgs.length > 0) {
+    orgId = existingOrgs[0].id;
+    actions.push({
+      action: "org_found_existing",
+      source_board: "leads", source_item: leadItemId,
+      target_board: "organizations", target_item: orgId,
+      details: `Found existing Org "${existingOrgs[0].name}" — linked`,
+      timestamp: now,
+    });
+  } else {
+    const orgCols: Record<string, unknown> = {};
+    for (const [leadCol, orgCol] of Object.entries(LEAD_TO_ORG_MAP)) {
+      const text = getCol(lead, leadCol);
+      if (!text) continue;
+      const rawVal = getColValue(lead, leadCol);
+      if (rawVal && typeof rawVal === "object" && "ids" in (rawVal as Record<string, unknown>)) {
+        orgCols[orgCol] = { labels: [text] };
+      } else {
+        orgCols[orgCol] = text;
+      }
+    }
+    orgCols.org_country = "Germany";
+
+    const newOrg = await createItem(BOARDS.organizations, schoolName, orgCols);
+    if (newOrg) {
+      orgId = newOrg.id;
+      actions.push({
+        action: "org_created",
+        source_board: "leads", source_item: leadItemId,
+        target_board: "organizations", target_item: orgId,
+        details: `Created Org "${schoolName}" with address + school type`,
+        timestamp: now,
+      });
+    } else {
+      return actions;
+    }
+  }
+
+  // Connect everything: Contact ↔ Org, Opp ↔ Org
+  if (contact) {
+    await connectItems(BOARDS.contacts, contact.id, "contact_account", [orgId]);
+    await connectItems(BOARDS.organizations, orgId, "account_contact", [contact.id]);
+  }
+  if (opp) {
+    await connectItems(BOARDS.opportunities, opp.id, "deal_org", [orgId]);
+    await connectItems(BOARDS.organizations, orgId, "org_deals", [opp.id]);
+  }
+
+  actions.push({
+    action: "lead_qualified_complete",
+    source_board: "leads", source_item: leadItemId,
+    details: `Lead qualified → Contact ${contact?.id || "?"}, Opp ${opp?.id || "?"}, Org ${orgId} all connected`,
+    timestamp: now,
+  });
+
+  return actions;
+}
+
 /**
  * Main event router
  */
@@ -563,6 +768,14 @@ export async function handleCRMEvent(
   const itemId = String(event.pulseId || event.itemId);
   const columnId = event.columnId || "";
   const newLabel = event.value?.label?.text;
+
+  // ── Leads board ──
+  if (boardId === BOARDS.leads) {
+    if (columnId === "lead_status" && newLabel === "Qualified") {
+      return handleLeadQualified(itemId, adminClient);
+    }
+    return [];
+  }
 
   // ── Opportunities board ──
   if (boardId === BOARDS.opportunities) {
