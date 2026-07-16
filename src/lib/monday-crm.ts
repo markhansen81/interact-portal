@@ -844,7 +844,17 @@ export async function handleCRMEvent(
   // ── Leads board ──
   if (boardId === BOARDS.leads) {
     if (columnId === "lead_status" && newLabel === "Qualified") {
-      return handleLeadQualified(itemId, adminClient);
+      try {
+        return await handleLeadQualified(itemId, adminClient);
+      } catch (err) {
+        return [{
+          action: "ERROR_lead_qualified",
+          source_board: "leads",
+          source_item: itemId,
+          details: `Lead qualification failed: ${String(err)}`,
+          timestamp: new Date().toISOString(),
+        }];
+      }
     }
     return [];
   }
