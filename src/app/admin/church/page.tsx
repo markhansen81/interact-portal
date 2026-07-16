@@ -11,7 +11,7 @@ export default async function ChurchPage() {
     .order("name", { ascending: true });
 
   // Group by year + KW
-  const grouped: Record<string, typeof items> = {};
+  const grouped: Record<string, NonNullable<typeof items>> = {};
   for (const item of items || []) {
     const key = item.kw && item.year
       ? `KW ${item.kw} // ${item.year}`
