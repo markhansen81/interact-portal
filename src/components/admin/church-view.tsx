@@ -36,8 +36,10 @@ interface ChurchItem {
   source: "opportunity" | "project";
   deal_value: number | null;
   deal_stage: string | null;
+  opp_status: string | null;
   project_status: string | null;
   program_type: string | null;
+  project_type: string | null;
   school_type: string | null;
   grade_level: string | null;
   num_students: number | null;
@@ -49,8 +51,10 @@ interface ChurchItem {
   accommodation: string | null;
   state: string | null;
   city: string | null;
+  street: string | null;
   contact_email: string | null;
   contact_phone: string | null;
+  teacher_contact: string | null;
   start_date: string | null;
   end_date: string | null;
   kw: number | null;
@@ -58,6 +62,36 @@ interface ChurchItem {
   coord_status: string | null;
   staff_status: string | null;
   staffing_notes: string | null;
+  special_conditions: string | null;
+  invoice_status: string | null;
+  invoice_notes: string | null;
+  contract_sent: string | null;
+  contract_received: string | null;
+  date_paid: string | null;
+  paid_status: string | null;
+  // Coordination checklists
+  folder_setup: string | null;
+  notes_check: string | null;
+  ta_profiles: string | null;
+  info_mail: string | null;
+  schedule_drafted: string | null;
+  schedule_mail_is: string | null;
+  schedule_mail_jh: string | null;
+  deadline_schedule: string | null;
+  final_project_mail: string | null;
+  travel_status: string | null;
+  hotel_room: string | null;
+  jh_room_deadline: string | null;
+  jh_room_reminder: string | null;
+  homestay: string | null;
+  homestay_profile: string | null;
+  // Feedback
+  ta_feedback: string | null;
+  student_feedback: string | null;
+  jh_feedback_mail: string | null;
+  feedback_school: string | null;
+  feedback_ta: string | null;
+  // Slots
   church_ta_slots: TASlot[];
 }
 
@@ -66,231 +100,222 @@ interface ChurchViewProps {
   availableTAs: TAProfile[];
 }
 
+const statusBadge = (val: string | null) => {
+  if (!val) return null;
+  const colors: Record<string, string> = {
+    Done: "bg-green-500",
+    "Working on it": "bg-amber-500",
+    Stuck: "bg-red-500",
+    "n/a": "bg-zinc-300",
+    Staffed: "bg-green-500",
+    pending: "bg-amber-500",
+    cancelled: "bg-red-500",
+    invoiced: "bg-green-500",
+    "not invoiced": "bg-red-500",
+    "Coord. done": "bg-green-500",
+    "Coord. Ongoing": "bg-blue-500",
+    "Project Done": "bg-green-500",
+    ToDo: "bg-amber-500",
+    "book early": "bg-purple-500",
+    "TA Self booking": "bg-blue-400",
+    "school books hotel": "bg-blue-400",
+    scheduled: "bg-blue-400",
+  };
+  const color = colors[val] || "bg-zinc-400";
+  return (
+    <span className={`inline-block h-2.5 w-2.5 rounded-full ${color}`} title={val} />
+  );
+};
+
 export function ChurchView({ groups, availableTAs }: ChurchViewProps) {
   const [staffingModal, setStaffingModal] = useState<{
     churchItem: ChurchItem;
     slotId: string;
   } | null>(null);
-
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
     new Set(Object.keys(groups))
   );
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   const toggleGroup = (key: string) => {
     setExpandedGroups((prev) => {
       const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
+      if (next.has(key)) next.delete(key); else next.add(key);
       return next;
     });
   };
 
-  const coordColors: Record<string, string> = {
-    ToDo: "bg-yellow-100 text-yellow-800",
-    "Coord. Ongoing": "bg-blue-100 text-blue-800",
-    "Coord. done": "bg-green-100 text-green-800",
-    "Project Done": "bg-green-100 text-green-800",
-    cancelled: "bg-red-100 text-red-800",
+  const toggleItem = (id: string) => {
+    setExpandedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
   };
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-3">
         {Object.entries(groups).map(([kwLabel, items]) => (
-          <div
-            key={kwLabel}
-            className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
-          >
+          <div key={kwLabel} className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 overflow-hidden">
             {/* KW Header */}
             <button
               onClick={() => toggleGroup(kwLabel)}
-              className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+              className="flex w-full items-center justify-between px-3 py-2 text-left bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800"
             >
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
-                  {kwLabel}
-                </span>
-                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500 dark:bg-zinc-800">
-                  {items.length} {items.length === 1 ? "project" : "projects"}
-                </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-50">{kwLabel}</span>
+                <span className="rounded bg-zinc-200 px-1.5 py-0.5 text-[10px] text-zinc-500 dark:bg-zinc-700">{items.length}</span>
               </div>
-              <span className="text-zinc-400">
-                {expandedGroups.has(kwLabel) ? "▾" : "▸"}
-              </span>
+              <span className="text-[10px] text-zinc-400">{expandedGroups.has(kwLabel) ? "▾" : "▸"}</span>
             </button>
 
             {expandedGroups.has(kwLabel) && (
-              <div className="border-t border-zinc-200 dark:border-zinc-800">
-                {items.map((item) => {
-                  const slots = item.church_ta_slots || [];
-                  const filled = slots.filter((s) => s.ta_id).length;
-                  const total = item.num_tas || 0;
+              <div className="overflow-x-auto">
+                <table className="w-full text-[11px]">
+                  <thead>
+                    <tr className="border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/30">
+                      <th className="px-2 py-1.5 text-left font-medium text-zinc-500 w-48">School</th>
+                      <th className="px-1 py-1.5 text-left font-medium text-zinc-500">Opp</th>
+                      <th className="px-1 py-1.5 text-left font-medium text-zinc-500">Coord</th>
+                      <th className="px-1 py-1.5 text-left font-medium text-zinc-500">Type</th>
+                      <th className="px-1 py-1.5 text-left font-medium text-zinc-500">Staff</th>
+                      <th className="px-1 py-1.5 text-left font-medium text-zinc-500">Address</th>
+                      <th className="px-1 py-1.5 text-left font-medium text-zinc-500">Dates</th>
+                      <th className="px-1 py-1.5 text-left font-medium text-zinc-500">State</th>
+                      <th className="px-1 py-1.5 text-center font-medium text-zinc-500">Days</th>
+                      <th className="px-1 py-1.5 text-left font-medium text-zinc-500">Program</th>
+                      <th className="px-1 py-1.5 text-left font-medium text-zinc-500">Grade</th>
+                      <th className="px-1 py-1.5 text-left font-medium text-zinc-500">Co-T</th>
+                      <th className="px-1 py-1.5 text-left font-medium text-zinc-500">Accom</th>
+                      <th className="px-1 py-1.5 text-left font-medium text-zinc-500">Contact</th>
+                      <th className="px-1 py-1.5 text-left font-medium text-zinc-500">Email</th>
+                      <th className="px-1 py-1.5 text-center font-medium text-zinc-500">SuS</th>
+                      <th className="px-1 py-1.5 text-center font-medium text-zinc-500">Grp</th>
+                      <th className="px-1 py-1.5 text-center font-medium text-zinc-500">TAs</th>
+                      <th className="px-1 py-1.5 text-center font-medium text-zinc-500">€pp</th>
+                      <th className="px-1 py-1.5 text-right font-medium text-zinc-500">Value</th>
+                      <th className="px-1 py-1.5 text-center font-medium text-zinc-500">Inv</th>
+                      <th className="px-1 py-1.5 text-center font-medium text-zinc-500" title="Contract Sent">CS</th>
+                      <th className="px-1 py-1.5 text-center font-medium text-zinc-500" title="Contract Received">CR</th>
+                      {/* Coordination checklist headers */}
+                      <th className="px-0.5 py-1.5 text-center font-medium text-zinc-400" title="Folder set up">📁</th>
+                      <th className="px-0.5 py-1.5 text-center font-medium text-zinc-400" title="Notes">📝</th>
+                      <th className="px-0.5 py-1.5 text-center font-medium text-zinc-400" title="TA Profiles">👤</th>
+                      <th className="px-0.5 py-1.5 text-center font-medium text-zinc-400" title="Info Mail to School">✉️</th>
+                      <th className="px-0.5 py-1.5 text-center font-medium text-zinc-400" title="Schedule Drafted">📅</th>
+                      <th className="px-0.5 py-1.5 text-center font-medium text-zinc-400" title="Schedule Mail IS">📤</th>
+                      <th className="px-0.5 py-1.5 text-center font-medium text-zinc-400" title="Schedule Mail JH">📤</th>
+                      <th className="px-0.5 py-1.5 text-center font-medium text-zinc-400" title="Final Project Mail">📨</th>
+                      <th className="px-0.5 py-1.5 text-center font-medium text-zinc-400" title="Travel">🚂</th>
+                      <th className="px-0.5 py-1.5 text-center font-medium text-zinc-400" title="Hotel/Room">🏨</th>
+                      <th className="px-0.5 py-1.5 text-center font-medium text-zinc-400" title="Homestay">🏠</th>
+                      <th className="px-0.5 py-1.5 text-center font-medium text-zinc-400" title="TA Feedback">📋</th>
+                      <th className="px-0.5 py-1.5 text-center font-medium text-zinc-400" title="Student Feedback">📋</th>
+                      <th className="px-0.5 py-1.5 text-center font-medium text-zinc-400" title="Feedback to School">📧</th>
+                      <th className="px-0.5 py-1.5 text-center font-medium text-zinc-400" title="Feedback to TA">📧</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                    {items.map((item) => {
+                      const slots = item.church_ta_slots || [];
+                      const filled = slots.filter((s) => s.ta_id).length;
+                      const total = item.num_tas || 0;
+                      const value = item.deal_value || (item.price_pp && item.num_students ? item.price_pp * item.num_students : null);
+                      const isExpanded = expandedItems.has(item.id);
 
-                  return (
-                    <div
-                      key={item.id}
-                      className="border-b border-zinc-100 last:border-0 dark:border-zinc-800/50"
-                    >
-                      {/* Project row */}
-                      <div className="grid grid-cols-12 gap-2 px-4 py-3 text-sm">
-                        {/* Name + source badge */}
-                        <div className="col-span-3 flex items-center gap-2">
-                          <span
-                            className={`h-2 w-2 shrink-0 rounded-full ${
-                              item.source === "project"
-                                ? "bg-green-500"
-                                : "bg-blue-500"
-                            }`}
-                          />
-                          <span className="font-medium text-zinc-900 dark:text-zinc-50 truncate">
+                      return (
+                        <tr key={item.id} className="hover:bg-blue-50/30 dark:hover:bg-zinc-800/30 cursor-pointer" onClick={() => total > 0 && toggleItem(item.id)}>
+                          {/* School name */}
+                          <td className="px-2 py-1.5 font-medium text-zinc-900 dark:text-zinc-50 truncate max-w-[200px]">
+                            <span className={`inline-block h-1.5 w-1.5 rounded-full mr-1 ${item.source === "project" ? "bg-green-500" : "bg-blue-500"}`} />
                             {item.school_name || item.name}
-                          </span>
-                        </div>
-
-                        {/* Program */}
-                        <div className="col-span-1 text-zinc-500 truncate">
-                          {item.program_type || "—"}
-                        </div>
-
-                        {/* State */}
-                        <div className="col-span-1 text-zinc-500 truncate">
-                          {item.state || "—"}
-                        </div>
-
-                        {/* Dates */}
-                        <div className="col-span-1 text-zinc-500 whitespace-nowrap">
-                          {item.start_date
-                            ? `${item.start_date.slice(5)}`
-                            : "—"}
-                        </div>
-
-                        {/* Days */}
-                        <div className="col-span-1 text-center text-zinc-500">
-                          {item.num_days || "—"}d
-                        </div>
-
-                        {/* Students/Groups */}
-                        <div className="col-span-1 text-center text-zinc-500">
-                          {item.num_students || "—"}/{item.num_groups || "—"}
-                        </div>
-
-                        {/* Price */}
-                        <div className="col-span-1 text-center text-zinc-500">
-                          {item.price_pp ? `€${item.price_pp}` : "—"}
-                        </div>
-
-                        {/* Staffing */}
-                        <div className="col-span-1 text-center">
-                          {total > 0 ? (
-                            <span
-                              className={`text-xs font-bold ${
-                                filled >= total
-                                  ? "text-green-600"
-                                  : filled > 0
-                                    ? "text-yellow-600"
-                                    : "text-red-600"
-                              }`}
-                            >
-                              {filled}/{total} TAs
-                            </span>
-                          ) : (
-                            <span className="text-xs text-zinc-400">—</span>
-                          )}
-                        </div>
-
-                        {/* Value */}
-                        <div className="col-span-1 text-right text-zinc-500">
-                          {item.deal_value
-                            ? `€${item.deal_value.toLocaleString()}`
-                            : "—"}
-                        </div>
-
-                        {/* Status */}
-                        <div className="col-span-1 text-right">
-                          <span
-                            className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                              coordColors[item.coord_status || ""] ||
-                              "bg-zinc-100 text-zinc-600"
-                            }`}
-                          >
-                            {item.coord_status || "ToDo"}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* TA Sub-rows */}
-                      {total > 0 && (
-                        <div className="bg-zinc-50/50 px-4 pb-3 dark:bg-zinc-800/20">
-                          <div className="ml-4 space-y-1">
-                            {slots.map((slot) => (
-                              <div
-                                key={slot.id}
-                                className="flex items-center gap-3 rounded-lg px-3 py-1.5 text-xs"
-                              >
-                                <span className="w-6 text-zinc-400">
-                                  TA {slot.slot_number}
-                                </span>
-
-                                {slot.ta_id && slot.profiles ? (
-                                  <>
-                                    <div className="flex items-center gap-2">
-                                      {slot.profiles.photo_url ? (
-                                        <img
-                                          src={slot.profiles.photo_url}
-                                          alt=""
-                                          className="h-5 w-5 rounded-full object-cover"
-                                        />
-                                      ) : (
-                                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-200 text-[9px] font-bold text-zinc-600">
-                                          {slot.profiles.first_name?.[0]}
-                                          {slot.profiles.last_name?.[0]}
-                                        </div>
-                                      )}
-                                      <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                                        {slot.profiles.first_name}{" "}
-                                        {slot.profiles.last_name}
-                                      </span>
-                                    </div>
-                                    <span className="text-zinc-400">
-                                      {slot.profiles.city}
-                                    </span>
-                                    <span
-                                      className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
-                                        slot.status === "confirmed"
-                                          ? "bg-green-100 text-green-700"
-                                          : slot.status === "assigned"
-                                            ? "bg-blue-100 text-blue-700"
-                                            : slot.status === "offered"
-                                              ? "bg-yellow-100 text-yellow-700"
-                                              : slot.status === "declined"
-                                                ? "bg-red-100 text-red-700"
-                                                : "bg-zinc-100 text-zinc-500"
-                                      }`}
-                                    >
-                                      {slot.status}
-                                    </span>
-                                  </>
-                                ) : (
-                                  <button
-                                    onClick={() =>
-                                      setStaffingModal({
-                                        churchItem: item,
-                                        slotId: slot.id,
-                                      })
-                                    }
-                                    className="rounded-md border border-dashed border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-500 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600 dark:border-zinc-600 dark:hover:border-blue-500 dark:hover:bg-blue-900/20"
-                                  >
-                                    + Staff TA
-                                  </button>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                          </td>
+                          {/* Opp status */}
+                          <td className="px-1 py-1.5 text-zinc-500 truncate max-w-[60px]">{item.opp_status || item.deal_stage || "—"}</td>
+                          {/* Coord status */}
+                          <td className="px-1 py-1.5">
+                            <span className={`rounded px-1 py-0.5 text-[9px] font-medium ${
+                              item.coord_status === "Coord. done" || item.coord_status === "Project Done" ? "bg-green-100 text-green-700" :
+                              item.coord_status === "Coord. Ongoing" ? "bg-blue-100 text-blue-700" :
+                              item.coord_status === "cancelled" ? "bg-red-100 text-red-700" :
+                              "bg-yellow-100 text-yellow-700"
+                            }`}>{item.coord_status || "ToDo"}</span>
+                          </td>
+                          {/* Type */}
+                          <td className="px-1 py-1.5 text-zinc-500 truncate max-w-[70px]">{item.project_type || item.program_type || "—"}</td>
+                          {/* Staff status */}
+                          <td className="px-1 py-1.5">
+                            {total > 0 ? (
+                              <span className={`text-[10px] font-bold ${filled >= total ? "text-green-600" : "text-red-600"}`}>{filled}/{total}</span>
+                            ) : (
+                              <span className="text-zinc-400">{item.staff_status || "—"}</span>
+                            )}
+                          </td>
+                          {/* Address */}
+                          <td className="px-1 py-1.5 text-zinc-500 truncate max-w-[120px]">{item.street || "—"}</td>
+                          {/* Dates */}
+                          <td className="px-1 py-1.5 text-zinc-500 whitespace-nowrap">{item.start_date ? `${item.start_date.slice(5)}` : "—"}{item.end_date && item.end_date !== item.start_date ? `–${item.end_date.slice(8)}` : ""}</td>
+                          {/* State */}
+                          <td className="px-1 py-1.5 text-zinc-500 truncate max-w-[60px]">{item.state || "—"}</td>
+                          {/* Days */}
+                          <td className="px-1 py-1.5 text-center text-zinc-500">{item.num_days || "—"}</td>
+                          {/* Program */}
+                          <td className="px-1 py-1.5 text-zinc-500 truncate max-w-[80px]">{item.program_type || "—"}</td>
+                          {/* Grade */}
+                          <td className="px-1 py-1.5 text-zinc-500 truncate max-w-[60px]">{item.grade_level || "—"}</td>
+                          {/* Co-taught */}
+                          <td className="px-1 py-1.5 text-zinc-500 truncate max-w-[50px]">{item.co_taught || "—"}</td>
+                          {/* Accommodation */}
+                          <td className="px-1 py-1.5 text-zinc-500 truncate max-w-[60px]">{item.accommodation || "—"}</td>
+                          {/* Teacher contact */}
+                          <td className="px-1 py-1.5 text-zinc-500 truncate max-w-[80px]">{item.teacher_contact || item.contact_phone || "—"}</td>
+                          {/* Email */}
+                          <td className="px-1 py-1.5 text-zinc-500 truncate max-w-[100px]">{item.contact_email || "—"}</td>
+                          {/* Students */}
+                          <td className="px-1 py-1.5 text-center text-zinc-500">{item.num_students || "—"}</td>
+                          {/* Groups */}
+                          <td className="px-1 py-1.5 text-center text-zinc-500">{item.num_groups || "—"}</td>
+                          {/* TAs */}
+                          <td className="px-1 py-1.5 text-center text-zinc-500">{item.num_tas || "—"}</td>
+                          {/* Price pp */}
+                          <td className="px-1 py-1.5 text-center text-zinc-500">{item.price_pp ? `€${item.price_pp}` : "—"}</td>
+                          {/* Value */}
+                          <td className="px-1 py-1.5 text-right text-zinc-600 font-medium">{value ? `€${value.toLocaleString()}` : "—"}</td>
+                          {/* Invoice */}
+                          <td className="px-1 py-1.5 text-center">
+                            <span className={`rounded px-1 py-0.5 text-[9px] ${
+                              item.invoice_status === "invoiced" ? "bg-green-100 text-green-700" :
+                              item.invoice_status === "not invoiced" ? "bg-red-100 text-red-700" :
+                              item.invoice_status === "pending" ? "bg-yellow-100 text-yellow-700" :
+                              "bg-zinc-100 text-zinc-500"
+                            }`}>{item.invoice_status || "—"}</span>
+                          </td>
+                          {/* Contract sent */}
+                          <td className="px-1 py-1.5 text-center text-zinc-400">{item.contract_sent ? "✓" : ""}</td>
+                          {/* Contract received */}
+                          <td className="px-1 py-1.5 text-center text-zinc-400">{item.contract_received ? "✓" : ""}</td>
+                          {/* Checklists */}
+                          <td className="px-0.5 py-1.5 text-center">{statusBadge(item.folder_setup)}</td>
+                          <td className="px-0.5 py-1.5 text-center">{statusBadge(item.notes_check)}</td>
+                          <td className="px-0.5 py-1.5 text-center">{statusBadge(item.ta_profiles)}</td>
+                          <td className="px-0.5 py-1.5 text-center">{statusBadge(item.info_mail)}</td>
+                          <td className="px-0.5 py-1.5 text-center">{statusBadge(item.schedule_drafted)}</td>
+                          <td className="px-0.5 py-1.5 text-center">{statusBadge(item.schedule_mail_is)}</td>
+                          <td className="px-0.5 py-1.5 text-center">{statusBadge(item.schedule_mail_jh)}</td>
+                          <td className="px-0.5 py-1.5 text-center">{statusBadge(item.final_project_mail)}</td>
+                          <td className="px-0.5 py-1.5 text-center">{statusBadge(item.travel_status)}</td>
+                          <td className="px-0.5 py-1.5 text-center">{statusBadge(item.hotel_room)}</td>
+                          <td className="px-0.5 py-1.5 text-center">{statusBadge(item.homestay)}</td>
+                          <td className="px-0.5 py-1.5 text-center">{statusBadge(item.ta_feedback)}</td>
+                          <td className="px-0.5 py-1.5 text-center">{statusBadge(item.student_feedback)}</td>
+                          <td className="px-0.5 py-1.5 text-center">{statusBadge(item.feedback_school)}</td>
+                          <td className="px-0.5 py-1.5 text-center">{statusBadge(item.feedback_ta)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
@@ -299,15 +324,10 @@ export function ChurchView({ groups, availableTAs }: ChurchViewProps) {
         {Object.keys(groups).length === 0 && (
           <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-12 text-center dark:border-zinc-700 dark:bg-zinc-900">
             <p className="text-zinc-500">No Church items yet.</p>
-            <p className="mt-1 text-sm text-zinc-400">
-              Set an Opportunity&apos;s &quot;Church&quot; status to &quot;Add to
-              Church&quot; in Monday to sync it here.
-            </p>
           </div>
         )}
       </div>
 
-      {/* Staffing Modal */}
       {staffingModal && (
         <StaffingModal
           churchItem={staffingModal.churchItem}
