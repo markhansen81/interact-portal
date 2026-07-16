@@ -1,12 +1,20 @@
 /**
  * Monday CRM Pipeline Handler
  *
- * Handles the Opp → Project → Church pipeline:
- * 1. Opp stage → Won: creates Project + Church item, connects everything
- * 2. Project column changed: updates Church item direct columns
- * 3. Project completed: creates Rebook Opp
+ * Monday is single source of truth for CRM data.
+ * Portal syncs from Monday and provides views (Church, resource planning).
  *
- * Logs all actions to Supabase for admin visibility.
+ * Flow:
+ * 1. Opp created/updated → synced to Supabase → visible on Portal Church
+ * 2. Opp stage → Won → creates Project on Monday + syncs to Supabase
+ * 3. Project updated → synced to Supabase → Church shows Project data instead of Opp
+ * 4. Project → Done → creates Rebook Opp on Monday
+ *
+ * Church logic:
+ * - If item has a Project → show Project data (it's the living record)
+ * - If item only has Opp → show Opp data (not yet converted)
+ *
+ * All actions logged to Supabase `crm_automation_log` for admin visibility.
  */
 
 import { mondayQuery } from "./monday";
@@ -18,46 +26,31 @@ const BOARDS = {
   organizations: "6976340560",
   opportunities: "6976340562",
   projects: "6976340557",
-  church: "18422264891", // Church 2026
 };
 
 // Column mappings: Opp → Project (fields to copy when Opp becomes Project)
-const OPP_TO_PROJECT_MAP: Record<string, string> = {
-  opp_school_name: "proj_school_name",
-  opp_num_students: "proj_num_students",
-  opp_num_groups: "proj_num_groups",
-  opp_num_days: "proj_num_days",
-  opp_num_tas: "proj_num_tas",
-  opp_price_pp: "proj_price_pp",
-  opp_program_type: "proj_program_type",
-  opp_grade_level: "proj_grade_level",
-  opp_co_taught: "proj_co_taught",
-  opp_accommodation: "proj_accommodation",
-  opp_school_year: "proj_school_year",
-  opp_email: "proj_email",
-  opp_phone: "proj_phone",
-  opp_staffing_notes: "proj_staffing_notes",
-  opp_tarif: "proj_tarif",
-  opp_state: "proj_state",
-  opp_street: "proj_street",
-  opp_city: "proj_city",
-  opp_postcode: "proj_postcode",
-  opp_school_type: "proj_school_type",
-  opp_project_start: "project_timeline",
-  opp_alt_dates: "proj_secondary_contact",
-};
-
-// Project → Church (fields to push to Church direct columns)
-const PROJECT_TO_CHURCH_MAP: Record<string, string> = {
-  proj_num_students: "num_participants",
-  proj_num_groups: "num_groups",
-  proj_num_days: "num_days",
-  proj_num_tas: "num_tas",
-  proj_price_pp: "price_pp",
-  proj_school_name: "name", // item name
-  proj_email: "contact_email_direct",
-  proj_phone: "teacher_contact",
-};
+const OPP_TO_PROJECT_COLS: [string, string][] = [
+  ["opp_school_name", "proj_school_name"],
+  ["opp_num_students", "proj_num_students"],
+  ["opp_num_groups", "proj_num_groups"],
+  ["opp_num_days", "proj_num_days"],
+  ["opp_num_tas", "proj_num_tas"],
+  ["opp_price_pp", "proj_price_pp"],
+  ["opp_program_type", "proj_program_type"],
+  ["opp_grade_level", "proj_grade_level"],
+  ["opp_co_taught", "proj_co_taught"],
+  ["opp_accommodation", "proj_accommodation"],
+  ["opp_school_year", "proj_school_year"],
+  ["opp_email", "proj_email"],
+  ["opp_phone", "proj_phone"],
+  ["opp_staffing_notes", "proj_staffing_notes"],
+  ["opp_tarif", "proj_tarif"],
+  ["opp_state", "proj_state"],
+  ["opp_street", "proj_street"],
+  ["opp_city", "proj_city"],
+  ["opp_postcode", "proj_postcode"],
+  ["opp_school_type", "proj_school_type"],
+];
 
 interface MondayEvent {
   type?: string;
@@ -71,7 +64,7 @@ interface MondayEvent {
   pulseName?: string;
 }
 
-interface CRMAction {
+export interface CRMAction {
   action: string;
   source_board: string;
   source_item: string;
@@ -81,9 +74,10 @@ interface CRMAction {
   timestamp: string;
 }
 
-/**
- * Fetch a Monday item with all column values
- */
+// ────────────────────────────────────────────
+// MONDAY API HELPERS
+// ────────────────────────────────────────────
+
 async function fetchItem(itemId: string) {
   const result = await mondayQuery(
     `query ($ids: [ID!]) {
@@ -97,9 +91,6 @@ async function fetchItem(itemId: string) {
   return result?.data?.items?.[0] || null;
 }
 
-/**
- * Get column value as text from an item
- */
 function getCol(
   item: { column_values: { id: string; text: string; value: string | null }[] },
   colId: string
@@ -107,9 +98,6 @@ function getCol(
   return item.column_values.find((c: { id: string }) => c.id === colId)?.text || "";
 }
 
-/**
- * Get column raw value (JSON) from an item
- */
 function getColValue(
   item: { column_values: { id: string; value: string | null }[] },
   colId: string
@@ -123,9 +111,6 @@ function getColValue(
   }
 }
 
-/**
- * Get connected item IDs from a board relation column
- */
 function getConnectedIds(
   item: { column_values: { id: string; value: string | null }[] },
   colId: string
@@ -137,9 +122,6 @@ function getConnectedIds(
   return val.linkedPulseIds.map((p) => String(p.linkedPulseId));
 }
 
-/**
- * Create an item on a board with column values
- */
 async function createItem(
   boardId: string,
   name: string,
@@ -149,46 +131,27 @@ async function createItem(
   const result = await mondayQuery(
     `mutation ($boardId: ID!, $name: String!, $cols: JSON!, $group: String) {
       create_item(
-        board_id: $boardId,
-        item_name: $name,
-        column_values: $cols,
-        group_id: $group,
+        board_id: $boardId, item_name: $name,
+        column_values: $cols, group_id: $group,
         create_labels_if_missing: true
       ) { id name }
     }`,
-    {
-      boardId,
-      name,
-      cols: JSON.stringify(columnValues),
-      group: groupId || "topics",
-    }
+    { boardId, name, cols: JSON.stringify(columnValues), group: groupId || "topics" }
   );
   return result?.data?.create_item || null;
 }
 
-/**
- * Connect items via board relation
- */
 async function connectItems(
-  boardId: string,
-  itemId: string,
-  relationColId: string,
-  targetIds: string[]
+  boardId: string, itemId: string, relationColId: string, targetIds: string[]
 ) {
-  const colValues = {
-    [relationColId]: { item_ids: targetIds.map(Number) },
-  };
   await mondayQuery(
     `mutation ($boardId: ID!, $itemId: ID!, $cols: JSON!) {
       change_multiple_column_values(board_id: $boardId, item_id: $itemId, column_values: $cols) { id }
     }`,
-    { boardId, itemId, cols: JSON.stringify(colValues) }
+    { boardId, itemId, cols: JSON.stringify({ [relationColId]: { item_ids: targetIds.map(Number) } }) }
   );
 }
 
-/**
- * Add an update/comment to an item
- */
 async function addUpdate(itemId: string, body: string) {
   await mondayQuery(
     `mutation ($itemId: ID!, $body: String!) {
@@ -199,20 +162,200 @@ async function addUpdate(itemId: string, body: string) {
 }
 
 // ────────────────────────────────────────────
+// SUPABASE SYNC — Church data lives here
+// ────────────────────────────────────────────
+
+/**
+ * Sync an Opp to the church_items table in Supabase.
+ * This is what the portal reads for the Church view.
+ */
+export async function syncOppToChurch(
+  oppItemId: string,
+  adminClient: ReturnType<typeof import("@/lib/supabase/admin").createAdminClient>
+): Promise<void> {
+  const opp = await fetchItem(oppItemId);
+  if (!opp) return;
+
+  const contactIds = getConnectedIds(opp, "deal_contact");
+  const orgIds = getConnectedIds(opp, "deal_org");
+
+  // Parse project start date for KW calculation
+  const startDate = getCol(opp, "opp_project_start");
+  const endDate = getCol(opp, "opp_project_end");
+  let kw: number | null = null;
+  let year: number | null = null;
+  if (startDate) {
+    const d = new Date(startDate);
+    year = d.getFullYear();
+    // ISO week number
+    const jan4 = new Date(d.getFullYear(), 0, 4);
+    kw = Math.ceil(((d.getTime() - jan4.getTime()) / 86400000 + jan4.getDay() + 1) / 7);
+  }
+
+  const churchData = {
+    monday_opp_id: oppItemId,
+    monday_project_id: null as string | null, // no project yet
+    monday_contact_ids: contactIds,
+    monday_org_ids: orgIds,
+    source: "opportunity" as const,
+    name: opp.name,
+    school_name: getCol(opp, "opp_school_name") || opp.name,
+    deal_value: parseFloat(getCol(opp, "deal_value")) || null,
+    deal_stage: getCol(opp, "deal_stage"),
+    program_type: getCol(opp, "opp_program_type"),
+    school_type: getCol(opp, "opp_school_type"),
+    grade_level: getCol(opp, "opp_grade_level"),
+    num_students: parseInt(getCol(opp, "opp_num_students")) || null,
+    num_groups: parseInt(getCol(opp, "opp_num_groups")) || null,
+    num_days: parseInt(getCol(opp, "opp_num_days")) || null,
+    num_tas: parseInt(getCol(opp, "opp_num_tas")) || null,
+    price_pp: parseFloat(getCol(opp, "opp_price_pp")) || null,
+    co_taught: getCol(opp, "opp_co_taught"),
+    accommodation: getCol(opp, "opp_accommodation"),
+    school_year: getCol(opp, "opp_school_year"),
+    street: getCol(opp, "opp_street"),
+    city: getCol(opp, "opp_city"),
+    postcode: getCol(opp, "opp_postcode"),
+    state: getCol(opp, "opp_state"),
+    contact_email: getCol(opp, "opp_email"),
+    contact_phone: getCol(opp, "opp_phone"),
+    sales_rep: getCol(opp, "opp_sales_rep"),
+    staffing_notes: getCol(opp, "opp_staffing_notes"),
+    start_date: startDate || null,
+    end_date: endDate || null,
+    kw,
+    year,
+    updated_at: new Date().toISOString(),
+  };
+
+  // Upsert by monday_opp_id
+  await adminClient
+    .from("church_items")
+    .upsert(churchData, { onConflict: "monday_opp_id" });
+}
+
+/**
+ * Sync a Project to the church_items table.
+ * Overwrites the Opp data — Project is now the living record.
+ */
+export async function syncProjectToChurch(
+  projectItemId: string,
+  oppItemId: string | null,
+  adminClient: ReturnType<typeof import("@/lib/supabase/admin").createAdminClient>
+): Promise<void> {
+  const project = await fetchItem(projectItemId);
+  if (!project) return;
+
+  const contactIds = getConnectedIds(project, "project_contact");
+  const orgIds = getConnectedIds(project, "connect_boards");
+
+  // Get timeline for dates
+  const timelineVal = getColValue(project, "project_timeline") as {
+    from?: string;
+    to?: string;
+  } | null;
+  const startDate = timelineVal?.from || null;
+  const endDate = timelineVal?.to || null;
+  let kw: number | null = null;
+  let year: number | null = null;
+  if (startDate) {
+    const d = new Date(startDate);
+    year = d.getFullYear();
+    const jan4 = new Date(d.getFullYear(), 0, 4);
+    kw = Math.ceil(((d.getTime() - jan4.getTime()) / 86400000 + jan4.getDay() + 1) / 7);
+  }
+
+  const churchData = {
+    monday_opp_id: oppItemId,
+    monday_project_id: projectItemId,
+    monday_contact_ids: contactIds,
+    monday_org_ids: orgIds,
+    source: "project" as const, // Now showing project data
+    name: project.name,
+    school_name: getCol(project, "proj_school_name") || project.name,
+    deal_stage: "Won",
+    project_status: getCol(project, "project_status"),
+    program_type: getCol(project, "proj_program_type"),
+    school_type: getCol(project, "proj_school_type"),
+    grade_level: getCol(project, "proj_grade_level"),
+    num_students: parseInt(getCol(project, "proj_num_students")) || null,
+    num_groups: parseInt(getCol(project, "proj_num_groups")) || null,
+    num_days: parseInt(getCol(project, "proj_num_days")) || null,
+    num_tas: parseInt(getCol(project, "proj_num_tas")) || null,
+    price_pp: parseFloat(getCol(project, "proj_price_pp")) || null,
+    co_taught: getCol(project, "proj_co_taught"),
+    accommodation: getCol(project, "proj_accommodation"),
+    school_year: getCol(project, "proj_school_year"),
+    street: getCol(project, "proj_street"),
+    city: getCol(project, "proj_city"),
+    postcode: getCol(project, "proj_postcode"),
+    state: getCol(project, "proj_state"),
+    contact_email: getCol(project, "proj_email"),
+    contact_phone: getCol(project, "proj_phone"),
+    staffing_notes: getCol(project, "proj_staffing_notes"),
+    feedback: getCol(project, "proj_feedback"),
+    invoice_details: getCol(project, "proj_invoice_details"),
+    start_date: startDate,
+    end_date: endDate,
+    kw,
+    year,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (oppItemId) {
+    // Update existing church item (was created from Opp, now upgrading to Project)
+    await adminClient
+      .from("church_items")
+      .upsert(churchData, { onConflict: "monday_opp_id" });
+  } else {
+    // Standalone project (no opp)
+    await adminClient
+      .from("church_items")
+      .insert(churchData);
+  }
+}
+
+// ────────────────────────────────────────────
 // PIPELINE HANDLERS
 // ────────────────────────────────────────────
 
 /**
- * Handle: Opp Stage changed to "Won"
- * → Create Project + Church item, connect everything
+ * Handle: Opp created or updated (any column change)
+ * → Sync to Supabase church_items (portal Church view)
  */
-export async function handleOppWon(
-  oppItemId: string
+export async function handleOppChanged(
+  oppItemId: string,
+  columnId: string,
+  adminClient: ReturnType<typeof import("@/lib/supabase/admin").createAdminClient>
 ): Promise<CRMAction[]> {
   const actions: CRMAction[] = [];
   const now = new Date().toISOString();
 
-  // 1. Fetch the full Opp item
+  // Sync opp data to church
+  await syncOppToChurch(oppItemId, adminClient);
+
+  actions.push({
+    action: "opp_synced_to_church",
+    source_board: "opportunities",
+    source_item: oppItemId,
+    details: `Opp column ${columnId} changed → synced to portal Church`,
+    timestamp: now,
+  });
+
+  return actions;
+}
+
+/**
+ * Handle: Opp Stage changed to "Won"
+ * → Create Project on Monday + sync to Supabase
+ */
+export async function handleOppWon(
+  oppItemId: string,
+  adminClient: ReturnType<typeof import("@/lib/supabase/admin").createAdminClient>
+): Promise<CRMAction[]> {
+  const actions: CRMAction[] = [];
+  const now = new Date().toISOString();
+
   const opp = await fetchItem(oppItemId);
   if (!opp) return actions;
 
@@ -220,188 +363,113 @@ export async function handleOppWon(
   const contactIds = getConnectedIds(opp, "deal_contact");
   const orgIds = getConnectedIds(opp, "deal_org");
 
-  // 2. Build Project column values from Opp
+  // Build Project column values from Opp
   const projectCols: Record<string, unknown> = {
     project_status: { label: "Working on it" },
   };
 
-  // Copy mapped fields
-  for (const [oppCol, projCol] of Object.entries(OPP_TO_PROJECT_MAP)) {
+  for (const [oppCol, projCol] of OPP_TO_PROJECT_COLS) {
     const text = getCol(opp, oppCol);
-    const rawVal = getColValue(opp, oppCol);
+    if (!text) continue;
 
-    if (!text && !rawVal) continue;
-
-    // Handle different column types
-    if (projCol === "project_timeline" && text) {
-      // Project start date → timeline
-      const dateStr = text.slice(0, 10);
+    if (projCol === "project_timeline") {
       const endCol = getCol(opp, "opp_project_end");
-      const endStr = endCol ? endCol.slice(0, 10) : dateStr;
-      projectCols[projCol] = { from: dateStr, to: endStr };
-    } else if (
-      projCol.includes("num_") ||
-      projCol.includes("price_") ||
-      projCol.includes("min_")
-    ) {
-      // Numbers
-      if (text) projectCols[projCol] = text;
-    } else if (rawVal && typeof rawVal === "object" && "linkedPulseIds" in (rawVal as Record<string, unknown>)) {
-      // Skip relation columns
-    } else if (text) {
-      // Check if it's a dropdown/status (has label structure)
-      if (
-        rawVal &&
-        typeof rawVal === "object" &&
-        ("ids" in (rawVal as Record<string, unknown>) || "index" in (rawVal as Record<string, unknown>))
-      ) {
-        projectCols[projCol] = { labels: [text] };
-      } else if (
-        projCol.includes("staffing") ||
-        projCol.includes("details") ||
-        projCol.includes("feedback")
-      ) {
-        projectCols[projCol] = { text };
-      } else {
-        projectCols[projCol] = text;
-      }
+      projectCols[projCol] = { from: text.slice(0, 10), to: endCol ? endCol.slice(0, 10) : text.slice(0, 10) };
+    } else if (projCol.includes("num_") || projCol.includes("price_") || projCol.includes("min_")) {
+      projectCols[projCol] = text;
+    } else if (projCol.includes("staffing") || projCol.includes("details") || projCol.includes("feedback")) {
+      projectCols[projCol] = { text };
+    } else {
+      // Try as dropdown label first, fall back to text
+      projectCols[projCol] = text;
     }
   }
 
-  // 3. Create the Project
-  const project = await createItem(
-    BOARDS.projects,
-    oppName,
-    projectCols,
-    "new_group29179"
-  );
-
+  // Create the Project on Monday
+  const project = await createItem(BOARDS.projects, oppName, projectCols, "new_group29179");
   if (!project) {
-    actions.push({
-      action: "ERROR",
-      source_board: "opportunities",
-      source_item: oppItemId,
-      details: `Failed to create project for ${oppName}`,
-      timestamp: now,
-    });
+    actions.push({ action: "ERROR", source_board: "opportunities", source_item: oppItemId,
+      details: `Failed to create project for ${oppName}`, timestamp: now });
     return actions;
   }
 
   actions.push({
     action: "project_created",
-    source_board: "opportunities",
-    source_item: oppItemId,
-    target_board: "projects",
-    target_item: project.id,
+    source_board: "opportunities", source_item: oppItemId,
+    target_board: "projects", target_item: project.id,
     details: `Created project "${oppName}" from won opportunity`,
     timestamp: now,
   });
 
-  // 4. Connect Project to Opp, Contact, Org
-  await connectItems(BOARDS.projects, project.id, "project_opportunity", [
-    oppItemId,
-  ]);
+  // Connect Project ↔ Opp, Contact, Org (all bidirectional)
+  await connectItems(BOARDS.projects, project.id, "project_opportunity", [oppItemId]);
   if (contactIds.length) {
-    await connectItems(
-      BOARDS.projects,
-      project.id,
-      "project_contact",
-      contactIds
-    );
-    // Reverse: Contact → Project
+    await connectItems(BOARDS.projects, project.id, "project_contact", contactIds);
     for (const cid of contactIds) {
-      await connectItems(BOARDS.contacts, cid, "contact_projects", [
-        project.id,
-      ]);
+      await connectItems(BOARDS.contacts, cid, "contact_projects", [project.id]);
     }
   }
   if (orgIds.length) {
     await connectItems(BOARDS.projects, project.id, "connect_boards", orgIds);
-    // Reverse: Org → Project
     for (const oid of orgIds) {
-      await connectItems(BOARDS.organizations, oid, "org_projects", [
-        project.id,
-      ]);
+      await connectItems(BOARDS.organizations, oid, "org_projects", [project.id]);
     }
   }
 
-  // 5. Create Church item
-  const churchCols: Record<string, unknown> = {};
+  // Sync to Supabase — church_items now shows Project data instead of Opp
+  await syncProjectToChurch(project.id, oppItemId, adminClient);
 
-  // Connect to all CRM entities
-  churchCols.rel_project = { item_ids: [Number(project.id)] };
-  churchCols.rel_opportunity = { item_ids: [Number(oppItemId)] };
-  if (contactIds.length) {
-    churchCols.rel_contact = { item_ids: contactIds.map(Number) };
-  }
-  if (orgIds.length) {
-    churchCols.rel_organization = { item_ids: orgIds.map(Number) };
-  }
+  actions.push({
+    action: "church_upgraded_to_project",
+    source_board: "projects", source_item: project.id,
+    details: `Church item now sourced from Project (was Opp). Live data from Project.`,
+    timestamp: now,
+  });
 
-  // Church item name = school name or opp name
-  const schoolName = getCol(opp, "opp_school_name") || oppName;
-
-  const church = await createItem(
-    BOARDS.church,
-    schoolName,
-    churchCols,
-    "topics" // Will be moved to correct KW group later or manually
-  );
-
-  if (church) {
-    actions.push({
-      action: "church_created",
-      source_board: "projects",
-      source_item: project.id,
-      target_board: "church",
-      target_item: church.id,
-      details: `Created Church item "${schoolName}" - mirrors will auto-populate from connected CRM items`,
-      timestamp: now,
-    });
-
-    // Add a note to the Church item
-    await addUpdate(
-      church.id,
-      `**Auto-created from Opportunity Won**\nOpp: ${oppName}\nProject: ${project.id}\nMirrors connected - data will auto-populate.`
-    );
-  }
-
-  // 6. Add note to the Opp
-  await addUpdate(
-    oppItemId,
-    `**Converted to Project**\nProject ID: ${project.id}\nChurch ID: ${church?.id || "failed"}\nAll connections established.`
-  );
+  await addUpdate(oppItemId,
+    `**Converted to Project**\nProject: ${project.id}\nChurch synced to portal.`);
 
   return actions;
 }
 
 /**
  * Handle: Project column changed
- * → If Church item is connected, the mirrors auto-update.
- * → No action needed (mirrors handle this natively!)
- * → But we log it for visibility.
+ * → Re-sync to Supabase (Church shows updated Project data)
  */
-export async function handleProjectUpdated(
+export async function handleProjectChanged(
   projectItemId: string,
   columnId: string,
-  newValue: string
+  adminClient: ReturnType<typeof import("@/lib/supabase/admin").createAdminClient>
 ): Promise<CRMAction[]> {
-  return [
-    {
-      action: "project_updated",
-      source_board: "projects",
-      source_item: projectItemId,
-      details: `Column ${columnId} changed to "${newValue}" - Church mirrors auto-updated`,
-      timestamp: new Date().toISOString(),
-    },
-  ];
+  const actions: CRMAction[] = [];
+  const now = new Date().toISOString();
+
+  // Find the linked Opp ID
+  const project = await fetchItem(projectItemId);
+  if (!project) return actions;
+
+  const oppIds = getConnectedIds(project, "project_opportunity");
+  const oppId = oppIds[0] || null;
+
+  // Re-sync project data to church
+  await syncProjectToChurch(projectItemId, oppId, adminClient);
+
+  actions.push({
+    action: "project_synced_to_church",
+    source_board: "projects", source_item: projectItemId,
+    details: `Project column ${columnId} changed → Church updated in portal`,
+    timestamp: now,
+  });
+
+  return actions;
 }
 
 /**
  * Handle: Project status → Done (create Rebook Opp)
  */
 export async function handleProjectCompleted(
-  projectItemId: string
+  projectItemId: string,
+  adminClient: ReturnType<typeof import("@/lib/supabase/admin").createAdminClient>
 ): Promise<CRMAction[]> {
   const actions: CRMAction[] = [];
   const now = new Date().toISOString();
@@ -412,13 +480,13 @@ export async function handleProjectCompleted(
   const contactIds = getConnectedIds(project, "project_contact");
   const orgIds = getConnectedIds(project, "connect_boards");
 
-  // Build rebook opp from project data
+  // Build rebook opp
   const rebookCols: Record<string, unknown> = {
     deal_stage: { label: "New" },
+    opp_new_returning: { labels: ["Returning Client"] },
   };
 
-  // Copy key fields
-  const fieldsToCopy = [
+  const fieldsToCopy: [string, string][] = [
     ["proj_school_name", "opp_school_name"],
     ["proj_num_students", "opp_num_students"],
     ["proj_num_groups", "opp_num_groups"],
@@ -437,27 +505,11 @@ export async function handleProjectCompleted(
 
   for (const [projCol, oppCol] of fieldsToCopy) {
     const text = getCol(project, projCol);
-    if (text) {
-      if (
-        oppCol.includes("num_") ||
-        oppCol.includes("price_")
-      ) {
-        rebookCols[oppCol] = text;
-      } else {
-        rebookCols[oppCol] = text;
-      }
-    }
+    if (text) rebookCols[oppCol] = text;
   }
 
-  // Connect to same Contact + Org
-  if (contactIds.length) {
-    rebookCols.deal_contact = { item_ids: contactIds.map(Number) };
-  }
-  if (orgIds.length) {
-    rebookCols.deal_org = { item_ids: orgIds.map(Number) };
-  }
-
-  rebookCols.opp_new_returning = { labels: ["Returning Client"] };
+  if (contactIds.length) rebookCols.deal_contact = { item_ids: contactIds.map(Number) };
+  if (orgIds.length) rebookCols.deal_org = { item_ids: orgIds.map(Number) };
 
   const rebookName = `${project.name} - REBOOK`;
   const rebook = await createItem(BOARDS.opportunities, rebookName, rebookCols);
@@ -465,27 +517,25 @@ export async function handleProjectCompleted(
   if (rebook) {
     actions.push({
       action: "rebook_created",
-      source_board: "projects",
-      source_item: projectItemId,
-      target_board: "opportunities",
-      target_item: rebook.id,
-      details: `Created rebook opportunity "${rebookName}" from completed project`,
+      source_board: "projects", source_item: projectItemId,
+      target_board: "opportunities", target_item: rebook.id,
+      details: `Created rebook "${rebookName}" from completed project`,
       timestamp: now,
     });
 
-    // Link reverse relations
-    for (const cid of contactIds) {
-      await connectItems(BOARDS.contacts, cid, "contact_deal", [rebook.id]);
-    }
-    for (const oid of orgIds) {
-      await connectItems(BOARDS.organizations, oid, "org_deals", [rebook.id]);
-    }
+    for (const cid of contactIds) await connectItems(BOARDS.contacts, cid, "contact_deal", [rebook.id]);
+    for (const oid of orgIds) await connectItems(BOARDS.organizations, oid, "org_deals", [rebook.id]);
 
-    await addUpdate(
-      projectItemId,
-      `**Rebook Opportunity Created**\nNew Opp: ${rebookName} (ID: ${rebook.id})\nLinked to same Contact + Org.`
-    );
+    // Sync rebook to church (new Opp, appears on portal)
+    await syncOppToChurch(rebook.id, adminClient);
+
+    await addUpdate(projectItemId,
+      `**Rebook Created**\n${rebookName} (ID: ${rebook.id})\nLinked to same Contact + Org.`);
   }
+
+  // Also update the completed project in church
+  const oppIds = getConnectedIds(project, "project_opportunity");
+  await syncProjectToChurch(projectItemId, oppIds[0] || null, adminClient);
 
   return actions;
 }
@@ -494,32 +544,35 @@ export async function handleProjectCompleted(
  * Main event router
  */
 export async function handleCRMEvent(
-  event: MondayEvent
+  event: MondayEvent,
+  adminClient: ReturnType<typeof import("@/lib/supabase/admin").createAdminClient>
 ): Promise<CRMAction[]> {
   const boardId = String(event.boardId);
   const itemId = String(event.pulseId || event.itemId);
-  const columnId = event.columnId;
+  const columnId = event.columnId || "";
 
-  // Opp board: stage changed
-  if (boardId === BOARDS.opportunities && columnId === "deal_stage") {
-    const newLabel = event.value?.label?.text;
-    if (newLabel === "Won") {
-      return handleOppWon(itemId);
+  // ── Opportunities board ──
+  if (boardId === BOARDS.opportunities) {
+    if (columnId === "deal_stage") {
+      const newLabel = event.value?.label?.text;
+      if (newLabel === "Won") {
+        return handleOppWon(itemId, adminClient);
+      }
     }
+    // Any opp change → sync to church
+    return handleOppChanged(itemId, columnId, adminClient);
   }
 
-  // Project board: status changed to Done
-  if (boardId === BOARDS.projects && columnId === "project_status") {
-    const newLabel = event.value?.label?.text;
-    if (newLabel === "Done") {
-      return handleProjectCompleted(itemId);
+  // ── Projects board ──
+  if (boardId === BOARDS.projects) {
+    if (columnId === "project_status") {
+      const newLabel = event.value?.label?.text;
+      if (newLabel === "Done") {
+        return handleProjectCompleted(itemId, adminClient);
+      }
     }
-  }
-
-  // Project board: any column changed (for logging)
-  if (boardId === BOARDS.projects && columnId) {
-    const newText = event.value?.label?.text || "";
-    return handleProjectUpdated(itemId, columnId, newText);
+    // Any project change → sync to church
+    return handleProjectChanged(itemId, columnId, adminClient);
   }
 
   return [];

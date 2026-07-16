@@ -1,18 +1,16 @@
 /**
  * Monday CRM Webhook Handler
  *
- * Receives webhooks from Monday when:
- * - Opp stage changes (→ creates Project + Church when "Won")
- * - Project status changes (→ creates Rebook when "Done")
- * - Project columns change (→ logged for visibility)
+ * Receives webhooks from Monday when Opp or Project columns change.
+ * Syncs data to Supabase `church_items` table for the portal Church view.
  *
- * All actions logged to Supabase `crm_automation_log` table
- * for admin visibility — super admins can see every action.
+ * Logic:
+ * - Opp changed → sync Opp data to church_items (source: "opportunity")
+ * - Opp Won → create Project on Monday + upgrade church_items source to "project"
+ * - Project changed → sync Project data to church_items
+ * - Project Done → create Rebook Opp + sync to church_items
  *
- * Setup:
- * 1. Register webhooks on Opp board (change_column_value event)
- * 2. Register webhooks on Project board (change_column_value event)
- * 3. URL: https://your-domain/api/webhooks/monday/crm
+ * All actions logged to `crm_automation_log` for super admin visibility.
  */
 
 import { NextResponse } from "next/server";
@@ -32,16 +30,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No event" }, { status: 400 });
   }
 
+  const adminClient = createAdminClient();
+
   try {
     // Process the CRM event
-    const actions = await handleCRMEvent(event);
+    const actions = await handleCRMEvent(event, adminClient);
 
-    // Log all actions to Supabase for admin visibility
+    // Log all actions to Supabase
     if (actions.length > 0) {
-      const adminClient = createAdminClient();
-
-      // Try to insert into crm_automation_log table
-      // If table doesn't exist yet, just log to console
       try {
         await adminClient.from("crm_automation_log").insert(
           actions.map((a) => ({
@@ -55,15 +51,12 @@ export async function POST(request: Request) {
           }))
         );
       } catch {
-        // Table might not exist yet, log to console
-        console.log("[CRM Automation]", JSON.stringify(actions, null, 2));
+        // Table might not exist yet
+        console.log("[CRM Log]", JSON.stringify(actions, null, 2));
       }
 
-      // Log summary
       for (const a of actions) {
-        console.log(
-          `[CRM] ${a.action}: ${a.details}`
-        );
+        console.log(`[CRM] ${a.action}: ${a.details}`);
       }
     }
 
