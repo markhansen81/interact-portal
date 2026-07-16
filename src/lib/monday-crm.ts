@@ -541,6 +541,18 @@ export async function handleProjectCompleted(
 }
 
 /**
+ * Set the Church status column to "On Church" after syncing
+ */
+async function setChurchStatus(boardId: string, itemId: string, label: string) {
+  await mondayQuery(
+    `mutation ($boardId: ID!, $itemId: ID!, $cols: JSON!) {
+      change_multiple_column_values(board_id: $boardId, item_id: $itemId, column_values: $cols) { id }
+    }`,
+    { boardId, itemId, cols: JSON.stringify({ church_status: { label } }) }
+  );
+}
+
+/**
  * Main event router
  */
 export async function handleCRMEvent(
@@ -550,29 +562,72 @@ export async function handleCRMEvent(
   const boardId = String(event.boardId);
   const itemId = String(event.pulseId || event.itemId);
   const columnId = event.columnId || "";
+  const newLabel = event.value?.label?.text;
 
   // ── Opportunities board ──
   if (boardId === BOARDS.opportunities) {
-    if (columnId === "deal_stage") {
-      const newLabel = event.value?.label?.text;
-      if (newLabel === "Won") {
-        return handleOppWon(itemId, adminClient);
+
+    // Church status set to "Add to Church" → sync Opp to church_items
+    if (columnId === "church_status" && newLabel === "Add to Church") {
+      const actions = await handleOppChanged(itemId, columnId, adminClient);
+      await setChurchStatus(BOARDS.opportunities, itemId, "On Church");
+      actions.push({
+        action: "opp_added_to_church",
+        source_board: "opportunities", source_item: itemId,
+        details: "Opp added to Church via status trigger → set to 'On Church'",
+        timestamp: new Date().toISOString(),
+      });
+      return actions;
+    }
+
+    // Stage → Won → create Project + upgrade church to project source
+    if (columnId === "deal_stage" && newLabel === "Won") {
+      return handleOppWon(itemId, adminClient);
+    }
+
+    // Any other change on an Opp that's already "On Church" → re-sync
+    if (columnId !== "church_status") {
+      const item = await fetchItem(itemId);
+      if (item && getCol(item, "church_status") === "On Church") {
+        return handleOppChanged(itemId, columnId, adminClient);
       }
     }
-    // Any opp change → sync to church
-    return handleOppChanged(itemId, columnId, adminClient);
+
+    return [];
   }
 
   // ── Projects board ──
   if (boardId === BOARDS.projects) {
-    if (columnId === "project_status") {
-      const newLabel = event.value?.label?.text;
-      if (newLabel === "Done") {
-        return handleProjectCompleted(itemId, adminClient);
+
+    // Church status set to "Add to Church" → sync Project to church_items
+    if (columnId === "church_status" && newLabel === "Add to Church") {
+      const project = await fetchItem(itemId);
+      const oppIds = project ? getConnectedIds(project, "project_opportunity") : [];
+      const actions = await handleProjectChanged(itemId, columnId, adminClient);
+      await setChurchStatus(BOARDS.projects, itemId, "On Church");
+      actions.push({
+        action: "project_added_to_church",
+        source_board: "projects", source_item: itemId,
+        details: "Project added to Church via status trigger → set to 'On Church'",
+        timestamp: new Date().toISOString(),
+      });
+      return actions;
+    }
+
+    // Status → Done → create Rebook
+    if (columnId === "project_status" && newLabel === "Done") {
+      return handleProjectCompleted(itemId, adminClient);
+    }
+
+    // Any other change on a Project that's already "On Church" → re-sync
+    if (columnId !== "church_status") {
+      const item = await fetchItem(itemId);
+      if (item && getCol(item, "church_status") === "On Church") {
+        return handleProjectChanged(itemId, columnId, adminClient);
       }
     }
-    // Any project change → sync to church
-    return handleProjectChanged(itemId, columnId, adminClient);
+
+    return [];
   }
 
   return [];
