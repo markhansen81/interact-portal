@@ -674,8 +674,8 @@ export async function handleLeadQualified(
       }
     }
 
-    oppCols.opp_new_returning = { labels: ["New Client"] };
     oppCols.opp_primary_contact = `${firstName} ${lastName}`.trim();
+    // New/Returning will be set after Org lookup (below)
 
     if (Object.keys(oppCols).length > 0) {
       await mondayQuery(
@@ -692,22 +692,86 @@ export async function handleLeadQualified(
     }
   }
 
-  // Create or find Org
-  const orgResult = await mondayQuery(
-    `{ boards(ids: [${BOARDS.organizations}]) { items_page(limit: 5, query_params: {rules: [{column_id: "name", compare_value: ["${schoolName}"], operator: contains_text}]}) { items { id name } } } }`
+  // Smart Org lookup: fuzzy name match + address match
+  const leadCity = getCol(lead, "lead_city");
+  const leadPostcode = getCol(lead, "lead_postcode");
+
+  // Search by multiple strategies
+  let matchedOrg: { id: string; name: string } | null = null;
+  let matchType = "";
+
+  // Strategy 1: Exact name match
+  const exactResult = await mondayQuery(
+    `{ boards(ids: [${BOARDS.organizations}]) { items_page(limit: 5, query_params: {rules: [{column_id: "name", compare_value: ["${schoolName}"], operator: contains_text}]}) { items { id name column_values(ids: ["org_postcode", "org_city"]) { id text } } } } }`
   );
-  const existingOrgs = orgResult?.data?.boards?.[0]?.items_page?.items || [];
+  const exactMatches = exactResult?.data?.boards?.[0]?.items_page?.items || [];
+  if (exactMatches.length > 0) {
+    matchedOrg = exactMatches[0];
+    matchType = "exact name";
+  }
+
+  // Strategy 2: Fuzzy - search by key words from school name
+  if (!matchedOrg) {
+    const keywords = schoolName
+      .replace(/[-–]/g, " ")
+      .split(/\s+/)
+      .filter((w: string) => w.length > 3 && !["schule", "grundschule", "gymnasium"].includes(w.toLowerCase()));
+
+    for (const keyword of keywords) {
+      const fuzzyResult = await mondayQuery(
+        `{ boards(ids: [${BOARDS.organizations}]) { items_page(limit: 10, query_params: {rules: [{column_id: "name", compare_value: ["${keyword}"], operator: contains_text}]}) { items { id name column_values(ids: ["org_postcode", "org_city"]) { id text } } } } }`
+      );
+      const fuzzyMatches = fuzzyResult?.data?.boards?.[0]?.items_page?.items || [];
+
+      // Match by keyword + same city or postcode
+      for (const org of fuzzyMatches) {
+        const orgCity = org.column_values?.find((c: {id: string}) => c.id === "org_city")?.text || "";
+        const orgPostcode = org.column_values?.find((c: {id: string}) => c.id === "org_postcode")?.text || "";
+        if ((leadCity && orgCity && orgCity.toLowerCase() === leadCity.toLowerCase()) ||
+            (leadPostcode && orgPostcode && orgPostcode === leadPostcode)) {
+          matchedOrg = org;
+          matchType = `fuzzy name "${keyword}" + matching ${orgCity ? "city" : "postcode"}`;
+          break;
+        }
+      }
+      if (matchedOrg) break;
+    }
+  }
+
+  // Strategy 3: Match by postcode only (same school, different name format)
+  if (!matchedOrg && leadPostcode) {
+    const postcodeResult = await mondayQuery(
+      `{ boards(ids: [${BOARDS.organizations}]) { items_page(limit: 5, query_params: {rules: [{column_id: "org_postcode", compare_value: ["${leadPostcode}"], operator: any_of}]}) { items { id name } } } }`
+    );
+    const postcodeMatches = postcodeResult?.data?.boards?.[0]?.items_page?.items || [];
+    if (postcodeMatches.length === 1) {
+      // Only match if there's exactly one school at that postcode
+      matchedOrg = postcodeMatches[0];
+      matchType = "unique postcode match";
+    }
+  }
 
   let orgId: string;
-  if (existingOrgs.length > 0) {
-    orgId = existingOrgs[0].id;
+  let isReturning = false;
+
+  if (matchedOrg) {
+    orgId = matchedOrg.id;
+    isReturning = true;
     actions.push({
       action: "org_found_existing",
       source_board: "leads", source_item: leadItemId,
       target_board: "organizations", target_item: orgId,
-      details: `Found existing Org "${existingOrgs[0].name}" — linked`,
+      details: `Found existing Org "${matchedOrg.name}" via ${matchType} — RETURNING CLIENT`,
       timestamp: now,
     });
+
+    // Update Opp to mark as returning
+    if (opp) {
+      await mondayQuery(
+        `mutation ($b: ID!, $i: ID!, $c: JSON!) { change_multiple_column_values(board_id: $b, item_id: $i, column_values: $c, create_labels_if_missing: true) { id } }`,
+        { b: BOARDS.opportunities, i: opp.id, c: JSON.stringify({ opp_new_returning: { labels: ["Returning Client"] } }) }
+      );
+    }
   } else {
     const orgCols: Record<string, unknown> = {};
     for (const [leadCol, orgCol] of Object.entries(LEAD_TO_ORG_MAP)) {
@@ -735,6 +799,14 @@ export async function handleLeadQualified(
     } else {
       return actions;
     }
+  }
+
+  // Set New/Returning on Opp
+  if (opp && !isReturning) {
+    await mondayQuery(
+      `mutation ($b: ID!, $i: ID!, $c: JSON!) { change_multiple_column_values(board_id: $b, item_id: $i, column_values: $c, create_labels_if_missing: true) { id } }`,
+      { b: BOARDS.opportunities, i: opp.id, c: JSON.stringify({ opp_new_returning: { labels: ["New Client"] } }) }
+    );
   }
 
   // Connect everything: Contact ↔ Org, Opp ↔ Org
