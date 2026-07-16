@@ -32,6 +32,18 @@ export async function POST(request: Request) {
 
   const adminClient = createAdminClient();
 
+  // Log every incoming event for debugging
+  console.log("[CRM Webhook] Event received:", JSON.stringify(event));
+  try {
+    await adminClient.from("crm_automation_log").insert({
+      action: "webhook_received",
+      source_board: String(event.boardId || ""),
+      source_item_id: String(event.pulseId || event.itemId || ""),
+      details: `columnId=${event.columnId}, type=${event.type}, value=${JSON.stringify(event.value)?.slice(0, 200)}`,
+      created_at: new Date().toISOString(),
+    });
+  } catch { /* ignore */ }
+
   try {
     // Process the CRM event
     const actions = await handleCRMEvent(event, adminClient);
