@@ -69,7 +69,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
   const set = (field: keyof FormData, value: unknown) =>
     setData((prev) => ({ ...prev, [field]: value }));
 
-  const toggleArray = (field: "programs" | "grades", value: string) => {
+  const toggleArray = (field: "programs" | "grades" | "roles", value: string) => {
     setData((prev) => ({
       ...prev,
       [field]: prev[field].includes(value)
@@ -164,7 +164,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                 <button
                   key={role.value}
                   type="button"
-                  onClick={() => toggleArray("roles" as any, role.value)}
+                  onClick={() => toggleArray("roles", role.value)}
                   className={`rounded-full border px-4 py-2 text-sm transition-all ${
                     data.roles.includes(role.value)
                       ? "border-[#FF0080] bg-[#FF0080]/20 text-[#FF0080] font-medium"
