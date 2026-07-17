@@ -1,0 +1,441 @@
+"use client";
+
+import { useState } from "react";
+import { t, type Locale } from "./translations";
+
+interface FormData {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  role: string;
+  school_name: string;
+  street: string;
+  postcode: string;
+  city: string;
+  state: string;
+  school_type: string;
+  has_dates: boolean | null;
+  preferred_dates: string;
+  num_days: string;
+  school_year: string;
+  programs: string[];
+  grades: string[];
+  num_students: string;
+  num_groups: string;
+  message: string;
+  lead_source: string;
+  newsletter: boolean;
+  privacy: boolean;
+}
+
+const STATES = [
+  "Baden-Württemberg", "Bayern", "Berlin", "Brandenburg", "Bremen",
+  "Hamburg", "Hessen", "Mecklenburg-Vorpommern", "Niedersachsen",
+  "Nordrhein-Westfalen", "Rheinland-Pfalz", "Saarland", "Sachsen",
+  "Sachsen-Anhalt", "Schleswig-Holstein", "Thüringen",
+];
+
+const SCHOOL_YEARS = ["2025/2026", "2026/2027", "2027/2028", "2028/2029"];
+
+export function LeadForm({ locale }: { locale: Locale }) {
+  const l = t[locale];
+  const [step, setStep] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [data, setData] = useState<FormData>({
+    first_name: "", last_name: "", email: "", phone: "",
+    role: "", school_name: "", street: "", postcode: "", city: "", state: "",
+    school_type: "", has_dates: null, preferred_dates: "", num_days: "",
+    school_year: "", programs: [], grades: [], num_students: "", num_groups: "",
+    message: "", lead_source: "", newsletter: false, privacy: false,
+  });
+
+  const set = (field: keyof FormData, value: unknown) =>
+    setData((prev) => ({ ...prev, [field]: value }));
+
+  const toggleArray = (field: "programs" | "grades", value: string) => {
+    setData((prev) => ({
+      ...prev,
+      [field]: prev[field].includes(value)
+        ? prev[field].filter((v) => v !== value)
+        : [...prev[field], value],
+    }));
+  };
+
+  const canNext = () => {
+    switch (step) {
+      case 1: return data.first_name && data.last_name && data.email;
+      case 2: return !!data.role;
+      case 3: return data.school_name && data.state;
+      case 4: return true;
+      case 5: return data.programs.length > 0;
+      case 6: return data.privacy;
+      default: return true;
+    }
+  };
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      await fetch("/api/lead-form", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, locale }),
+      });
+      setSubmitted(true);
+    } catch {
+      alert("Error submitting form");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+            <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <h2 className="text-2xl font-bold text-zinc-900">{l.success_title}</h2>
+          <p className="mt-2 text-zinc-500">{l.success_message}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center px-4 py-12">
+      <div className="w-full max-w-lg">
+        {/* Progress */}
+        <div className="mb-8 flex gap-1">
+          {[1, 2, 3, 4, 5, 6].map((s) => (
+            <div key={s} className={`h-1 flex-1 rounded-full transition-all ${s <= step ? "bg-pink-500" : "bg-zinc-200"}`} />
+          ))}
+        </div>
+
+        {/* Language toggle */}
+        <div className="mb-6 flex justify-end gap-2">
+          <a href="?lang=de" className={`text-xs px-2 py-1 rounded ${locale === "de" ? "bg-zinc-900 text-white" : "text-zinc-400 hover:text-zinc-600"}`}>DE</a>
+          <a href="?lang=en" className={`text-xs px-2 py-1 rounded ${locale === "en" ? "bg-zinc-900 text-white" : "text-zinc-400 hover:text-zinc-600"}`}>EN</a>
+        </div>
+
+        {/* Step 1: About You */}
+        {step === 1 && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-zinc-900">{l.step1_title}</h2>
+              <p className="mt-1 text-zinc-500">{l.step1_subtitle}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Input label={l.first_name} value={data.first_name} onChange={(v) => set("first_name", v)} required />
+              <Input label={l.last_name} value={data.last_name} onChange={(v) => set("last_name", v)} required />
+            </div>
+            <Input label={l.email} value={data.email} onChange={(v) => set("email", v)} type="email" required />
+            <Input label={l.phone} value={data.phone} onChange={(v) => set("phone", v)} type="tel" />
+          </div>
+        )}
+
+        {/* Step 2: Role */}
+        {step === 2 && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-zinc-900">{l.step2_title}</h2>
+              <p className="mt-1 text-zinc-500">{l.step2_subtitle}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {l.roles.map((role) => (
+                <button
+                  key={role.value}
+                  type="button"
+                  onClick={() => set("role", role.value)}
+                  className={`rounded-full border px-4 py-2 text-sm transition-all ${
+                    data.role === role.value
+                      ? "border-pink-500 bg-pink-50 text-pink-700 font-medium"
+                      : "border-zinc-200 text-zinc-600 hover:border-zinc-400"
+                  }`}
+                >
+                  {role.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: School */}
+        {step === 3 && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-zinc-900">{l.step3_title}</h2>
+              <p className="mt-1 text-zinc-500">{l.step3_subtitle}</p>
+            </div>
+            <Input label={l.school_name} value={data.school_name} onChange={(v) => set("school_name", v)} required />
+            <Input label={l.school_address} value={data.street} onChange={(v) => set("street", v)} placeholder="Straße, Nr." />
+            <div className="grid grid-cols-2 gap-4">
+              <Input label="PLZ" value={data.postcode} onChange={(v) => set("postcode", v)} />
+              <Input label={locale === "de" ? "Stadt" : "City"} value={data.city} onChange={(v) => set("city", v)} />
+            </div>
+            <Select label={locale === "de" ? "Bundesland" : "State"} value={data.state} onChange={(v) => set("state", v)} options={STATES} required />
+            <div>
+              <label className="mb-2 block text-sm font-medium text-zinc-700">{l.school_type}</label>
+              <div className="flex flex-wrap gap-2">
+                {l.school_types.slice(0, 8).map((st) => (
+                  <button
+                    key={st}
+                    type="button"
+                    onClick={() => set("school_type", st)}
+                    className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
+                      data.school_type === st
+                        ? "border-pink-500 bg-pink-50 text-pink-700 font-medium"
+                        : "border-zinc-200 text-zinc-600 hover:border-zinc-400"
+                    }`}
+                  >
+                    {st}
+                  </button>
+                ))}
+                <select
+                  value={data.school_type}
+                  onChange={(e) => set("school_type", e.target.value)}
+                  className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs text-zinc-600"
+                >
+                  <option value="">Mehr...</option>
+                  {l.school_types.slice(8).map((st) => (
+                    <option key={st} value={st}>{st}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4: Dates */}
+        {step === 4 && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-zinc-900">{l.step4_title}</h2>
+              <p className="mt-1 text-zinc-500">{l.step4_subtitle}</p>
+            </div>
+            <div className="flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={() => set("has_dates", true)}
+                className={`rounded-lg border p-4 text-left transition-all ${
+                  data.has_dates === true ? "border-pink-500 bg-pink-50" : "border-zinc-200 hover:border-zinc-400"
+                }`}
+              >
+                <span className="font-medium text-zinc-900">{l.has_dates_yes}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => set("has_dates", false)}
+                className={`rounded-lg border p-4 text-left transition-all ${
+                  data.has_dates === false ? "border-pink-500 bg-pink-50" : "border-zinc-200 hover:border-zinc-400"
+                }`}
+              >
+                <span className="font-medium text-zinc-900">{l.has_dates_no}</span>
+              </button>
+            </div>
+            {data.has_dates && (
+              <div className="space-y-4">
+                <Input label={l.preferred_dates} value={data.preferred_dates} onChange={(v) => set("preferred_dates", v)} placeholder="z.B. KW 12, März 2027" />
+                <div className="grid grid-cols-2 gap-4">
+                  <Input label={l.num_days} value={data.num_days} onChange={(v) => set("num_days", v)} type="number" />
+                  <Select label={l.school_year} value={data.school_year} onChange={(v) => set("school_year", v)} options={SCHOOL_YEARS} />
+                </div>
+              </div>
+            )}
+            {data.has_dates === false && (
+              <Select label={l.school_year} value={data.school_year} onChange={(v) => set("school_year", v)} options={SCHOOL_YEARS} />
+            )}
+          </div>
+        )}
+
+        {/* Step 5: Project */}
+        {step === 5 && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-zinc-900">{l.step5_title}</h2>
+              <p className="mt-1 text-zinc-500">{l.step5_subtitle}</p>
+            </div>
+            <div className="space-y-2">
+              {l.programs.map((prog) => (
+                <button
+                  key={prog.value}
+                  type="button"
+                  onClick={() => toggleArray("programs", prog.value)}
+                  className={`w-full rounded-lg border p-3 text-left transition-all ${
+                    data.programs.includes(prog.value)
+                      ? "border-pink-500 bg-pink-50"
+                      : "border-zinc-200 hover:border-zinc-400"
+                  }`}
+                >
+                  <span className="text-sm font-medium text-zinc-900">{prog.value}</span>
+                  <span className="mt-0.5 block text-xs text-zinc-500">{prog.desc}</span>
+                </button>
+              ))}
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-zinc-700">{l.grades}</label>
+              <div className="flex flex-wrap gap-2">
+                {l.grade_options.map((g) => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => toggleArray("grades", `Grade ${g}`)}
+                    className={`h-9 w-9 rounded-full border text-xs font-medium transition-all ${
+                      data.grades.includes(`Grade ${g}`)
+                        ? "border-pink-500 bg-pink-500 text-white"
+                        : "border-zinc-200 text-zinc-600 hover:border-zinc-400"
+                    }`}
+                  >
+                    {g}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Input label={l.num_students} value={data.num_students} onChange={(v) => set("num_students", v)} type="number" />
+              <Input label={l.num_groups} value={data.num_groups} onChange={(v) => set("num_groups", v)} type="number" />
+            </div>
+            <Textarea label={l.message} value={data.message} onChange={(v) => set("message", v)} />
+          </div>
+        )}
+
+        {/* Step 6: Final */}
+        {step === 6 && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-zinc-900">{l.step6_title}</h2>
+              <p className="mt-1 text-zinc-500">{l.step6_subtitle}</p>
+            </div>
+            <Select label={l.lead_source} value={data.lead_source} onChange={(v) => set("lead_source", v)} options={l.lead_sources} />
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => set("newsletter", true)}
+                className={`flex-1 rounded-lg border p-3 text-sm transition-all ${
+                  data.newsletter ? "border-pink-500 bg-pink-50 font-medium" : "border-zinc-200 hover:border-zinc-400"
+                }`}
+              >
+                {l.newsletter_yes}
+              </button>
+              <button
+                type="button"
+                onClick={() => set("newsletter", false)}
+                className={`flex-1 rounded-lg border p-3 text-sm transition-all ${
+                  !data.newsletter ? "border-pink-500 bg-pink-50 font-medium" : "border-zinc-200 hover:border-zinc-400"
+                }`}
+              >
+                {l.newsletter_no}
+              </button>
+            </div>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={data.privacy}
+                onChange={(e) => set("privacy", e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-zinc-300 text-pink-600 focus:ring-pink-500"
+              />
+              <span className="text-sm text-zinc-600">{l.privacy}</span>
+            </label>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <div className="mt-8 flex justify-between">
+          {step > 1 ? (
+            <button
+              type="button"
+              onClick={() => setStep(step - 1)}
+              className="rounded-lg px-6 py-2.5 text-sm font-medium text-zinc-600 hover:text-zinc-900"
+            >
+              {l.back}
+            </button>
+          ) : <div />}
+
+          {step < 6 ? (
+            <button
+              type="button"
+              onClick={() => canNext() && setStep(step + 1)}
+              disabled={!canNext()}
+              className="rounded-lg bg-pink-600 px-8 py-2.5 text-sm font-medium text-white hover:bg-pink-700 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {l.next}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={!canNext() || submitting}
+              className="rounded-lg bg-pink-600 px-8 py-2.5 text-sm font-medium text-white hover:bg-pink-700 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {submitting ? "..." : l.submit}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Simple form components ──
+
+function Input({ label, value, onChange, type = "text", required, placeholder }: {
+  label: string; value: string; onChange: (v: string) => void;
+  type?: string; required?: boolean; placeholder?: string;
+}) {
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium text-zinc-700">
+        {label} {required && <span className="text-pink-500">*</span>}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full rounded-lg border border-zinc-300 px-3 py-2.5 text-sm text-zinc-900 focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500"
+      />
+    </div>
+  );
+}
+
+function Select({ label, value, onChange, options, required }: {
+  label: string; value: string; onChange: (v: string) => void;
+  options: readonly string[]; required?: boolean;
+}) {
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium text-zinc-700">
+        {label} {required && <span className="text-pink-500">*</span>}
+      </label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-lg border border-zinc-300 px-3 py-2.5 text-sm text-zinc-900 focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500"
+      >
+        <option value="">—</option>
+        {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </div>
+  );
+}
+
+function Textarea({ label, value, onChange }: {
+  label: string; value: string; onChange: (v: string) => void;
+}) {
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium text-zinc-700">{label}</label>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={3}
+        className="w-full rounded-lg border border-zinc-300 px-3 py-2.5 text-sm text-zinc-900 focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500 resize-none"
+      />
+    </div>
+  );
+}
