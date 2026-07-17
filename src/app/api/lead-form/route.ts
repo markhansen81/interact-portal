@@ -17,8 +17,8 @@ export async function POST(request: Request) {
   if (data.phone) {
     columnValues.lead_phone = { phone: data.phone.replace(/[^\d+]/g, ""), countryShortName: "DE" };
   }
-  if (data.role) {
-    columnValues.dropdown_mktcc3f9 = { labels: [data.role] };
+  if (data.roles?.length) {
+    columnValues.dropdown_mktcc3f9 = { labels: data.roles };
   }
   if (data.street) {
     columnValues.text_mm26h7f1 = data.street;
