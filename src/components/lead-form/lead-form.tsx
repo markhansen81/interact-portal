@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { t, type Locale } from "./translations";
 
 interface FormData {
@@ -51,6 +51,21 @@ export function LeadForm({ locale }: { locale: Locale }) {
     message: "", lead_source: "", newsletter: false, privacy: false,
   });
 
+  const formRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const sendHeight = () => {
+      if (formRef.current) {
+        const height = formRef.current.scrollHeight + 60;
+        window.parent.postMessage({ type: "resize-iframe", height }, "*");
+      }
+    };
+    sendHeight();
+    const observer = new ResizeObserver(sendHeight);
+    if (formRef.current) observer.observe(formRef.current);
+    return () => observer.disconnect();
+  }, [step, data]);
+
   const set = (field: keyof FormData, value: unknown) =>
     setData((prev) => ({ ...prev, [field]: value }));
 
@@ -93,7 +108,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
 
   if (submitted) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4" style={{ backgroundColor: "#333333" }}>
+      <div className="flex items-center justify-center px-4 py-12" style={{ backgroundColor: "#333333" }}>
         <div className="text-center max-w-md">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#FF0080]/20">
             <svg className="h-8 w-8 text-[#FF0080]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
@@ -106,7 +121,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
   }
 
   return (
-    <div className="flex min-h-screen items-start sm:items-center justify-center px-4 py-8 sm:py-12" style={{ backgroundColor: "#333333", minHeight: "100vh" }}>
+    <div ref={formRef} className="flex items-start justify-center px-4 py-8" style={{ backgroundColor: "#333333" }}>
       <div className="w-full max-w-lg">
         {/* Progress */}
         <div className="mb-6 sm:mb-8 flex gap-1">
