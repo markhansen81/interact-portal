@@ -260,7 +260,15 @@ export function LeadForm({ locale }: { locale: Locale }) {
                   <input
                     type="date"
                     value={data.preferred_dates}
-                    onChange={(e) => set("preferred_dates", e.target.value)}
+                    onChange={(e) => {
+                      set("preferred_dates", e.target.value);
+                      // Auto-set Bis to Von + 4 days (5 day project)
+                      if (e.target.value) {
+                        const start = new Date(e.target.value);
+                        start.setDate(start.getDate() + 4);
+                        set("num_days", start.toISOString().split("T")[0]);
+                      }
+                    }}
                     className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white focus:border-[#FF0080] focus:outline-none transition-colors"
                   />
                 </div>
@@ -271,6 +279,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                   <input
                     type="date"
                     value={data.num_days}
+                    min={data.preferred_dates || undefined}
                     onChange={(e) => set("num_days", e.target.value)}
                     className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white focus:border-[#FF0080] focus:outline-none transition-colors"
                   />
