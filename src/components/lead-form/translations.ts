@@ -27,7 +27,7 @@ export const t = {
     step3_title: "Ihre Schule",
     step3_subtitle: "Wo befindet sich Ihre Schule?",
     school_name: "Schulname",
-    school_address: "Adresse suchen...",
+    school_address: "Straße, Nr.",
     school_type: "Schultyp",
     school_types: [
       "Grundschule", "Gymnasium", "Gesamtschule", "Realschule", "Hauptschule",
@@ -116,7 +116,7 @@ export const t = {
     step3_title: "Your School",
     step3_subtitle: "Where is your school located?",
     school_name: "School Name",
-    school_address: "Search address...",
+    school_address: "Street, No.",
     school_type: "School Type",
     school_types: [
       "Grundschule", "Gymnasium", "Gesamtschule", "Realschule", "Hauptschule",

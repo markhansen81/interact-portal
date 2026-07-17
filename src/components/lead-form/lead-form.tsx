@@ -82,7 +82,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
     switch (step) {
       case 1: return data.first_name && data.last_name && data.email;
       case 2: return data.roles.length > 0;
-      case 3: return data.school_name && data.state;
+      case 3: return data.school_name && data.street && data.postcode && data.city && data.state;
       case 4: return true;
       case 5: return data.programs.length > 0;
       case 6: return data.privacy;
@@ -186,10 +186,10 @@ export function LeadForm({ locale }: { locale: Locale }) {
               <p className="mt-1 text-[#999999]">{l.step3_subtitle}</p>
             </div>
             <Input label={l.school_name} value={data.school_name} onChange={(v) => set("school_name", v)} required />
-            <Input label={l.school_address} value={data.street} onChange={(v) => set("street", v)} placeholder="Straße, Nr." />
+            <Input label={l.school_address} value={data.street} onChange={(v) => set("street", v)} required />
             <div className="grid grid-cols-2 gap-4">
-              <Input label="PLZ" value={data.postcode} onChange={(v) => set("postcode", v)} />
-              <Input label={locale === "de" ? "Stadt" : "City"} value={data.city} onChange={(v) => set("city", v)} />
+              <Input label="PLZ" value={data.postcode} onChange={(v) => set("postcode", v)} required />
+              <Input label={locale === "de" ? "Stadt" : "City"} value={data.city} onChange={(v) => set("city", v)} required />
             </div>
             <Select label={locale === "de" ? "Bundesland" : "State"} value={data.state} onChange={(v) => set("state", v)} options={STATES} required />
             <div>
