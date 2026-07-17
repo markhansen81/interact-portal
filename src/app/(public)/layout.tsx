@@ -3,7 +3,10 @@ import "@/app/globals.css";
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="de">
-      <body className="min-h-screen bg-[#3a3a3a] text-white antialiased">
+      <head>
+        <link href="https://fonts.googleapis.com/css2?family=Anton&family=Epilogue:wght@400;500;600&display=swap" rel="stylesheet" />
+      </head>
+      <body className="min-h-screen bg-[#404040] text-white antialiased" style={{ fontFamily: "'Epilogue', sans-serif" }}>
         {children}
       </body>
     </html>
