@@ -1,8 +1,8 @@
 export const t = {
   de: {
     // Step 1: About You
-    step1_title: "Über Sie",
-    step1_subtitle: "Erzählen Sie uns ein wenig über sich.",
+    step1_title: "Projektanfrage",
+    step1_subtitle: "Interessiert an einem Englischprojekt an Ihrer Schule? Füllen Sie das Formular aus und wir melden uns bei Ihnen.",
     first_name: "Vorname",
     last_name: "Nachname",
     email: "E-Mail-Adresse",
@@ -92,8 +92,8 @@ export const t = {
   },
 
   en: {
-    step1_title: "About You",
-    step1_subtitle: "Tell us a little about yourself.",
+    step1_title: "Project Enquiry",
+    step1_subtitle: "Interested in an English project at your school? Fill out the form and we'll get back to you.",
     first_name: "First Name",
     last_name: "Last Name",
     email: "Email Address",
