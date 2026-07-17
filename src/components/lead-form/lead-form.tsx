@@ -125,7 +125,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
         {step === 1 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-black text-pink-500 uppercase">{l.step1_title}</h2>
+              <h2 className="text-3xl sm:text-4xl text-pink-500 uppercase" style={{ fontFamily: "Anton, sans-serif" }}>{l.step1_title}</h2>
               <p className="mt-1 text-zinc-400">{l.step1_subtitle}</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -141,7 +141,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
         {step === 2 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-black text-pink-500 uppercase">{l.step2_title}</h2>
+              <h2 className="text-3xl sm:text-4xl text-pink-500 uppercase" style={{ fontFamily: "Anton, sans-serif" }}>{l.step2_title}</h2>
               <p className="mt-1 text-zinc-400">{l.step2_subtitle}</p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -167,7 +167,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
         {step === 3 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-black text-pink-500 uppercase">{l.step3_title}</h2>
+              <h2 className="text-3xl sm:text-4xl text-pink-500 uppercase" style={{ fontFamily: "Anton, sans-serif" }}>{l.step3_title}</h2>
               <p className="mt-1 text-zinc-400">{l.step3_subtitle}</p>
             </div>
             <Input label={l.school_name} value={data.school_name} onChange={(v) => set("school_name", v)} required />
@@ -178,7 +178,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
             </div>
             <Select label={locale === "de" ? "Bundesland" : "State"} value={data.state} onChange={(v) => set("state", v)} options={STATES} required />
             <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-300">{l.school_type}</label>
+              <label className="mb-2 block text-xs font-semibold text-zinc-400 uppercase tracking-wider">{l.school_type}</label>
               <div className="flex flex-wrap gap-2">
                 {l.school_types.slice(0, 8).map((st) => (
                   <button
@@ -213,7 +213,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
         {step === 4 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-black text-pink-500 uppercase">{l.step4_title}</h2>
+              <h2 className="text-3xl sm:text-4xl text-pink-500 uppercase" style={{ fontFamily: "Anton, sans-serif" }}>{l.step4_title}</h2>
               <p className="mt-1 text-zinc-400">{l.step4_subtitle}</p>
             </div>
             <div className="flex flex-col gap-3">
@@ -255,7 +255,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
         {step === 5 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-black text-pink-500 uppercase">{l.step5_title}</h2>
+              <h2 className="text-3xl sm:text-4xl text-pink-500 uppercase" style={{ fontFamily: "Anton, sans-serif" }}>{l.step5_title}</h2>
               <p className="mt-1 text-zinc-400">{l.step5_subtitle}</p>
             </div>
             <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-1">
@@ -277,7 +277,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-300">{l.grades}</label>
+              <label className="mb-2 block text-xs font-semibold text-zinc-400 uppercase tracking-wider">{l.grades}</label>
               <div className="flex flex-wrap gap-2">
                 {l.grade_options.map((g) => (
                   <button
@@ -308,7 +308,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
         {step === 6 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-black text-pink-500 uppercase">{l.step6_title}</h2>
+              <h2 className="text-3xl sm:text-4xl text-pink-500 uppercase" style={{ fontFamily: "Anton, sans-serif" }}>{l.step6_title}</h2>
               <p className="mt-1 text-zinc-400">{l.step6_subtitle}</p>
             </div>
 
@@ -347,7 +347,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                   onChange={(e) => set("privacy", e.target.checked)}
                   className="h-4 w-4 rounded border-zinc-500 bg-transparent text-pink-600 focus:ring-pink-500"
                 />
-                <span className="text-sm font-medium text-zinc-300">{l.privacy}</span>
+                <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{l.privacy}</span>
               </label>
             </div>
           </div>
@@ -398,7 +398,7 @@ function Input({ label, value, onChange, type = "text", required, placeholder }:
 }) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-zinc-300">
+      <label className="mb-1 block text-xs font-semibold text-zinc-400 uppercase tracking-wider">
         {label} {required && <span className="text-pink-500">*</span>}
       </label>
       <input
@@ -406,7 +406,7 @@ function Input({ label, value, onChange, type = "text", required, placeholder }:
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-zinc-600 bg-zinc-700/50 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500"
+        className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white placeholder-zinc-500 focus:border-pink-500 focus:outline-none transition-colors"
       />
     </div>
   );
@@ -418,13 +418,13 @@ function Select({ label, value, onChange, options, required }: {
 }) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-zinc-300">
+      <label className="mb-1 block text-xs font-semibold text-zinc-400 uppercase tracking-wider">
         {label} {required && <span className="text-pink-500">*</span>}
       </label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-zinc-600 bg-zinc-700/50 px-3 py-2.5 text-sm text-white focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500"
+        className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white focus:border-pink-500 focus:outline-none transition-colors"
       >
         <option value="">—</option>
         {options.map((o) => <option key={o} value={o}>{o}</option>)}
@@ -438,12 +438,12 @@ function Textarea({ label, value, onChange }: {
 }) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-zinc-300">{label}</label>
+      <label className="mb-1 block text-xs font-semibold text-zinc-400 uppercase tracking-wider">{label}</label>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
-        className="w-full rounded-lg border border-zinc-600 bg-zinc-700/50 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500 resize-none"
+        className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white placeholder-zinc-500 focus:border-pink-500 focus:outline-none transition-colors resize-none"
       />
     </div>
   );
