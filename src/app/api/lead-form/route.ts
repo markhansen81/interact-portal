@@ -98,6 +98,11 @@ export async function POST(request: Request) {
 
   const itemName = data.school_name || `${data.first_name} ${data.last_name}`;
 
+  // Also set School Name as a separate column
+  if (data.school_name) {
+    columnValues.text_mm5ah6a8 = data.school_name;
+  }
+
   const result = await mondayQuery(
     `mutation ($b: ID!, $n: String!, $c: JSON!, $g: String!) {
       create_item(board_id: $b, item_name: $n, column_values: $c, group_id: $g, create_labels_if_missing: true) { id }
