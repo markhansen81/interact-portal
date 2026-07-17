@@ -406,7 +406,7 @@ function Input({ label, value, onChange, type = "text", required, placeholder }:
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-[#CCCCCC] placeholder-zinc-500 focus:border-[#FF0080] focus:outline-none transition-colors"
+        className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white placeholder-zinc-500 focus:border-[#FF0080] focus:outline-none transition-colors"
       />
     </div>
   );
@@ -443,7 +443,7 @@ function Textarea({ label, value, onChange }: {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
-        className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-[#CCCCCC] placeholder-zinc-500 focus:border-[#FF0080] focus:outline-none transition-colors resize-none"
+        className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white placeholder-zinc-500 focus:border-[#FF0080] focus:outline-none transition-colors resize-none"
       />
     </div>
   );
