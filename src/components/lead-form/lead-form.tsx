@@ -45,7 +45,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
   const [submitted, setSubmitted] = useState(false);
   const [data, setData] = useState<FormData>({
     first_name: "", last_name: "", email: "", phone: "",
-    role: "", school_name: "", street: "", postcode: "", city: "", state: "",
+    roles: [], school_name: "", street: "", postcode: "", city: "", state: "",
     school_type: "", has_dates: null, preferred_dates: "", num_days: "",
     school_year: "", programs: [], grades: [], num_students: "", num_groups: "",
     message: "", lead_source: "", newsletter: false, privacy: false,
