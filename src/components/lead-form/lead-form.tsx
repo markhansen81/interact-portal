@@ -95,10 +95,10 @@ export function LeadForm({ locale }: { locale: Locale }) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
         <div className="text-center max-w-md">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-pink-600/20">
-            <svg className="h-8 w-8 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#FF0080]/20">
+            <svg className="h-8 w-8 text-[#FF0080]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
           </div>
-          <h2 className="text-3xl font-black text-pink-500 uppercase">{l.success_title}</h2>
+          <h2 className="text-3xl font-black text-[#FF0080] uppercase">{l.success_title}</h2>
           <p className="mt-3 text-zinc-300">{l.success_message}</p>
         </div>
       </div>
@@ -111,21 +111,21 @@ export function LeadForm({ locale }: { locale: Locale }) {
         {/* Progress */}
         <div className="mb-6 sm:mb-8 flex gap-1">
           {[1, 2, 3, 4, 5, 6].map((s) => (
-            <div key={s} className={`h-1 flex-1 rounded-full transition-all ${s <= step ? "bg-pink-500" : "bg-zinc-600"}`} />
+            <div key={s} className={`h-1 flex-1 rounded-full transition-all ${s <= step ? "bg-[#FF0080]" : "bg-zinc-600"}`} />
           ))}
         </div>
 
         {/* Language toggle */}
         <div className="mb-4 sm:mb-6 flex justify-end gap-2">
-          <a href="?lang=de" className={`text-xs px-2 py-1 rounded ${locale === "de" ? "bg-pink-600 text-white" : "text-zinc-400 hover:text-white"}`}>DE</a>
-          <a href="?lang=en" className={`text-xs px-2 py-1 rounded ${locale === "en" ? "bg-pink-600 text-white" : "text-zinc-400 hover:text-white"}`}>EN</a>
+          <a href="?lang=de" className={`text-xs px-2 py-1 rounded ${locale === "de" ? "bg-[#FF0080] text-white" : "text-zinc-400 hover:text-white"}`}>DE</a>
+          <a href="?lang=en" className={`text-xs px-2 py-1 rounded ${locale === "en" ? "bg-[#FF0080] text-white" : "text-zinc-400 hover:text-white"}`}>EN</a>
         </div>
 
         {/* Step 1: About You */}
         {step === 1 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-3xl sm:text-4xl text-pink-500 uppercase" style={{ fontFamily: "Anton, sans-serif" }}>{l.step1_title}</h2>
+              <h2 className="text-3xl sm:text-4xl text-[#FF0080] uppercase" style={{ fontFamily: "Anton, sans-serif" }}>{l.step1_title}</h2>
               <p className="mt-1 text-zinc-400">{l.step1_subtitle}</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -141,7 +141,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
         {step === 2 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-3xl sm:text-4xl text-pink-500 uppercase" style={{ fontFamily: "Anton, sans-serif" }}>{l.step2_title}</h2>
+              <h2 className="text-3xl sm:text-4xl text-[#FF0080] uppercase" style={{ fontFamily: "Anton, sans-serif" }}>{l.step2_title}</h2>
               <p className="mt-1 text-zinc-400">{l.step2_subtitle}</p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -152,7 +152,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                   onClick={() => set("role", role.value)}
                   className={`rounded-full border px-4 py-2 text-sm transition-all ${
                     data.role === role.value
-                      ? "border-pink-500 bg-pink-600/20 text-pink-400 font-medium"
+                      ? "border-[#FF0080] bg-[#FF0080]/20 text-[#FF0080] font-medium"
                       : "border-zinc-600 text-zinc-300 hover:border-zinc-400"
                   }`}
                 >
@@ -167,7 +167,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
         {step === 3 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-3xl sm:text-4xl text-pink-500 uppercase" style={{ fontFamily: "Anton, sans-serif" }}>{l.step3_title}</h2>
+              <h2 className="text-3xl sm:text-4xl text-[#FF0080] uppercase" style={{ fontFamily: "Anton, sans-serif" }}>{l.step3_title}</h2>
               <p className="mt-1 text-zinc-400">{l.step3_subtitle}</p>
             </div>
             <Input label={l.school_name} value={data.school_name} onChange={(v) => set("school_name", v)} required />
@@ -187,7 +187,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                     onClick={() => set("school_type", st)}
                     className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
                       data.school_type === st
-                        ? "border-pink-500 bg-pink-600/20 text-pink-400 font-medium"
+                        ? "border-[#FF0080] bg-[#FF0080]/20 text-[#FF0080] font-medium"
                         : "border-zinc-600 text-zinc-300 hover:border-zinc-400"
                     }`}
                   >
@@ -213,7 +213,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
         {step === 4 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-3xl sm:text-4xl text-pink-500 uppercase" style={{ fontFamily: "Anton, sans-serif" }}>{l.step4_title}</h2>
+              <h2 className="text-3xl sm:text-4xl text-[#FF0080] uppercase" style={{ fontFamily: "Anton, sans-serif" }}>{l.step4_title}</h2>
               <p className="mt-1 text-zinc-400">{l.step4_subtitle}</p>
             </div>
             <div className="flex flex-col gap-3">
@@ -221,7 +221,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                 type="button"
                 onClick={() => set("has_dates", true)}
                 className={`rounded-lg border p-4 text-left transition-all ${
-                  data.has_dates === true ? "border-pink-500 bg-pink-600/10" : "border-zinc-600 hover:border-zinc-400"
+                  data.has_dates === true ? "border-[#FF0080] bg-[#FF0080]/10" : "border-zinc-600 hover:border-zinc-400"
                 }`}
               >
                 <span className="font-medium text-white">{l.has_dates_yes}</span>
@@ -230,7 +230,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                 type="button"
                 onClick={() => set("has_dates", false)}
                 className={`rounded-lg border p-4 text-left transition-all ${
-                  data.has_dates === false ? "border-pink-500 bg-pink-600/10" : "border-zinc-600 hover:border-zinc-400"
+                  data.has_dates === false ? "border-[#FF0080] bg-[#FF0080]/10" : "border-zinc-600 hover:border-zinc-400"
                 }`}
               >
                 <span className="font-medium text-white">{l.has_dates_no}</span>
@@ -255,7 +255,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
         {step === 5 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-3xl sm:text-4xl text-pink-500 uppercase" style={{ fontFamily: "Anton, sans-serif" }}>{l.step5_title}</h2>
+              <h2 className="text-3xl sm:text-4xl text-[#FF0080] uppercase" style={{ fontFamily: "Anton, sans-serif" }}>{l.step5_title}</h2>
               <p className="mt-1 text-zinc-400">{l.step5_subtitle}</p>
             </div>
             <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-1">
@@ -266,7 +266,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                   onClick={() => toggleArray("programs", prog.value)}
                   className={`w-full rounded-lg border p-3 text-left transition-all ${
                     data.programs.includes(prog.value)
-                      ? "border-pink-500 bg-pink-600/10"
+                      ? "border-[#FF0080] bg-[#FF0080]/10"
                       : "border-zinc-600 hover:border-zinc-400"
                   }`}
                 >
@@ -286,7 +286,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                     onClick={() => toggleArray("grades", `Grade ${g}`)}
                     className={`h-9 w-9 rounded-full border text-xs font-medium transition-all ${
                       data.grades.includes(`Grade ${g}`)
-                        ? "border-pink-500 bg-pink-600 text-white"
+                        ? "border-[#FF0080] bg-[#FF0080] text-white"
                         : "border-zinc-600 text-zinc-300 hover:border-zinc-400"
                     }`}
                   >
@@ -308,7 +308,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
         {step === 6 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-3xl sm:text-4xl text-pink-500 uppercase" style={{ fontFamily: "Anton, sans-serif" }}>{l.step6_title}</h2>
+              <h2 className="text-3xl sm:text-4xl text-[#FF0080] uppercase" style={{ fontFamily: "Anton, sans-serif" }}>{l.step6_title}</h2>
               <p className="mt-1 text-zinc-400">{l.step6_subtitle}</p>
             </div>
 
@@ -319,7 +319,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
               <h3 className="text-base font-bold text-white">{l.newsletter_title}</h3>
               <p className="mt-1 text-sm text-zinc-400">
                 {l.newsletter_desc}{" "}
-                <a href="https://interactenglish.de/datenschutz" target="_blank" className="text-pink-500 underline">
+                <a href="https://interactenglish.de/datenschutz" target="_blank" className="text-[#FF0080] underline">
                   {l.newsletter_link_text}
                 </a>.
               </p>
@@ -328,7 +328,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                   type="checkbox"
                   checked={data.newsletter}
                   onChange={(e) => set("newsletter", e.target.checked)}
-                  className="h-4 w-4 rounded border-zinc-500 bg-transparent text-pink-600 focus:ring-pink-500"
+                  className="h-4 w-4 rounded border-zinc-500 bg-transparent text-[#FF0080] focus:ring-[#FF0080]"
                 />
                 <span className="text-sm text-zinc-300">{l.newsletter_label}</span>
               </label>
@@ -337,7 +337,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
             {/* Privacy */}
             <div className="rounded-lg border border-zinc-600 p-5">
               <h3 className="text-base font-bold text-white">
-                {l.privacy_title} <span className="text-pink-500">*</span>
+                {l.privacy_title} <span className="text-[#FF0080]">*</span>
               </h3>
               <p className="mt-1 text-sm text-zinc-400">{l.privacy_desc}</p>
               <label className="mt-3 flex items-center gap-3 cursor-pointer">
@@ -345,7 +345,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                   type="checkbox"
                   checked={data.privacy}
                   onChange={(e) => set("privacy", e.target.checked)}
-                  className="h-4 w-4 rounded border-zinc-500 bg-transparent text-pink-600 focus:ring-pink-500"
+                  className="h-4 w-4 rounded border-zinc-500 bg-transparent text-[#FF0080] focus:ring-[#FF0080]"
                 />
                 <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{l.privacy}</span>
               </label>
@@ -370,7 +370,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
               type="button"
               onClick={() => canNext() && setStep(step + 1)}
               disabled={!canNext()}
-              className="rounded-lg bg-pink-600 px-8 py-2.5 text-sm font-bold text-white uppercase hover:bg-pink-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              className="rounded-lg bg-[#FF0080] px-8 py-2.5 text-sm font-bold text-white uppercase hover:bg-[#FF0080]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               {l.next}
             </button>
@@ -379,7 +379,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
               type="button"
               onClick={handleSubmit}
               disabled={!canNext() || submitting}
-              className="rounded-lg bg-pink-600 px-8 py-2.5 text-sm font-bold text-white uppercase hover:bg-pink-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              className="rounded-lg bg-[#FF0080] px-8 py-2.5 text-sm font-bold text-white uppercase hover:bg-[#FF0080]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               {submitting ? "..." : l.submit}
             </button>
@@ -399,14 +399,14 @@ function Input({ label, value, onChange, type = "text", required, placeholder }:
   return (
     <div>
       <label className="mb-1 block text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-        {label} {required && <span className="text-pink-500">*</span>}
+        {label} {required && <span className="text-[#FF0080]">*</span>}
       </label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white placeholder-zinc-500 focus:border-pink-500 focus:outline-none transition-colors"
+        className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white placeholder-zinc-500 focus:border-[#FF0080] focus:outline-none transition-colors"
       />
     </div>
   );
@@ -419,12 +419,12 @@ function Select({ label, value, onChange, options, required }: {
   return (
     <div>
       <label className="mb-1 block text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-        {label} {required && <span className="text-pink-500">*</span>}
+        {label} {required && <span className="text-[#FF0080]">*</span>}
       </label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white focus:border-pink-500 focus:outline-none transition-colors"
+        className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white focus:border-[#FF0080] focus:outline-none transition-colors"
       >
         <option value="">—</option>
         {options.map((o) => <option key={o} value={o}>{o}</option>)}
@@ -443,7 +443,7 @@ function Textarea({ label, value, onChange }: {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
-        className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white placeholder-zinc-500 focus:border-pink-500 focus:outline-none transition-colors resize-none"
+        className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white placeholder-zinc-500 focus:border-[#FF0080] focus:outline-none transition-colors resize-none"
       />
     </div>
   );
