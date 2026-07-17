@@ -96,7 +96,8 @@ export async function POST(request: Request) {
     columnValues.long_text_mktdx1rj = { text: descParts.join("\n\n") };
   }
 
-  const itemName = data.school_name || `${data.first_name} ${data.last_name}`;
+  const contactName = `${data.first_name} ${data.last_name}`.trim();
+  const itemName = data.school_name ? `${data.school_name} // ${contactName}` : contactName;
 
   // Also set School Name as a separate column
   if (data.school_name) {
