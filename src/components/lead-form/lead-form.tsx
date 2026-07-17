@@ -252,32 +252,29 @@ export function LeadForm({ locale }: { locale: Locale }) {
               </button>
             </div>
             {data.has_dates && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold text-[#999999] uppercase tracking-wider">
-                      {locale === "de" ? "Von" : "From"} <span className="text-[#FF0080]">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      value={data.preferred_dates}
-                      onChange={(e) => set("preferred_dates", e.target.value)}
-                      className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white focus:border-[#FF0080] focus:outline-none transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold text-[#999999] uppercase tracking-wider">
-                      {locale === "de" ? "Bis" : "To"} <span className="text-[#FF0080]">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      value={data.num_days}
-                      onChange={(e) => set("num_days", e.target.value)}
-                      className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white focus:border-[#FF0080] focus:outline-none transition-colors"
-                    />
-                  </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-[#999999] uppercase tracking-wider">
+                    {locale === "de" ? "Von" : "From"} <span className="text-[#FF0080]">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={data.preferred_dates}
+                    onChange={(e) => set("preferred_dates", e.target.value)}
+                    className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white focus:border-[#FF0080] focus:outline-none transition-colors"
+                  />
                 </div>
-                <Select label={l.school_year} value={data.school_year} onChange={(v) => set("school_year", v)} options={SCHOOL_YEARS} />
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-[#999999] uppercase tracking-wider">
+                    {locale === "de" ? "Bis" : "To"} <span className="text-[#FF0080]">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={data.num_days}
+                    onChange={(e) => set("num_days", e.target.value)}
+                    className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white focus:border-[#FF0080] focus:outline-none transition-colors"
+                  />
+                </div>
               </div>
             )}
             {data.has_dates === false && (
