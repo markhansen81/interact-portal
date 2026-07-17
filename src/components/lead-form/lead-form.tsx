@@ -8,7 +8,7 @@ interface FormData {
   last_name: string;
   email: string;
   phone: string;
-  role: string;
+  roles: string[];
   school_name: string;
   street: string;
   postcode: string;
@@ -66,7 +66,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
   const canNext = () => {
     switch (step) {
       case 1: return data.first_name && data.last_name && data.email;
-      case 2: return !!data.role;
+      case 2: return data.roles.length > 0;
       case 3: return data.school_name && data.state;
       case 4: return true;
       case 5: return data.programs.length > 0;
@@ -149,9 +149,9 @@ export function LeadForm({ locale }: { locale: Locale }) {
                 <button
                   key={role.value}
                   type="button"
-                  onClick={() => set("role", role.value)}
+                  onClick={() => toggleArray("roles" as any, role.value)}
                   className={`rounded-full border px-4 py-2 text-sm transition-all ${
-                    data.role === role.value
+                    data.roles.includes(role.value)
                       ? "border-[#FF0080] bg-[#FF0080]/20 text-[#FF0080] font-medium"
                       : "border-zinc-600 text-[#CCCCCC] hover:border-zinc-400"
                   }`}
