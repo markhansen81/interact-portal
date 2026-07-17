@@ -95,40 +95,40 @@ export function LeadForm({ locale }: { locale: Locale }) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
         <div className="text-center max-w-md">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-            <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-pink-600/20">
+            <svg className="h-8 w-8 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
           </div>
-          <h2 className="text-2xl font-bold text-zinc-900">{l.success_title}</h2>
-          <p className="mt-2 text-zinc-500">{l.success_message}</p>
+          <h2 className="text-3xl font-black text-pink-500 uppercase">{l.success_title}</h2>
+          <p className="mt-3 text-zinc-300">{l.success_message}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12">
+    <div className="flex min-h-screen items-start sm:items-center justify-center px-4 py-8 sm:py-12">
       <div className="w-full max-w-lg">
         {/* Progress */}
-        <div className="mb-8 flex gap-1">
+        <div className="mb-6 sm:mb-8 flex gap-1">
           {[1, 2, 3, 4, 5, 6].map((s) => (
-            <div key={s} className={`h-1 flex-1 rounded-full transition-all ${s <= step ? "bg-pink-500" : "bg-zinc-200"}`} />
+            <div key={s} className={`h-1 flex-1 rounded-full transition-all ${s <= step ? "bg-pink-500" : "bg-zinc-600"}`} />
           ))}
         </div>
 
         {/* Language toggle */}
-        <div className="mb-6 flex justify-end gap-2">
-          <a href="?lang=de" className={`text-xs px-2 py-1 rounded ${locale === "de" ? "bg-zinc-900 text-white" : "text-zinc-400 hover:text-zinc-600"}`}>DE</a>
-          <a href="?lang=en" className={`text-xs px-2 py-1 rounded ${locale === "en" ? "bg-zinc-900 text-white" : "text-zinc-400 hover:text-zinc-600"}`}>EN</a>
+        <div className="mb-4 sm:mb-6 flex justify-end gap-2">
+          <a href="?lang=de" className={`text-xs px-2 py-1 rounded ${locale === "de" ? "bg-pink-600 text-white" : "text-zinc-400 hover:text-white"}`}>DE</a>
+          <a href="?lang=en" className={`text-xs px-2 py-1 rounded ${locale === "en" ? "bg-pink-600 text-white" : "text-zinc-400 hover:text-white"}`}>EN</a>
         </div>
 
         {/* Step 1: About You */}
         {step === 1 && (
-          <div className="space-y-6">
+          <div className="space-y-5">
             <div>
-              <h2 className="text-2xl font-bold text-zinc-900">{l.step1_title}</h2>
-              <p className="mt-1 text-zinc-500">{l.step1_subtitle}</p>
+              <h2 className="text-2xl sm:text-3xl font-black text-pink-500 uppercase">{l.step1_title}</h2>
+              <p className="mt-1 text-zinc-400">{l.step1_subtitle}</p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input label={l.first_name} value={data.first_name} onChange={(v) => set("first_name", v)} required />
               <Input label={l.last_name} value={data.last_name} onChange={(v) => set("last_name", v)} required />
             </div>
@@ -139,10 +139,10 @@ export function LeadForm({ locale }: { locale: Locale }) {
 
         {/* Step 2: Role */}
         {step === 2 && (
-          <div className="space-y-6">
+          <div className="space-y-5">
             <div>
-              <h2 className="text-2xl font-bold text-zinc-900">{l.step2_title}</h2>
-              <p className="mt-1 text-zinc-500">{l.step2_subtitle}</p>
+              <h2 className="text-2xl sm:text-3xl font-black text-pink-500 uppercase">{l.step2_title}</h2>
+              <p className="mt-1 text-zinc-400">{l.step2_subtitle}</p>
             </div>
             <div className="flex flex-wrap gap-2">
               {l.roles.map((role) => (
@@ -152,8 +152,8 @@ export function LeadForm({ locale }: { locale: Locale }) {
                   onClick={() => set("role", role.value)}
                   className={`rounded-full border px-4 py-2 text-sm transition-all ${
                     data.role === role.value
-                      ? "border-pink-500 bg-pink-50 text-pink-700 font-medium"
-                      : "border-zinc-200 text-zinc-600 hover:border-zinc-400"
+                      ? "border-pink-500 bg-pink-600/20 text-pink-400 font-medium"
+                      : "border-zinc-600 text-zinc-300 hover:border-zinc-400"
                   }`}
                 >
                   {role.label}
@@ -165,10 +165,10 @@ export function LeadForm({ locale }: { locale: Locale }) {
 
         {/* Step 3: School */}
         {step === 3 && (
-          <div className="space-y-6">
+          <div className="space-y-5">
             <div>
-              <h2 className="text-2xl font-bold text-zinc-900">{l.step3_title}</h2>
-              <p className="mt-1 text-zinc-500">{l.step3_subtitle}</p>
+              <h2 className="text-2xl sm:text-3xl font-black text-pink-500 uppercase">{l.step3_title}</h2>
+              <p className="mt-1 text-zinc-400">{l.step3_subtitle}</p>
             </div>
             <Input label={l.school_name} value={data.school_name} onChange={(v) => set("school_name", v)} required />
             <Input label={l.school_address} value={data.street} onChange={(v) => set("street", v)} placeholder="Straße, Nr." />
@@ -178,7 +178,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
             </div>
             <Select label={locale === "de" ? "Bundesland" : "State"} value={data.state} onChange={(v) => set("state", v)} options={STATES} required />
             <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-700">{l.school_type}</label>
+              <label className="mb-2 block text-sm font-medium text-zinc-300">{l.school_type}</label>
               <div className="flex flex-wrap gap-2">
                 {l.school_types.slice(0, 8).map((st) => (
                   <button
@@ -187,8 +187,8 @@ export function LeadForm({ locale }: { locale: Locale }) {
                     onClick={() => set("school_type", st)}
                     className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
                       data.school_type === st
-                        ? "border-pink-500 bg-pink-50 text-pink-700 font-medium"
-                        : "border-zinc-200 text-zinc-600 hover:border-zinc-400"
+                        ? "border-pink-500 bg-pink-600/20 text-pink-400 font-medium"
+                        : "border-zinc-600 text-zinc-300 hover:border-zinc-400"
                     }`}
                   >
                     {st}
@@ -197,7 +197,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                 <select
                   value={data.school_type}
                   onChange={(e) => set("school_type", e.target.value)}
-                  className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs text-zinc-600"
+                  className="rounded-full border border-zinc-600 bg-transparent px-3 py-1.5 text-xs text-zinc-300"
                 >
                   <option value="">Mehr...</option>
                   {l.school_types.slice(8).map((st) => (
@@ -211,29 +211,29 @@ export function LeadForm({ locale }: { locale: Locale }) {
 
         {/* Step 4: Dates */}
         {step === 4 && (
-          <div className="space-y-6">
+          <div className="space-y-5">
             <div>
-              <h2 className="text-2xl font-bold text-zinc-900">{l.step4_title}</h2>
-              <p className="mt-1 text-zinc-500">{l.step4_subtitle}</p>
+              <h2 className="text-2xl sm:text-3xl font-black text-pink-500 uppercase">{l.step4_title}</h2>
+              <p className="mt-1 text-zinc-400">{l.step4_subtitle}</p>
             </div>
             <div className="flex flex-col gap-3">
               <button
                 type="button"
                 onClick={() => set("has_dates", true)}
                 className={`rounded-lg border p-4 text-left transition-all ${
-                  data.has_dates === true ? "border-pink-500 bg-pink-50" : "border-zinc-200 hover:border-zinc-400"
+                  data.has_dates === true ? "border-pink-500 bg-pink-600/10" : "border-zinc-600 hover:border-zinc-400"
                 }`}
               >
-                <span className="font-medium text-zinc-900">{l.has_dates_yes}</span>
+                <span className="font-medium text-white">{l.has_dates_yes}</span>
               </button>
               <button
                 type="button"
                 onClick={() => set("has_dates", false)}
                 className={`rounded-lg border p-4 text-left transition-all ${
-                  data.has_dates === false ? "border-pink-500 bg-pink-50" : "border-zinc-200 hover:border-zinc-400"
+                  data.has_dates === false ? "border-pink-500 bg-pink-600/10" : "border-zinc-600 hover:border-zinc-400"
                 }`}
               >
-                <span className="font-medium text-zinc-900">{l.has_dates_no}</span>
+                <span className="font-medium text-white">{l.has_dates_no}</span>
               </button>
             </div>
             {data.has_dates && (
@@ -253,12 +253,12 @@ export function LeadForm({ locale }: { locale: Locale }) {
 
         {/* Step 5: Project */}
         {step === 5 && (
-          <div className="space-y-6">
+          <div className="space-y-5">
             <div>
-              <h2 className="text-2xl font-bold text-zinc-900">{l.step5_title}</h2>
-              <p className="mt-1 text-zinc-500">{l.step5_subtitle}</p>
+              <h2 className="text-2xl sm:text-3xl font-black text-pink-500 uppercase">{l.step5_title}</h2>
+              <p className="mt-1 text-zinc-400">{l.step5_subtitle}</p>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-1">
               {l.programs.map((prog) => (
                 <button
                   key={prog.value}
@@ -266,18 +266,18 @@ export function LeadForm({ locale }: { locale: Locale }) {
                   onClick={() => toggleArray("programs", prog.value)}
                   className={`w-full rounded-lg border p-3 text-left transition-all ${
                     data.programs.includes(prog.value)
-                      ? "border-pink-500 bg-pink-50"
-                      : "border-zinc-200 hover:border-zinc-400"
+                      ? "border-pink-500 bg-pink-600/10"
+                      : "border-zinc-600 hover:border-zinc-400"
                   }`}
                 >
-                  <span className="text-sm font-medium text-zinc-900">{prog.value}</span>
-                  <span className="mt-0.5 block text-xs text-zinc-500">{prog.desc}</span>
+                  <span className="text-sm font-medium text-white">{prog.value}</span>
+                  <span className="mt-0.5 block text-xs text-zinc-400">{prog.desc}</span>
                 </button>
               ))}
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-700">{l.grades}</label>
+              <label className="mb-2 block text-sm font-medium text-zinc-300">{l.grades}</label>
               <div className="flex flex-wrap gap-2">
                 {l.grade_options.map((g) => (
                   <button
@@ -286,8 +286,8 @@ export function LeadForm({ locale }: { locale: Locale }) {
                     onClick={() => toggleArray("grades", `Grade ${g}`)}
                     className={`h-9 w-9 rounded-full border text-xs font-medium transition-all ${
                       data.grades.includes(`Grade ${g}`)
-                        ? "border-pink-500 bg-pink-500 text-white"
-                        : "border-zinc-200 text-zinc-600 hover:border-zinc-400"
+                        ? "border-pink-500 bg-pink-600 text-white"
+                        : "border-zinc-600 text-zinc-300 hover:border-zinc-400"
                     }`}
                   >
                     {g}
@@ -308,49 +308,58 @@ export function LeadForm({ locale }: { locale: Locale }) {
         {step === 6 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-zinc-900">{l.step6_title}</h2>
-              <p className="mt-1 text-zinc-500">{l.step6_subtitle}</p>
+              <h2 className="text-2xl sm:text-3xl font-black text-pink-500 uppercase">{l.step6_title}</h2>
+              <p className="mt-1 text-zinc-400">{l.step6_subtitle}</p>
             </div>
+
             <Select label={l.lead_source} value={data.lead_source} onChange={(v) => set("lead_source", v)} options={l.lead_sources} />
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => set("newsletter", true)}
-                className={`flex-1 rounded-lg border p-3 text-sm transition-all ${
-                  data.newsletter ? "border-pink-500 bg-pink-50 font-medium" : "border-zinc-200 hover:border-zinc-400"
-                }`}
-              >
-                {l.newsletter_yes}
-              </button>
-              <button
-                type="button"
-                onClick={() => set("newsletter", false)}
-                className={`flex-1 rounded-lg border p-3 text-sm transition-all ${
-                  !data.newsletter ? "border-pink-500 bg-pink-50 font-medium" : "border-zinc-200 hover:border-zinc-400"
-                }`}
-              >
-                {l.newsletter_no}
-              </button>
+
+            {/* Newsletter */}
+            <div className="rounded-lg border border-zinc-600 p-5">
+              <h3 className="text-base font-bold text-white">{l.newsletter_title}</h3>
+              <p className="mt-1 text-sm text-zinc-400">
+                {l.newsletter_desc}{" "}
+                <a href="https://interactenglish.de/datenschutz" target="_blank" className="text-pink-500 underline">
+                  {l.newsletter_link_text}
+                </a>.
+              </p>
+              <label className="mt-3 flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={data.newsletter}
+                  onChange={(e) => set("newsletter", e.target.checked)}
+                  className="h-4 w-4 rounded border-zinc-500 bg-transparent text-pink-600 focus:ring-pink-500"
+                />
+                <span className="text-sm text-zinc-300">{l.newsletter_label}</span>
+              </label>
             </div>
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={data.privacy}
-                onChange={(e) => set("privacy", e.target.checked)}
-                className="mt-1 h-4 w-4 rounded border-zinc-300 text-pink-600 focus:ring-pink-500"
-              />
-              <span className="text-sm text-zinc-600">{l.privacy}</span>
-            </label>
+
+            {/* Privacy */}
+            <div className="rounded-lg border border-zinc-600 p-5">
+              <h3 className="text-base font-bold text-white">
+                {l.privacy_title} <span className="text-pink-500">*</span>
+              </h3>
+              <p className="mt-1 text-sm text-zinc-400">{l.privacy_desc}</p>
+              <label className="mt-3 flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={data.privacy}
+                  onChange={(e) => set("privacy", e.target.checked)}
+                  className="h-4 w-4 rounded border-zinc-500 bg-transparent text-pink-600 focus:ring-pink-500"
+                />
+                <span className="text-sm font-medium text-zinc-300">{l.privacy}</span>
+              </label>
+            </div>
           </div>
         )}
 
         {/* Navigation */}
-        <div className="mt-8 flex justify-between">
+        <div className="mt-6 sm:mt-8 flex justify-between">
           {step > 1 ? (
             <button
               type="button"
               onClick={() => setStep(step - 1)}
-              className="rounded-lg px-6 py-2.5 text-sm font-medium text-zinc-600 hover:text-zinc-900"
+              className="rounded-lg px-6 py-2.5 text-sm font-medium text-zinc-400 hover:text-white"
             >
               {l.back}
             </button>
@@ -361,7 +370,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
               type="button"
               onClick={() => canNext() && setStep(step + 1)}
               disabled={!canNext()}
-              className="rounded-lg bg-pink-600 px-8 py-2.5 text-sm font-medium text-white hover:bg-pink-700 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="rounded-lg bg-pink-600 px-8 py-2.5 text-sm font-bold text-white uppercase hover:bg-pink-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               {l.next}
             </button>
@@ -370,7 +379,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
               type="button"
               onClick={handleSubmit}
               disabled={!canNext() || submitting}
-              className="rounded-lg bg-pink-600 px-8 py-2.5 text-sm font-medium text-white hover:bg-pink-700 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="rounded-lg bg-pink-600 px-8 py-2.5 text-sm font-bold text-white uppercase hover:bg-pink-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               {submitting ? "..." : l.submit}
             </button>
@@ -381,7 +390,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
   );
 }
 
-// ── Simple form components ──
+// ── Form components (dark theme) ──
 
 function Input({ label, value, onChange, type = "text", required, placeholder }: {
   label: string; value: string; onChange: (v: string) => void;
@@ -389,7 +398,7 @@ function Input({ label, value, onChange, type = "text", required, placeholder }:
 }) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-zinc-700">
+      <label className="mb-1 block text-sm font-medium text-zinc-300">
         {label} {required && <span className="text-pink-500">*</span>}
       </label>
       <input
@@ -397,7 +406,7 @@ function Input({ label, value, onChange, type = "text", required, placeholder }:
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-zinc-300 px-3 py-2.5 text-sm text-zinc-900 focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500"
+        className="w-full rounded-lg border border-zinc-600 bg-zinc-700/50 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500"
       />
     </div>
   );
@@ -409,13 +418,13 @@ function Select({ label, value, onChange, options, required }: {
 }) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-zinc-700">
+      <label className="mb-1 block text-sm font-medium text-zinc-300">
         {label} {required && <span className="text-pink-500">*</span>}
       </label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-zinc-300 px-3 py-2.5 text-sm text-zinc-900 focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500"
+        className="w-full rounded-lg border border-zinc-600 bg-zinc-700/50 px-3 py-2.5 text-sm text-white focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500"
       >
         <option value="">—</option>
         {options.map((o) => <option key={o} value={o}>{o}</option>)}
@@ -429,12 +438,12 @@ function Textarea({ label, value, onChange }: {
 }) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-zinc-700">{label}</label>
+      <label className="mb-1 block text-sm font-medium text-zinc-300">{label}</label>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
-        className="w-full rounded-lg border border-zinc-300 px-3 py-2.5 text-sm text-zinc-900 focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500 resize-none"
+        className="w-full rounded-lg border border-zinc-600 bg-zinc-700/50 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500 resize-none"
       />
     </div>
   );
