@@ -47,14 +47,19 @@ export async function POST(request: Request) {
   if (data.num_groups) {
     columnValues.numeric_mktdm7w5 = data.num_groups;
   }
-  // If dates picked (Von/Bis), auto-calculate days and school year
-  if (data.preferred_dates && data.num_days && data.has_dates) {
-    // preferred_dates = start date, num_days = end date (reused field)
-    const startDate = data.preferred_dates;
-    const endDate = data.num_days;
+  // Dates: preferred_dates = start date (Von), num_days = end date (Bis) when has_dates=true
+  if (data.has_dates === true && data.preferred_dates) {
+    const startDate = data.preferred_dates; // YYYY-MM-DD
+    const endDate = data.num_days || startDate; // YYYY-MM-DD
+
+    // Preferred dates as text
     columnValues.preferred_dates = `${startDate} - ${endDate}`;
 
-    // Calculate days
+    // Start/End date columns
+    columnValues.proposed_start_date = { date: startDate };
+    columnValues.proposed_end_date = { date: endDate };
+
+    // Calculate number of days
     const start = new Date(startDate);
     const end = new Date(endDate);
     const diffDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
@@ -67,12 +72,14 @@ export async function POST(request: Request) {
     const year = start.getFullYear();
     const schoolYear = month >= 7 ? `${year}/${year + 1}` : `${year - 1}/${year}`;
     columnValues.dropdown_mktdk7xc = { labels: [schoolYear] };
-  } else if (data.preferred_dates && !data.has_dates) {
-    // "Not sure" flow — text field for timeframe
-    columnValues.preferred_dates = data.preferred_dates;
-  }
-  if (data.school_year) {
-    columnValues.dropdown_mktdk7xc = { labels: [data.school_year] };
+  } else if (data.has_dates === false) {
+    // "Not sure" flow
+    if (data.preferred_dates) {
+      columnValues.preferred_dates = data.preferred_dates;
+    }
+    if (data.school_year) {
+      columnValues.dropdown_mktdk7xc = { labels: [data.school_year] };
+    }
   }
   if (data.lead_source) {
     columnValues.dropdown_mktdmbbk = { labels: [data.lead_source] };
