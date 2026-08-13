@@ -267,5 +267,6 @@ export async function POST(request: Request) {
     ok: true,
     order_id: orderId,
     order_number: orderNumber,
+    invoice_pdf_url: publicUrl,
   });
 }
