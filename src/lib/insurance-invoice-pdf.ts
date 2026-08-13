@@ -92,7 +92,7 @@ export function generateInsuranceInvoicePDF(order: InsuranceOrderData): Buffer {
     color: "#666666",
   });
   y += 6;
-  addText("Geschaeftsfuehrer:", pageWidth - margin, y, {
+  addText("Gesch\u00e4ftsf\u00fchrer:", pageWidth - margin, y, {
     fontSize: 8,
     align: "right",
     color: "#666666",
@@ -139,13 +139,13 @@ export function generateInsuranceInvoicePDF(order: InsuranceOrderData): Buffer {
   // --- Billed To ---
   addText("BILLED TO:", margin, y, { fontSize: 10, fontStyle: "bold" });
   y += 6;
-  addText(
-    `${order.customer_first_name} ${order.customer_last_name}`,
-    margin,
-    y,
-    { fontSize: 10 }
-  );
-  y += 5;
+  const customerName = `${order.customer_first_name} ${order.customer_last_name}`.trim()
+    || `${order.insured_first_name || ""} ${order.insured_last_name || ""}`.trim()
+    || "";
+  if (customerName) {
+    addText(customerName, margin, y, { fontSize: 10 });
+    y += 5;
+  }
 
   if (order.billing_address) {
     const addr = order.billing_address;
@@ -234,7 +234,7 @@ export function generateInsuranceInvoicePDF(order: InsuranceOrderData): Buffer {
     ["Nachname der versicherten Person:", order.insured_last_name],
     ["Schulname:", order.school_name],
     ["Datum des Projekts:", order.project_date],
-    ["Teilnahmegebuehr:", order.participation_fee],
+    ["Teilnahmegeb\u00fchr:", order.participation_fee],
     ["Anzahl der Projekttage:", order.num_project_days],
   ];
 
