@@ -5,6 +5,24 @@ import {
   generateInsuranceInvoicePDF,
   type InsuranceOrderData,
 } from "@/lib/insurance-invoice-pdf";
+import { mondayQuery } from "@/lib/monday";
+
+const INSURANCE_BOARD_ID = "18426362720";
+const INSURANCE_ORDERS_GROUP = "group_mm66afmz";
+
+// Monday column IDs
+const MON_COL = {
+  orderNumber: "text_mm66gnmg",
+  email: "email_mm664mq3",
+  school: "text_mm66s51r",
+  studentName: "text_mm66ksge",
+  projectDate: "text_mm668kdr",
+  days: "numeric_mm66k3es",
+  fee: "numeric_mm66t5sc",
+  total: "numeric_mm66c7zw",
+  pdf: "link_mm6657qg",
+  purchaseDate: "date_mm66f4g0",
+};
 
 // Map German form field labels to database columns
 const FIELD_MAP: Record<string, string> = {
@@ -236,6 +254,43 @@ export async function POST(request: Request) {
       { error: "Failed to save order" },
       { status: 500 }
     );
+  }
+
+  // Push to Monday.com Insurance board
+  const studentName = [formFields.insured_first_name, formFields.insured_last_name]
+    .filter(Boolean)
+    .join(" ") || "Unknown";
+  const purchaseDateISO = order.createdOn
+    ? new Date(order.createdOn).toISOString().slice(0, 10)
+    : new Date().toISOString().slice(0, 10);
+
+  try {
+    const columnValues = JSON.stringify({
+      [MON_COL.orderNumber]: String(orderNumber),
+      [MON_COL.email]: { email: customerEmail, text: customerEmail },
+      [MON_COL.school]: formFields.school_name || "",
+      [MON_COL.studentName]: studentName,
+      [MON_COL.projectDate]: formFields.project_date || "",
+      [MON_COL.days]: formFields.num_project_days || "",
+      [MON_COL.fee]: formFields.participation_fee || "",
+      [MON_COL.total]: String(grandTotal),
+      [MON_COL.pdf]: { url: publicUrl, text: `Invoice ${orderNumber}` },
+      [MON_COL.purchaseDate]: { date: purchaseDateISO },
+    });
+
+    await mondayQuery(
+      `mutation ($boardId: ID!, $groupId: String!, $itemName: String!, $columnValues: JSON!) {
+        create_item(board_id: $boardId, group_id: $groupId, item_name: $itemName, column_values: $columnValues) { id }
+      }`,
+      {
+        boardId: INSURANCE_BOARD_ID,
+        groupId: INSURANCE_ORDERS_GROUP,
+        itemName: `${productName} - ${studentName}`,
+        columnValues,
+      }
+    );
+  } catch (err) {
+    console.error("[SQUARESPACE] Monday push failed:", err);
   }
 
   // Email invoice to customer
