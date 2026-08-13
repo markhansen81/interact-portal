@@ -86,16 +86,26 @@ export async function POST(request: Request) {
     });
 
     if (match) {
-      // Update status to "Claim" (index 1)
+      // Update claim columns + status
+      const claimDate = new Date().toISOString().slice(0, 10);
+      const columnValues = JSON.stringify({
+        [STATUS_COL]: { index: 1 },
+        numeric_mm66sev8: String(daysMissed || ""),
+        date_mm66zhf2: { date: claimDate },
+        text_mm66vg5z: reason,
+        text_mm665xah: iban,
+        text_mm66aep4: accountHolder,
+        text_mm667kg3: notes,
+      });
+
       await mondayQuery(
-        `mutation ($itemId: ID!, $boardId: ID!, $columnId: String!, $value: JSON!) {
-          change_column_value(item_id: $itemId, board_id: $boardId, column_id: $columnId, value: $value) { id }
+        `mutation ($itemId: ID!, $boardId: ID!, $columnValues: JSON!) {
+          change_multiple_column_values(item_id: $itemId, board_id: $boardId, column_values: $columnValues) { id }
         }`,
         {
           itemId: match.id,
           boardId: INSURANCE_BOARD_ID,
-          columnId: STATUS_COL,
-          value: JSON.stringify({ index: 1 }),
+          columnValues,
         }
       );
 
