@@ -135,8 +135,8 @@ export async function POST(request: Request) {
 
   // Extract data — handle both raw Squarespace and Zapier's flattened format
   const customerEmail = order.customerEmail || order.billingAddress?.email || "";
-  const firstName = order.billingAddress?.firstName || order.firstName || "";
-  const lastName = order.billingAddress?.lastName || order.lastName || "";
+  const firstName = order.guardianname || order.billingAddress?.firstName || order.firstName || "";
+  const lastName = order.guardianname1 || order.billingAddress?.lastName || order.lastName || "";
   const orderNumber = order.orderNumber || order.order_number || orderId;
   const productName = order.productname || order.productName
     || order.lineItems?.[0]?.productName || order.lineItems?.[0]?.name || "Insurance";
