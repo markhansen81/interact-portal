@@ -121,18 +121,17 @@ export function insuranceOrderConfirmationEmail(
   total: string
 ) {
   return {
-    subject: `Ihre Bestellung / Your Order #${orderNumber} - ${productName}`,
+    subject: `Ihre Bestellung #${orderNumber} - ${productName}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #18181b;">Bestellbestaetigung / Order Confirmation</h2>
+        <h2 style="color: #18181b;">Bestellbest\u00e4tigung</h2>
         <p>Hallo ${customerName},</p>
-        <p>vielen Dank fuer Ihre Bestellung. Anbei finden Sie Ihre Rechnung als PDF.</p>
-        <p style="color: #71717a;">Thank you for your order. Please find your invoice attached as a PDF.</p>
+        <p>vielen Dank f\u00fcr Ihre Bestellung. Anbei finden Sie Ihre Rechnung als PDF.</p>
         <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 20px 0;" />
         <table style="width: 100%; font-size: 14px;">
-          <tr><td style="color: #71717a; padding: 4px 0;">Bestellnummer / Order #:</td><td style="font-weight: bold;">${orderNumber}</td></tr>
-          <tr><td style="color: #71717a; padding: 4px 0;">Produkt / Product:</td><td>${productName}</td></tr>
-          <tr><td style="color: #71717a; padding: 4px 0;">Gesamt / Total:</td><td style="font-weight: bold;">${total}</td></tr>
+          <tr><td style="color: #71717a; padding: 4px 0;">Bestellnummer:</td><td style="font-weight: bold;">${orderNumber}</td></tr>
+          <tr><td style="color: #71717a; padding: 4px 0;">Produkt:</td><td>${productName}</td></tr>
+          <tr><td style="color: #71717a; padding: 4px 0;">Gesamt:</td><td style="font-weight: bold;">${total}</td></tr>
         </table>
         <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 20px 0;" />
         <p style="color: #71717a; font-size: 12px;">InterACT English gGmbH | Planufer 92B, 10967 Berlin | info@interactenglish.de</p>
