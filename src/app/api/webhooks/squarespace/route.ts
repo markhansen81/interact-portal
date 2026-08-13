@@ -265,6 +265,7 @@ export async function POST(request: Request) {
     : new Date().toISOString().slice(0, 10);
 
   try {
+    const guardianName = `${firstName} ${lastName}`.trim();
     const columnValues = JSON.stringify({
       [MON_COL.orderNumber]: String(orderNumber),
       [MON_COL.email]: { email: customerEmail, text: customerEmail },
@@ -276,6 +277,7 @@ export async function POST(request: Request) {
       [MON_COL.total]: String(grandTotal),
       [MON_COL.pdf]: { url: publicUrl, text: `Invoice ${orderNumber}` },
       [MON_COL.purchaseDate]: { date: purchaseDateISO },
+      text_mm6632x9: guardianName,
     });
 
     await mondayQuery(
