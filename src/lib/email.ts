@@ -12,10 +12,12 @@ export async function sendEmail({
   to,
   subject,
   html,
+  attachments,
 }: {
   to: string;
   subject: string;
   html: string;
+  attachments?: Array<{ filename: string; content: Buffer }>;
 }) {
   const resend = getResend();
   if (!resend) {
@@ -28,6 +30,7 @@ export async function sendEmail({
       to,
       subject,
       html,
+      ...(attachments && { attachments }),
     });
   } catch (error) {
     console.error("[EMAIL] Failed:", error);
@@ -106,6 +109,33 @@ export function newMessageEmail(recipientName: string, senderName: string) {
         <p>You have a new message from <strong>${senderName}</strong>.</p>
         <p><a href="${APP_URL}/portal/messages" style="display: inline-block; background: #18181b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">Read Message</a></p>
         <p style="color: #71717a; font-size: 14px;">InterACT English gGmbH</p>
+      </div>
+    `,
+  };
+}
+
+export function insuranceOrderConfirmationEmail(
+  customerName: string,
+  orderNumber: string,
+  productName: string,
+  total: string
+) {
+  return {
+    subject: `Ihre Bestellung / Your Order #${orderNumber} - ${productName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #18181b;">Bestellbestaetigung / Order Confirmation</h2>
+        <p>Hallo ${customerName},</p>
+        <p>vielen Dank fuer Ihre Bestellung. Anbei finden Sie Ihre Rechnung als PDF.</p>
+        <p style="color: #71717a;">Thank you for your order. Please find your invoice attached as a PDF.</p>
+        <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 20px 0;" />
+        <table style="width: 100%; font-size: 14px;">
+          <tr><td style="color: #71717a; padding: 4px 0;">Bestellnummer / Order #:</td><td style="font-weight: bold;">${orderNumber}</td></tr>
+          <tr><td style="color: #71717a; padding: 4px 0;">Produkt / Product:</td><td>${productName}</td></tr>
+          <tr><td style="color: #71717a; padding: 4px 0;">Gesamt / Total:</td><td style="font-weight: bold;">${total}</td></tr>
+        </table>
+        <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 20px 0;" />
+        <p style="color: #71717a; font-size: 12px;">InterACT English gGmbH | Planufer 92B, 10967 Berlin | info@interactenglish.de</p>
       </div>
     `,
   };

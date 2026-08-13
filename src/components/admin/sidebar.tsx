@@ -12,6 +12,7 @@ const navItems = [
   { href: "/admin/work-orders", label: "Work Orders", icon: "file-text" },
   { href: "/admin/contracts", label: "Contracts", icon: "pen-tool" },
   { href: "/admin/invoices", label: "Invoices", icon: "receipt" },
+  { href: "/admin/insurance-orders", label: "Insurance", icon: "shield" },
   { href: "/admin/availability", label: "Availability", icon: "calendar" },
   { href: "/admin/services", label: "Services & Rates", icon: "settings" },
   { href: "/admin/training", label: "Training", icon: "briefcase" },
@@ -47,6 +48,9 @@ const iconPaths: Record<string, React.ReactNode> = {
   ),
   calendar: (
     <path d="M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM16 2v4M8 2v4M3 10h18" />
+  ),
+  shield: (
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
   ),
 };
 
