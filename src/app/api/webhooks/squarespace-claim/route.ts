@@ -85,19 +85,19 @@ export async function POST(request: Request) {
       );
     });
 
-    if (match) {
-      // Update claim columns + status
-      const claimDate = new Date().toISOString().slice(0, 10);
-      const columnValues = JSON.stringify({
-        [STATUS_COL]: { index: 1 },
-        numeric_mm66sev8: String(daysMissed || ""),
-        date_mm66zhf2: { date: claimDate },
-        text_mm66vg5z: reason,
-        text_mm665xah: iban,
-        text_mm66aep4: accountHolder,
-        text_mm667kg3: notes,
-      });
+    const claimDate = new Date().toISOString().slice(0, 10);
+    const claimColumnValues = {
+      [STATUS_COL]: { index: 1 },
+      numeric_mm66sev8: String(daysMissed || ""),
+      date_mm66zhf2: { date: claimDate },
+      text_mm66vg5z: reason,
+      text_mm665xah: iban,
+      text_mm66aep4: accountHolder,
+      text_mm667kg3: notes,
+    };
 
+    if (match) {
+      // Match found — update existing item with claim data
       await mondayQuery(
         `mutation ($itemId: ID!, $boardId: ID!, $columnValues: JSON!) {
           change_multiple_column_values(item_id: $itemId, board_id: $boardId, column_values: $columnValues) { id }
@@ -105,7 +105,7 @@ export async function POST(request: Request) {
         {
           itemId: match.id,
           boardId: INSURANCE_BOARD_ID,
-          columnValues,
+          columnValues: JSON.stringify(claimColumnValues),
         }
       );
 
@@ -117,6 +117,27 @@ export async function POST(request: Request) {
         {
           itemId: match.id,
           groupId: CLAIMS_GROUP,
+        }
+      );
+    } else {
+      // No match — create new item directly in Claims group
+      const newItemColumns = {
+        ...claimColumnValues,
+        text_mm66gnmg: String(orderNumber),
+        email_mm664mq3: { email: email, text: email },
+        text_mm66s51r: schoolName,
+        text_mm66ksge: studentName,
+      };
+
+      await mondayQuery(
+        `mutation ($boardId: ID!, $groupId: String!, $itemName: String!, $columnValues: JSON!) {
+          create_item(board_id: $boardId, group_id: $groupId, item_name: $itemName, column_values: $columnValues) { id }
+        }`,
+        {
+          boardId: INSURANCE_BOARD_ID,
+          groupId: CLAIMS_GROUP,
+          itemName: `Claim - ${studentName || orderNumber}`,
+          columnValues: JSON.stringify(newItemColumns),
         }
       );
     }
