@@ -88,6 +88,7 @@ export async function POST(request: Request) {
       [STATUS_COL]: { index: 0 },
       numeric_mm66sev8: String(daysMissed || ""),
       text_mm66vsyc: absenceDates,
+      text_mm66hsq0: studentName,
       date_mm66zhf2: { date: claimDate },
       text_mm665xah: iban,
       text_mm66aep4: accountHolder,
