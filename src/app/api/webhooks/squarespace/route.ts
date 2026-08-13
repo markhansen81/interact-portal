@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, insuranceOrderConfirmationEmail } from "@/lib/email";
 import {
@@ -19,28 +18,6 @@ const FIELD_MAP: Record<string, string> = {
   AGB: "agb_accepted",
   "Personenbezogene Daten": "data_privacy_accepted",
 };
-
-function verifySignature(
-  rawBody: string,
-  signature: string | null
-): boolean {
-  const secret = process.env.SQUARESPACE_WEBHOOK_SECRET;
-  if (!secret) {
-    console.warn("[SQUARESPACE] No webhook secret configured, skipping verification");
-    return true;
-  }
-  if (!signature) return false;
-
-  const expected = crypto
-    .createHmac("sha256", secret)
-    .update(rawBody)
-    .digest("base64");
-
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expected)
-  );
-}
 
 function extractFormFields(
   lineItems: Array<{
@@ -73,26 +50,25 @@ function extractFormFields(
 }
 
 export async function POST(request: Request) {
-  const rawBody = await request.text();
-  const signature = request.headers.get("Squarespace-Signature");
-
-  // Verify webhook signature
-  if (!verifySignature(rawBody, signature)) {
-    console.error("[SQUARESPACE] Invalid webhook signature");
-    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+  // Verify bearer token (used by Zapier to authenticate)
+  const authHeader = request.headers.get("Authorization");
+  const expectedToken = process.env.SQUARESPACE_WEBHOOK_SECRET;
+  if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let body;
   try {
-    body = JSON.parse(rawBody);
+    body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  // Squarespace sends the order data directly or wrapped
+  // Support both raw Squarespace format and Zapier's flattened format
   const order = body.data || body;
 
-  if (!order.id) {
+  const orderId = order.id || order.orderId || order.order_id;
+  if (!orderId) {
     return NextResponse.json({ error: "No order ID" }, { status: 400 });
   }
 
@@ -102,7 +78,7 @@ export async function POST(request: Request) {
   const { data: existing } = await adminClient
     .from("insurance_orders")
     .select("id")
-    .eq("squarespace_order_id", order.id)
+    .eq("squarespace_order_id", orderId)
     .single();
 
   if (existing) {
@@ -113,7 +89,7 @@ export async function POST(request: Request) {
   const customerEmail = order.customerEmail || order.billingAddress?.email || "";
   const firstName = order.billingAddress?.firstName || "";
   const lastName = order.billingAddress?.lastName || "";
-  const orderNumber = order.orderNumber || order.id;
+  const orderNumber = order.orderNumber || order.order_number || orderId;
   const lineItems = order.lineItems || [];
   const productName = lineItems[0]?.productName || lineItems[0]?.name || "Insurance";
   const quantity = lineItems[0]?.quantity || 1;
@@ -177,7 +153,7 @@ export async function POST(request: Request) {
   const pdfBuffer = generateInsuranceInvoicePDF(pdfData);
 
   // Upload PDF to Supabase Storage
-  const storagePath = `insurance-invoices/${order.id}.pdf`;
+  const storagePath = `insurance-invoices/${orderId}.pdf`;
   const { error: uploadError } = await adminClient.storage
     .from("documents")
     .upload(storagePath, pdfBuffer, {
@@ -197,7 +173,7 @@ export async function POST(request: Request) {
   const { error: insertError } = await adminClient
     .from("insurance_orders")
     .insert({
-      squarespace_order_id: order.id,
+      squarespace_order_id: orderId,
       order_number: String(orderNumber),
       customer_email: customerEmail,
       customer_first_name: firstName,
@@ -244,12 +220,12 @@ export async function POST(request: Request) {
     await adminClient
       .from("insurance_orders")
       .update({ email_sent_at: new Date().toISOString() })
-      .eq("squarespace_order_id", order.id);
+      .eq("squarespace_order_id", orderId);
   }
 
   return NextResponse.json({
     ok: true,
-    order_id: order.id,
+    order_id: orderId,
     order_number: orderNumber,
   });
 }
