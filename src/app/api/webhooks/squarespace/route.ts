@@ -191,7 +191,13 @@ export async function POST(request: Request) {
   const pdfBuffer = generateInsuranceInvoicePDF(pdfData);
 
   // Upload PDF to Supabase Storage
-  const storagePath = `insurance-invoices/${orderId}.pdf`;
+  // Filename: YYYYMMDD_orderNumber_surname.pdf
+  const dateStr = order.createdOn
+    ? new Date(order.createdOn).toISOString().slice(0, 10).replace(/-/g, "")
+    : new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const surname = (formFields.insured_last_name as string || lastName || "unknown")
+    .replace(/\s+/g, "-").replace(/[^a-zA-Z0-9äöüÄÖÜß\-]/g, "");
+  const storagePath = `insurance-invoices/${dateStr}_${orderNumber}_${surname}.pdf`;
   const { error: uploadError } = await adminClient.storage
     .from("documents")
     .upload(storagePath, pdfBuffer, {
@@ -250,7 +256,7 @@ export async function POST(request: Request) {
       html: emailData.html,
       attachments: [
         {
-          filename: `Invoice-${orderNumber}.pdf`,
+          filename: `${dateStr}_${orderNumber}_${surname}.pdf`,
           content: pdfBuffer,
         },
       ],
