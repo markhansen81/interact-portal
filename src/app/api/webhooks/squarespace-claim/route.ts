@@ -32,6 +32,7 @@ export async function POST(request: Request) {
   const absenceDates = claim.absenceDates || claim.abwesenheitstage || "";
   const daysMissed = claim.daysMissed || claim.days_missed
     || (absenceDates ? absenceDates.split(/[,;\n]+/).filter((d: string) => d.trim()).length : 0);
+  const claimEmail = claim.email || claim.claimEmail || "";
   const iban = claim.iban || "";
   const accountHolder = claim.accountHolder || claim.kontoinhaber || "";
   const notes = claim.notes || claim.anmerkungen || "";
@@ -89,6 +90,7 @@ export async function POST(request: Request) {
       numeric_mm66sev8: String(daysMissed || ""),
       text_mm66vsyc: absenceDates,
       text_mm66hsq0: studentName,
+      email_mm66n2cq: claimEmail ? { email: claimEmail, text: claimEmail } : undefined,
       date_mm66zhf2: { date: claimDate },
       text_mm665xah: iban,
       text_mm66aep4: accountHolder,
