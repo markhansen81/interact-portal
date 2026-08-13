@@ -87,7 +87,7 @@ export async function POST(request: Request) {
 
     const claimDate = new Date().toISOString().slice(0, 10);
     const claimColumnValues = {
-      [STATUS_COL]: { index: 1 },
+      [STATUS_COL]: { index: 0 },
       numeric_mm66sev8: String(daysMissed || ""),
       date_mm66zhf2: { date: claimDate },
       text_mm665xah: iban,
