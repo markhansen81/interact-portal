@@ -137,11 +137,11 @@ export function generateInsuranceInvoicePDF(order: InsuranceOrderData): Buffer {
   doc.line(margin, y, pageWidth - margin, y);
   y += 10;
 
-  addText("Order Invoice", margin, y, { fontSize: 22, fontStyle: "bold" });
+  addText("Rechnung", margin, y, { fontSize: 22, fontStyle: "bold" });
   y += 10;
 
   addText(
-    `Order Number: ${order.order_number} (placed on ${order.order_date})`,
+    `Bestellnummer: ${order.order_number} (vom ${order.order_date})`,
     margin,
     y,
     { fontSize: 10 }
@@ -149,7 +149,7 @@ export function generateInsuranceInvoicePDF(order: InsuranceOrderData): Buffer {
   y += 10;
 
   // --- Billed To ---
-  addText("BILLED TO:", margin, y, { fontSize: 10, fontStyle: "bold" });
+  addText("RECHNUNGSADRESSE:", margin, y, { fontSize: 10, fontStyle: "bold" });
   y += 6;
   addText(
     `${order.customer_first_name} ${order.customer_last_name}`,
@@ -184,7 +184,7 @@ export function generateInsuranceInvoicePDF(order: InsuranceOrderData): Buffer {
   y += 10;
 
   // --- Order Summary table ---
-  addText("Order Summary", margin, y, { fontSize: 16, fontStyle: "bold" });
+  addText("Bestellübersicht", margin, y, { fontSize: 16, fontStyle: "bold" });
   y += 8;
 
   // Table header
@@ -195,10 +195,10 @@ export function generateInsuranceInvoicePDF(order: InsuranceOrderData): Buffer {
   const col3 = margin + 105;
   const col4 = margin + 135;
 
-  addText("ITEM", col1, y, { fontSize: 9, fontStyle: "bold" });
-  addText("QTY", col2, y, { fontSize: 9, fontStyle: "bold" });
-  addText("UNIT PRICE", col3, y, { fontSize: 9, fontStyle: "bold" });
-  addText("SUBTOTAL", col4, y, { fontSize: 9, fontStyle: "bold" });
+  addText("ARTIKEL", col1, y, { fontSize: 9, fontStyle: "bold" });
+  addText("MENGE", col2, y, { fontSize: 9, fontStyle: "bold" });
+  addText("EINZELPREIS", col3, y, { fontSize: 9, fontStyle: "bold" });
+  addText("ZWISCHENSUMME", col4, y, { fontSize: 9, fontStyle: "bold" });
   y += 2;
   doc.line(margin, y, pageWidth - margin, y);
   y += 6;
@@ -219,15 +219,15 @@ export function generateInsuranceInvoicePDF(order: InsuranceOrderData): Buffer {
   y += 6;
 
   // Totals
-  addText("Item Subtotal", col2 + 10, y, { fontSize: 10 });
+  addText("Zwischensumme", col2 + 10, y, { fontSize: 10 });
   addText(`${currencySymbol}${order.total.toFixed(2)}`, col4, y, {
     fontSize: 10,
   });
   y += 5;
-  addText("Tax", col2 + 10, y, { fontSize: 10 });
+  addText("MwSt.", col2 + 10, y, { fontSize: 10 });
   addText(`${currencySymbol}0.00`, col4, y, { fontSize: 10 });
   y += 5;
-  addText("TOTAL", col2 + 10, y, { fontSize: 10, fontStyle: "bold" });
+  addText("GESAMT", col2 + 10, y, { fontSize: 10, fontStyle: "bold" });
   addText(`${currencySymbol}${order.total.toFixed(2)}`, col4, y, {
     fontSize: 10,
     fontStyle: "bold",
@@ -235,7 +235,7 @@ export function generateInsuranceInvoicePDF(order: InsuranceOrderData): Buffer {
   y += 14;
 
   // --- Additional Information ---
-  addText("Additional Information", margin, y, {
+  addText("Weitere Informationen", margin, y, {
     fontSize: 16,
     fontStyle: "bold",
   });
