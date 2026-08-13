@@ -137,14 +137,21 @@ export function generateInsuranceInvoicePDF(order: InsuranceOrderData): Buffer {
   doc.line(margin, y, pageWidth - margin, y);
   y += 10;
 
-  addText("Rechnung", margin, y, { fontSize: 22, fontStyle: "bold" });
+  addText("Projektversicherung \u2013 Rechnung", margin, y, { fontSize: 20, fontStyle: "bold" });
   y += 10;
 
   addText(
-    `Bestellnummer: ${order.order_number} (vom ${order.order_date})`,
+    `Bestellnummer: #${order.order_number} (vom ${order.order_date})`,
     margin,
     y,
     { fontSize: 10 }
+  );
+  y += 6;
+  addText(
+    "Diese Versicherung sch\u00fctzt Ihre Investition in das Englischprojekt. Bei krankheitsbedingter Abwesenheit haben Sie Anspruch auf R\u00fcckerstattung.",
+    margin,
+    y,
+    { fontSize: 9, color: "#666666", maxWidth: contentWidth }
   );
   y += 10;
 
@@ -258,6 +265,21 @@ export function generateInsuranceInvoicePDF(order: InsuranceOrderData): Buffer {
       y += 6;
     }
   }
+
+  // --- Footer info ---
+  y += 8;
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.3);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 6;
+
+  addText("Erstattungsantrag: interactenglish.de/erstattungsantrag (innerhalb von 14 Tagen nach Projektende)", margin, y, {
+    fontSize: 9, fontStyle: "bold", color: "#e6007e",
+  });
+  y += 5;
+  addText("AGB & Versicherungsbedingungen: siehe beiliegendes Dokument oder interactenglish.de/versicherung", margin, y, {
+    fontSize: 8, color: "#666666",
+  });
 
   // Convert to Buffer
   const arrayBuffer = doc.output("arraybuffer");

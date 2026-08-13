@@ -118,21 +118,26 @@ export function insuranceOrderConfirmationEmail(
   customerName: string,
   orderNumber: string,
   productName: string,
-  total: string
+  total: string,
+  studentName: string,
+  schoolName: string
 ) {
   return {
-    subject: `Ihre Bestellung #${orderNumber} - ${productName}`,
+    subject: `Ihre Bestellung: Projektversicherung #${orderNumber} - ${productName} // ${total}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #18181b;">Bestellbest\u00e4tigung</h2>
+        <h2 style="color: #18181b;">Projektversicherung \u2013 Bestellbest\u00e4tigung</h2>
         <p>Hallo ${customerName},</p>
-        <p>vielen Dank f\u00fcr Ihre Bestellung. Anbei finden Sie Ihre Rechnung als PDF.</p>
+        <p>vielen Dank f\u00fcr den Abschluss der Projektversicherung f\u00fcr <strong>${studentName}</strong> (${schoolName}). Anbei finden Sie Ihre Rechnung, unsere AGB sowie Informationen zur Erstattung als PDF.</p>
         <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 20px 0;" />
         <table style="width: 100%; font-size: 14px;">
-          <tr><td style="color: #71717a; padding: 4px 0;">Bestellnummer:</td><td style="font-weight: bold;">${orderNumber}</td></tr>
-          <tr><td style="color: #71717a; padding: 4px 0;">Produkt:</td><td>${productName}</td></tr>
+          <tr><td style="color: #71717a; padding: 4px 0;">Bestellnummer:</td><td style="font-weight: bold;">#${orderNumber}</td></tr>
+          <tr><td style="color: #71717a; padding: 4px 0;">Versicherung:</td><td>${productName}</td></tr>
+          <tr><td style="color: #71717a; padding: 4px 0;">Versicherte Person:</td><td>${studentName}</td></tr>
           <tr><td style="color: #71717a; padding: 4px 0;">Gesamt:</td><td style="font-weight: bold;">${total}</td></tr>
         </table>
+        <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 20px 0;" />
+        <p style="font-size: 13px;">Im Falle einer Abwesenheit k\u00f6nnen Sie Ihren <strong>Erstattungsantrag</strong> innerhalb von 14 Tagen nach Projektende einreichen unter: <a href="https://interactenglish.de/erstattungsantrag">interactenglish.de/erstattungsantrag</a></p>
         <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 20px 0;" />
         <p style="color: #71717a; font-size: 12px;">InterACT English gGmbH | Planufer 92B, 10967 Berlin | info@interactenglish.de</p>
       </div>

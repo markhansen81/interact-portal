@@ -296,13 +296,19 @@ export async function POST(request: Request) {
   // Email invoice to customer
   if (customerEmail) {
     const currencySymbol = currency === "EUR" ? "\u20AC" : currency;
+    // Parent name from billing, student name from form fields
+    const parentName = `${firstName} ${lastName}`.trim() || "Kunde";
+    const insuredName = [formFields.insured_first_name, formFields.insured_last_name]
+      .filter(Boolean).join(" ") || "Ihr Kind";
+    const school = (formFields.school_name as string) || "";
+
     const emailData = insuranceOrderConfirmationEmail(
-      `${firstName} ${lastName}`.trim()
-        || [formFields.insured_first_name, formFields.insured_last_name].filter(Boolean).join(" ")
-        || "Kunde",
+      parentName,
       String(orderNumber),
       productName,
-      `${currencySymbol}${grandTotal.toFixed(2)}`
+      `${currencySymbol}${grandTotal.toFixed(2)}`,
+      insuredName,
+      school
     );
 
     await sendEmail({
