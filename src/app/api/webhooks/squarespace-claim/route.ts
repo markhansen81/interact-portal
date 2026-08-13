@@ -26,13 +26,12 @@ export async function POST(request: Request) {
 
   const studentFirstName = claim.studentFirstName || claim.insured_first_name || "";
   const studentLastName = claim.studentLastName || claim.insured_last_name || "";
-  const parentName = [claim.parentFirstName, claim.parentLastName].filter(Boolean).join(" ")
-    || claim.parentName || "";
-  const email = claim.email || claim.customerEmail || "";
-  const schoolName = claim.schoolName || claim.school_name || "";
   const orderNumber = claim.orderNumber || claim.order_number || "";
-  const daysMissed = claim.daysMissed || claim.days_missed || "";
-  const reason = claim.reason || "";
+  const absenceDates = claim.absenceDates || claim.abwesenheitstage || "";
+  // Count dates: split by comma, newline, or semicolon
+  const daysMissed = absenceDates
+    ? absenceDates.split(/[,;\n]+/).filter((d: string) => d.trim()).length
+    : Number(claim.daysMissed || claim.days_missed || 0);
   const iban = claim.iban || "";
   const accountHolder = claim.accountHolder || claim.kontoinhaber || "";
   const notes = claim.notes || claim.anmerkungen || "";
@@ -46,11 +45,10 @@ export async function POST(request: Request) {
       .update({
         claim_submitted_at: new Date().toISOString(),
         claim_days_missed: Number(daysMissed) || null,
-        claim_reason: reason,
+        claim_absence_dates: absenceDates,
         claim_iban: iban,
         claim_account_holder: accountHolder,
         claim_notes: notes,
-        claim_parent_name: parentName,
       })
       .eq("order_number", orderNumber);
   }
@@ -89,6 +87,7 @@ export async function POST(request: Request) {
     const claimColumnValues = {
       [STATUS_COL]: { index: 0 },
       numeric_mm66sev8: String(daysMissed || ""),
+      text_mm66vsyc: absenceDates,
       date_mm66zhf2: { date: claimDate },
       text_mm665xah: iban,
       text_mm66aep4: accountHolder,
@@ -123,8 +122,6 @@ export async function POST(request: Request) {
       const newItemColumns = {
         ...claimColumnValues,
         text_mm66gnmg: String(orderNumber),
-        email_mm664mq3: { email: email, text: email },
-        text_mm66s51r: schoolName,
         text_mm66ksge: studentName,
       };
 
