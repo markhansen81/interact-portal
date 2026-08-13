@@ -24,14 +24,14 @@ export async function POST(request: Request) {
   // Extract claim data from Zapier (Squarespace form fields)
   const claim = body.data || body;
 
-  const studentFirstName = claim.studentFirstName || claim.insured_first_name || "";
-  const studentLastName = claim.studentLastName || claim.insured_last_name || "";
+  const studentName = claim.studentName
+    || [claim.studentFirstName, claim.studentLastName].filter(Boolean).join(" ")
+    || [claim.insured_first_name, claim.insured_last_name].filter(Boolean).join(" ")
+    || "";
   const orderNumber = claim.orderNumber || claim.order_number || "";
   const absenceDates = claim.absenceDates || claim.abwesenheitstage || "";
-  // Count dates: split by comma, newline, or semicolon
-  const daysMissed = absenceDates
-    ? absenceDates.split(/[,;\n]+/).filter((d: string) => d.trim()).length
-    : Number(claim.daysMissed || claim.days_missed || 0);
+  const daysMissed = claim.daysMissed || claim.days_missed
+    || (absenceDates ? absenceDates.split(/[,;\n]+/).filter((d: string) => d.trim()).length : 0);
   const iban = claim.iban || "";
   const accountHolder = claim.accountHolder || claim.kontoinhaber || "";
   const notes = claim.notes || claim.anmerkungen || "";
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     );
 
     const items = searchResult?.data?.boards?.[0]?.items_page?.items || [];
-    const studentName = `${studentFirstName} ${studentLastName}`.trim();
+    // studentName already defined above
 
     // Match by order number or student name
     const match = items.find((item: { id: string; name: string; column_values: { id: string; text: string }[] }) => {
@@ -145,6 +145,6 @@ export async function POST(request: Request) {
   return NextResponse.json({
     ok: true,
     order_number: orderNumber,
-    student: `${studentFirstName} ${studentLastName}`.trim(),
+    student: studentName,
   });
 }
