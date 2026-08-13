@@ -278,6 +278,7 @@ export async function POST(request: Request) {
       [MON_COL.pdf]: { url: publicUrl, text: `Invoice ${orderNumber}` },
       [MON_COL.purchaseDate]: { date: purchaseDateISO },
       text_mm6632x9: guardianName,
+      phone_mm66f2p7: order.phoneNumber ? { phone: order.phoneNumber, countryShortName: "DE" } : undefined,
       color_mm66j0qt: { index: 5 },
     });
 
