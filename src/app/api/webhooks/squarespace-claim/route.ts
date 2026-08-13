@@ -24,18 +24,25 @@ export async function POST(request: Request) {
   // Extract claim data from Zapier (Squarespace form fields)
   const claim = body.data || body;
 
+  // Support both English keys and German Squarespace form field names
   const studentName = claim.studentName
+    || claim["Name der versicherten Person"]
     || [claim.studentFirstName, claim.studentLastName].filter(Boolean).join(" ")
-    || [claim.insured_first_name, claim.insured_last_name].filter(Boolean).join(" ")
     || "";
-  const orderNumber = claim.orderNumber || claim.order_number || "";
-  const absenceDates = claim.absenceDates || claim.abwesenheitstage || "";
+  const orderNumber = claim.orderNumber || claim.order_number
+    || claim["Versicherungs-Auftragsnummer."] || claim["Versicherungs-Auftragsnummer"] || "";
+  const absenceDates = claim.absenceDates || claim.abwesenheitstage
+    || claim["Abwesenheitstage"] || "";
   const daysMissed = claim.daysMissed || claim.days_missed
+    || claim["Anzahl der vollständig versäumten Projekttage"]
     || (absenceDates ? absenceDates.split(/[,;\n]+/).filter((d: string) => d.trim()).length : 0);
-  const claimEmail = claim.email || claim.claimEmail || "";
-  const iban = claim.iban || "";
-  const accountHolder = claim.accountHolder || claim.kontoinhaber || "";
-  const notes = claim.notes || claim.anmerkungen || "";
+  const claimEmail = claim.email || claim.claimEmail
+    || claim["Email-Adresse"] || claim["E-Mail-Adresse"] || "";
+  const iban = claim.iban || claim.IBAN || claim["IBAN"] || "";
+  const accountHolder = claim.accountHolder || claim.kontoinhaber
+    || claim["Zahlungsempfänger*in"] || claim["Zahlungsempfaenger"] || "";
+  const notes = claim.notes || claim.anmerkungen
+    || claim["Nachricht"] || "";
 
   const adminClient = createAdminClient();
 
