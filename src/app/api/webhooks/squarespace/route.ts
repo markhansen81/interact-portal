@@ -20,28 +20,58 @@ const FIELD_MAP: Record<string, string> = {
 };
 
 function extractFormFields(
-  lineItems: Array<{
-    customizations?: Array<{ label?: string; value?: string }>;
-  }>
+  order: Record<string, unknown>
 ): Record<string, string | number | boolean> {
   const fields: Record<string, string | number | boolean> = {};
 
-  for (const item of lineItems) {
-    if (!item.customizations) continue;
-    for (const field of item.customizations) {
-      const label = field.label?.replace(/:+$/, "").trim();
-      if (!label || !field.value) continue;
+  // Zapier format: additionalInfo = comma-separated values,
+  // additionalInfo_1 = comma-separated labels
+  const valuesStr = order.additionalInfo as string | undefined;
+  const labelsStr = order.additionalInfo_1 as string | undefined;
 
-      const dbColumn = FIELD_MAP[label];
-      if (!dbColumn) continue;
+  if (valuesStr && labelsStr) {
+    const values = valuesStr.split(",").map((v) => v.trim());
+    const labels = labelsStr.split(",").map((l) => l.replace(/:+$/, "").trim());
+
+    for (let i = 0; i < labels.length && i < values.length; i++) {
+      const dbColumn = FIELD_MAP[labels[i]];
+      if (!dbColumn || !values[i]) continue;
 
       if (dbColumn === "agb_accepted" || dbColumn === "data_privacy_accepted") {
         fields[dbColumn] = true;
       } else if (dbColumn === "participation_fee" || dbColumn === "num_project_days") {
-        const num = Number(field.value);
-        fields[dbColumn] = isNaN(num) ? field.value : num;
+        const num = Number(values[i]);
+        fields[dbColumn] = isNaN(num) ? values[i] : num;
       } else {
-        fields[dbColumn] = field.value;
+        fields[dbColumn] = values[i];
+      }
+    }
+    return fields;
+  }
+
+  // Raw Squarespace format: lineItems[].customizations[]
+  const lineItems = order.lineItems as Array<{
+    customizations?: Array<{ label?: string; value?: string }>;
+  }> | undefined;
+
+  if (lineItems) {
+    for (const item of lineItems) {
+      if (!item.customizations) continue;
+      for (const field of item.customizations) {
+        const label = field.label?.replace(/:+$/, "").trim();
+        if (!label || !field.value) continue;
+
+        const dbColumn = FIELD_MAP[label];
+        if (!dbColumn) continue;
+
+        if (dbColumn === "agb_accepted" || dbColumn === "data_privacy_accepted") {
+          fields[dbColumn] = true;
+        } else if (dbColumn === "participation_fee" || dbColumn === "num_project_days") {
+          const num = Number(field.value);
+          fields[dbColumn] = isNaN(num) ? field.value : num;
+        } else {
+          fields[dbColumn] = field.value;
+        }
       }
     }
   }
@@ -85,23 +115,29 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, skipped: true, reason: "already processed" });
   }
 
-  // Extract data
+  // Extract data — handle both raw Squarespace and Zapier's flattened format
   const customerEmail = order.customerEmail || order.billingAddress?.email || "";
-  const firstName = order.billingAddress?.firstName || "";
-  const lastName = order.billingAddress?.lastName || "";
+  const firstName = order.billingAddress?.firstName || order.firstName || "";
+  const lastName = order.billingAddress?.lastName || order.lastName || "";
   const orderNumber = order.orderNumber || order.order_number || orderId;
-  const lineItems = order.lineItems || [];
-  const productName = lineItems[0]?.productName || lineItems[0]?.name || "Insurance";
-  const quantity = lineItems[0]?.quantity || 1;
-  const unitPrice = lineItems[0]?.unitPricePaid?.value
-    ? Number(lineItems[0].unitPricePaid.value) / 100
-    : 0;
-  const grandTotal = order.grandTotal?.value
-    ? Number(order.grandTotal.value) / 100
-    : 0;
-  const currency = order.grandTotal?.currency || "EUR";
+  const productName = order.productname || order.productName
+    || order.lineItems?.[0]?.productName || order.lineItems?.[0]?.name || "Insurance";
+  const quantity = order.lineItems?.[0]?.quantity || 1;
 
-  const formFields = extractFormFields(lineItems);
+  // grandTotal: Zapier sends as string "0.00", raw API sends as object { value, currency }
+  let grandTotal = 0;
+  let currency = "EUR";
+  if (typeof order.grandTotal === "string") {
+    grandTotal = Number(order.grandTotal) || 0;
+  } else if (order.grandTotal?.value) {
+    grandTotal = Number(order.grandTotal.value) / 100;
+    currency = order.grandTotal.currency || "EUR";
+  }
+  const unitPrice = order.lineItems?.[0]?.unitPricePaid?.value
+    ? Number(order.lineItems[0].unitPricePaid.value) / 100
+    : grandTotal;
+
+  const formFields = extractFormFields(order);
 
   // Format order date
   const orderDate = order.createdOn
@@ -123,16 +159,18 @@ export async function POST(request: Request) {
     customer_first_name: firstName,
     customer_last_name: lastName,
     customer_email: customerEmail,
-    billing_address: order.billingAddress
-      ? {
-          line1: [order.billingAddress.address1, order.billingAddress.address2]
-            .filter(Boolean)
-            .join(", "),
-          city: order.billingAddress.city,
-          postalCode: order.billingAddress.postalCode,
-          country: order.billingAddress.countryCode,
-        }
-      : undefined,
+    billing_address: typeof order.billingAddress === "string"
+      ? { line1: order.billingAddress }
+      : order.billingAddress
+        ? {
+            line1: [order.billingAddress.address1, order.billingAddress.address2]
+              .filter(Boolean)
+              .join(", "),
+            city: order.billingAddress.city,
+            postalCode: order.billingAddress.postalCode,
+            country: order.billingAddress.countryCode,
+          }
+        : undefined,
     product_name: productName,
     quantity,
     unit_price: unitPrice,
