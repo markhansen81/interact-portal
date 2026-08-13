@@ -1,4 +1,6 @@
 import jsPDF from "jspdf";
+import fs from "fs";
+import path from "path";
 
 export interface InsuranceOrderData {
   order_number: string;
@@ -65,6 +67,16 @@ export function generateInsuranceInvoicePDF(order: InsuranceOrderData): Buffer {
     return doc.getTextDimensions(text, {
       maxWidth: opts?.maxWidth || contentWidth,
     }).h;
+  }
+
+  // --- Logo (top left) ---
+  try {
+    const logoPath = path.join(process.cwd(), "public", "interact-logo.png");
+    const logoData = fs.readFileSync(logoPath);
+    const logoBase64 = `data:image/png;base64,${logoData.toString("base64")}`;
+    doc.addImage(logoBase64, "PNG", margin, y - 5, 35, 25);
+  } catch {
+    // Logo not found — continue without it
   }
 
   // --- Company header (top right, matching work order PDF) ---
@@ -139,13 +151,13 @@ export function generateInsuranceInvoicePDF(order: InsuranceOrderData): Buffer {
   // --- Billed To ---
   addText("BILLED TO:", margin, y, { fontSize: 10, fontStyle: "bold" });
   y += 6;
-  const customerName = `${order.customer_first_name} ${order.customer_last_name}`.trim()
-    || `${order.insured_first_name || ""} ${order.insured_last_name || ""}`.trim()
-    || "";
-  if (customerName) {
-    addText(customerName, margin, y, { fontSize: 10 });
-    y += 5;
-  }
+  addText(
+    `${order.customer_first_name} ${order.customer_last_name}`,
+    margin,
+    y,
+    { fontSize: 10 }
+  );
+  y += 5;
 
   if (order.billing_address) {
     const addr = order.billing_address;
