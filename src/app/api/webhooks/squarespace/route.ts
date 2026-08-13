@@ -236,7 +236,9 @@ export async function POST(request: Request) {
   if (customerEmail) {
     const currencySymbol = currency === "EUR" ? "\u20AC" : currency;
     const emailData = insuranceOrderConfirmationEmail(
-      `${firstName} ${lastName}`.trim() || "Customer",
+      `${firstName} ${lastName}`.trim()
+        || [formFields.insured_first_name, formFields.insured_last_name].filter(Boolean).join(" ")
+        || "Kunde",
       String(orderNumber),
       productName,
       `${currencySymbol}${grandTotal.toFixed(2)}`
