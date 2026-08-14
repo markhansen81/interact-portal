@@ -107,7 +107,7 @@ export async function createInsightlyLead(data: {
     customFields.push({ FIELD_NAME: "Programes_interested_in__c", FIELD_VALUE: data.programs.join(", ") });
   }
   if (data.grades?.length) {
-    customFields.push({ FIELD_NAME: "OPPORTUNITY_FIELD_1__c", FIELD_VALUE: data.grades.map(g => `Klasse ${g}`).join(", ") });
+    customFields.push({ FIELD_NAME: "OPPORTUNITY_FIELD_1__c", FIELD_VALUE: data.grades.join(", ") });
   }
   if (data.num_students) {
     customFields.push({ FIELD_NAME: "Estimated_Number_of_Participants__c", FIELD_VALUE: Number(data.num_students) });
