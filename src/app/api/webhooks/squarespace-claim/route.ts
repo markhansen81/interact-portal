@@ -46,6 +46,10 @@ export async function POST(request: Request) {
 
   const adminClient = createAdminClient();
 
+  // Log raw payload for debugging
+  console.log("[CLAIM] Raw keys:", Object.keys(claim));
+  console.log("[CLAIM] Parsed:", { studentName, orderNumber, absenceDates, daysMissed, iban, claimEmail, accountHolder });
+
   // Save claim to Supabase (add claim fields to insurance_orders)
   if (orderNumber) {
     await adminClient
@@ -57,6 +61,7 @@ export async function POST(request: Request) {
         claim_iban: iban,
         claim_account_holder: accountHolder,
         claim_notes: notes,
+        raw_payload: body,
       })
       .eq("order_number", orderNumber);
   }
