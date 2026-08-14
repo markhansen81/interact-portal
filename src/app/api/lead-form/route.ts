@@ -122,7 +122,7 @@ export async function POST(request: Request) {
   if (data.num_groups) descParts2.push(`Groups: ${data.num_groups}`);
   if (data.preferred_dates) descParts2.push(`Dates: ${data.preferred_dates}`);
 
-  createInsightlyLead({
+  await createInsightlyLead({
     first_name: data.first_name || "",
     last_name: data.last_name || "",
     email: data.email,
@@ -141,7 +141,7 @@ export async function POST(request: Request) {
     num_students: data.num_students,
     num_groups: data.num_groups,
     school_year: data.school_year,
-  }).catch((err) => console.error("[LEAD] Insightly error:", err));
+  });
 
   if (result?.data?.create_item) {
     return NextResponse.json({ ok: true, id: result.data.create_item.id });
