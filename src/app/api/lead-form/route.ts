@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { mondayQuery } from "@/lib/monday";
+import { createInsightlyLead } from "@/lib/insightly";
 
 const LEADS_BOARD = "6976340556";
 
@@ -110,6 +111,31 @@ export async function POST(request: Request) {
     }`,
     { b: LEADS_BOARD, n: itemName, c: JSON.stringify(columnValues), g: "topics" }
   );
+
+  // Also create lead in Insightly
+  const descParts2: string[] = [];
+  if (data.message) descParts2.push(data.message);
+  if (data.school_name) descParts2.push(`School: ${data.school_name}`);
+  if (data.programs?.length) descParts2.push(`Programs: ${data.programs.join(", ")}`);
+  if (data.grades?.length) descParts2.push(`Grades: ${data.grades.join(", ")}`);
+  if (data.num_students) descParts2.push(`Students: ${data.num_students}`);
+  if (data.num_groups) descParts2.push(`Groups: ${data.num_groups}`);
+  if (data.preferred_dates) descParts2.push(`Dates: ${data.preferred_dates}`);
+
+  createInsightlyLead({
+    first_name: data.first_name || "",
+    last_name: data.last_name || "",
+    email: data.email,
+    phone: data.phone,
+    organisation_name: data.school_name,
+    title: data.roles?.join(", "),
+    street: data.street,
+    city: data.city,
+    state: data.state,
+    postcode: data.postcode,
+    description: descParts2.join("\n"),
+    lead_source: data.lead_source || "Web",
+  }).catch((err) => console.error("[LEAD] Insightly error:", err));
 
   if (result?.data?.create_item) {
     return NextResponse.json({ ok: true, id: result.data.create_item.id });
