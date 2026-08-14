@@ -34,6 +34,12 @@ export async function createInsightlyLead(data: {
   postcode?: string;
   description?: string;
   lead_source?: string;
+  school_type?: string;
+  programs?: string[];
+  grades?: string[];
+  num_students?: string;
+  num_groups?: string;
+  school_year?: string;
 }) {
   const auth = getAuthHeader();
   if (!auth) {
@@ -74,6 +80,47 @@ export async function createInsightlyLead(data: {
     customFields.push({ FIELD_NAME: "LEAD_FIELD_1", FIELD_VALUE: stateUpper });
     customFields.push({ FIELD_NAME: "LEAD_FIELD_1_1_1_1_1_1__c", FIELD_VALUE: stateUpper });
   }
+
+  // Match old website custom fields exactly
+  if (data.email) {
+    customFields.push({ FIELD_NAME: "Client_email_1__c", FIELD_VALUE: data.email });
+  }
+  const contactName = `${data.first_name} ${data.last_name}`.trim();
+  if (contactName) {
+    customFields.push({ FIELD_NAME: "Primary_Contact_1_1__c", FIELD_VALUE: contactName });
+  }
+  if (data.phone) {
+    customFields.push({ FIELD_NAME: "Primary_Contact_Phone__c", FIELD_VALUE: data.phone });
+  }
+  if (data.organisation_name) {
+    customFields.push({ FIELD_NAME: "School_Name__c", FIELD_VALUE: data.organisation_name });
+  }
+  if (data.street || data.postcode || data.city) {
+    const fullAddress = [data.street, [data.postcode, data.city].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+    customFields.push({ FIELD_NAME: "School_Address__c", FIELD_VALUE: fullAddress });
+  }
+  if (data.school_type) {
+    customFields.push({ FIELD_NAME: "School_Type_1__c", FIELD_VALUE: data.school_type });
+    customFields.push({ FIELD_NAME: "Organization_type_dropdown_1_1__c", FIELD_VALUE: data.school_type });
+  }
+  if (data.programs?.length) {
+    customFields.push({ FIELD_NAME: "Programes_interested_in__c", FIELD_VALUE: data.programs.join(", ") });
+  }
+  if (data.grades?.length) {
+    customFields.push({ FIELD_NAME: "OPPORTUNITY_FIELD_1__c", FIELD_VALUE: data.grades.map(g => `Klasse ${g}`).join(", ") });
+  }
+  if (data.num_students) {
+    customFields.push({ FIELD_NAME: "Estimated_Number_of_Participants__c", FIELD_VALUE: Number(data.num_students) });
+  }
+  if (data.num_groups) {
+    customFields.push({ FIELD_NAME: "Estimated_Number_of_Participants_2_1__c", FIELD_VALUE: Number(data.num_groups) });
+  }
+  if (data.school_year) {
+    // Insightly expects "2026 / 2027" format (spaces around slash)
+    const formattedYear = data.school_year.replace(/\s*\/\s*/, " / ");
+    customFields.push({ FIELD_NAME: "School_Year__c", FIELD_VALUE: formattedYear });
+  }
+  customFields.push({ FIELD_NAME: "New_or_returning_Client__c", FIELD_VALUE: "New Client" });
 
   lead.CUSTOMFIELDS = customFields;
 

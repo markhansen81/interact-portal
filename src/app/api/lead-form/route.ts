@@ -135,6 +135,12 @@ export async function POST(request: Request) {
     postcode: data.postcode,
     description: descParts2.join("\n"),
     lead_source: data.lead_source || "Web",
+    school_type: data.school_type,
+    programs: data.programs,
+    grades: data.grades,
+    num_students: data.num_students,
+    num_groups: data.num_groups,
+    school_year: data.school_year,
   }).catch((err) => console.error("[LEAD] Insightly error:", err));
 
   if (result?.data?.create_item) {
