@@ -24,7 +24,8 @@ export async function POST(request: Request) {
   // Extract claim data from Zapier (Squarespace form fields)
   // Trim keys — Zapier sometimes adds trailing spaces
   const rawClaim = body.data || body;
-  const claim: Record<string, unknown> = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const claim: Record<string, any> = {};
   for (const [key, value] of Object.entries(rawClaim)) {
     claim[key.trim()] = value;
   }
