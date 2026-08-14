@@ -22,7 +22,12 @@ export async function POST(request: Request) {
   }
 
   // Extract claim data from Zapier (Squarespace form fields)
-  const claim = body.data || body;
+  // Trim keys — Zapier sometimes adds trailing spaces
+  const rawClaim = body.data || body;
+  const claim: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(rawClaim)) {
+    claim[key.trim()] = value;
+  }
 
   // Support both English keys and German Squarespace form field names
   const studentName = claim.studentName
