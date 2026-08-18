@@ -144,7 +144,7 @@ export async function POST(request: Request) {
   });
 
   if (result?.data?.create_item) {
-    return NextResponse.json({ ok: true, id: result.data.create_item.id });
+    return NextResponse.json({ ok: true, id: result.data.create_item.id, insightly_key_present: !!process.env.INSIGHTLY_API_KEY });
   }
 
   return NextResponse.json({ error: "Failed to create lead", details: result }, { status: 500 });
