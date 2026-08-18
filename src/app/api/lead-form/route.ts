@@ -105,14 +105,7 @@ export async function POST(request: Request) {
     columnValues.text_mm5ah6a8 = data.school_name;
   }
 
-  const result = await mondayQuery(
-    `mutation ($b: ID!, $n: String!, $c: JSON!, $g: String!) {
-      create_item(board_id: $b, item_name: $n, column_values: $c, group_id: $g, create_labels_if_missing: true) { id }
-    }`,
-    { b: LEADS_BOARD, n: itemName, c: JSON.stringify(columnValues), g: "topics" }
-  );
-
-  // Also create lead in Insightly
+  // Build Insightly description
   const descParts2: string[] = [];
   if (data.message) descParts2.push(data.message);
   if (data.school_name) descParts2.push(`School: ${data.school_name}`);
@@ -122,29 +115,45 @@ export async function POST(request: Request) {
   if (data.num_groups) descParts2.push(`Groups: ${data.num_groups}`);
   if (data.preferred_dates) descParts2.push(`Dates: ${data.preferred_dates}`);
 
-  await createInsightlyLead({
-    first_name: data.first_name || "",
-    last_name: data.last_name || "",
-    email: data.email,
-    phone: data.phone,
-    organisation_name: data.school_name,
-    title: data.roles?.join(", "),
-    street: data.street,
-    city: data.city,
-    state: data.state,
-    postcode: data.postcode,
-    description: descParts2.join("\n"),
-    lead_source: data.lead_source || "Web",
-    school_type: data.school_type,
-    programs: data.programs,
-    grades: data.grades,
-    num_students: data.num_students,
-    num_groups: data.num_groups,
-    school_year: data.school_year,
-  });
+  // Run Monday and Insightly in parallel
+  const [result, insightlyResult] = await Promise.all([
+    mondayQuery(
+      `mutation ($b: ID!, $n: String!, $c: JSON!, $g: String!) {
+        create_item(board_id: $b, item_name: $n, column_values: $c, group_id: $g, create_labels_if_missing: true) { id }
+      }`,
+      { b: LEADS_BOARD, n: itemName, c: JSON.stringify(columnValues), g: "topics" }
+    ),
+    createInsightlyLead({
+      first_name: data.first_name || "",
+      last_name: data.last_name || "",
+      email: data.email,
+      phone: data.phone,
+      organisation_name: data.school_name,
+      title: data.roles?.join(", "),
+      street: data.street,
+      city: data.city,
+      state: data.state,
+      postcode: data.postcode,
+      description: descParts2.join("\n"),
+      lead_source: data.lead_source || "Web",
+      school_type: data.school_type,
+      programs: data.programs,
+      grades: data.grades,
+      num_students: data.num_students,
+      num_groups: data.num_groups,
+      school_year: data.school_year,
+    }).catch((err) => {
+      console.error("[LEAD] Insightly error:", err);
+      return null;
+    }),
+  ]);
 
   if (result?.data?.create_item) {
-    return NextResponse.json({ ok: true, id: result.data.create_item.id, insightly_key_present: !!process.env.INSIGHTLY_API_KEY });
+    return NextResponse.json({
+      ok: true,
+      id: result.data.create_item.id,
+      insightly: insightlyResult ? "ok" : "failed",
+    });
   }
 
   return NextResponse.json({ error: "Failed to create lead", details: result }, { status: 500 });
