@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { mondayQuery } from "@/lib/monday";
 import { createInsightlyLead } from "@/lib/insightly";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { notifyNewLead } from "@/lib/slack";
 
 const LEADS_BOARD = "6976340556";
 
@@ -194,6 +195,17 @@ export async function POST(request: Request) {
       })
       .eq("id", leadId);
   }
+
+  // 6. Notify Slack
+  await notifyNewLead({
+    name: `${data.first_name} ${data.last_name}`.trim(),
+    email: data.email,
+    school: data.school_name,
+    programs: data.programs,
+    state: data.state,
+    mondayOk: !!mondayItemId,
+    insightlyOk: !!insightlyLeadId,
+  });
 
   return NextResponse.json({
     ok: true,
