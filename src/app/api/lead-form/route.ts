@@ -1,12 +1,52 @@
 import { NextResponse } from "next/server";
 import { mondayQuery } from "@/lib/monday";
 import { createInsightlyLead } from "@/lib/insightly";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const LEADS_BOARD = "6976340556";
 
 export async function POST(request: Request) {
   const data = await request.json();
+  const adminClient = createAdminClient();
 
+  // 1. Save to Supabase FIRST — this is our safety net
+  const { data: savedLead, error: saveError } = await adminClient
+    .from("leads")
+    .insert({
+      first_name: data.first_name || "",
+      last_name: data.last_name || "",
+      email: data.email || null,
+      phone: data.phone || null,
+      roles: data.roles || [],
+      school_name: data.school_name || null,
+      street: data.street || null,
+      postcode: data.postcode || null,
+      city: data.city || null,
+      state: data.state || null,
+      school_type: data.school_type || null,
+      programs: data.programs || [],
+      grades: data.grades || [],
+      num_students: data.num_students || null,
+      num_groups: data.num_groups || null,
+      school_year: data.school_year || null,
+      preferred_dates: data.preferred_dates || null,
+      has_dates: data.has_dates ?? null,
+      lead_source: data.lead_source || null,
+      message: data.message || null,
+      newsletter: data.newsletter || false,
+      locale: data.locale || null,
+      raw_payload: data,
+    })
+    .select("id")
+    .single();
+
+  if (saveError) {
+    console.error("[LEAD] Supabase save failed:", saveError);
+  }
+
+  const leadId = savedLead?.id;
+
+  // 2. Build Monday column values
   const columnValues: Record<string, unknown> = {
     lead_company: `${data.first_name} ${data.last_name}`.trim(),
     contact_first_name: data.first_name,
@@ -48,33 +88,23 @@ export async function POST(request: Request) {
   if (data.num_groups) {
     columnValues.numeric_mktdm7w5 = data.num_groups;
   }
-  // Dates: preferred_dates = start date (Von), num_days = end date (Bis) when has_dates=true
   if (data.has_dates === true && data.preferred_dates) {
-    const startDate = data.preferred_dates; // YYYY-MM-DD
-    const endDate = data.num_days || startDate; // YYYY-MM-DD
-
-    // Preferred dates as text
+    const startDate = data.preferred_dates;
+    const endDate = data.num_days || startDate;
     columnValues.preferred_dates = `${startDate} - ${endDate}`;
-
-    // Start/End date columns
     columnValues.proposed_start_date = { date: startDate };
     columnValues.proposed_end_date = { date: endDate };
-
-    // Calculate number of days
     const start = new Date(startDate);
     const end = new Date(endDate);
     const diffDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
     if (diffDays > 0) {
       columnValues.numeric_mktd4bet = String(diffDays);
     }
-
-    // Auto school year: Aug-Dec = current/next, Jan-Jul = prev/current
     const month = start.getMonth();
     const year = start.getFullYear();
     const schoolYear = month >= 7 ? `${year}/${year + 1}` : `${year - 1}/${year}`;
     columnValues.dropdown_mktdk7xc = { labels: [schoolYear] };
   } else if (data.has_dates === false) {
-    // "Not sure" flow
     if (data.preferred_dates) {
       columnValues.preferred_dates = data.preferred_dates;
     }
@@ -89,7 +119,6 @@ export async function POST(request: Request) {
     columnValues.dropdown_mktd7dhm = { labels: [data.locale === "de" ? "Ja" : "Yes"] };
   }
 
-  // Build description from message + context
   const descParts: string[] = [];
   if (data.message) descParts.push(data.message);
   if (data.has_dates === false) descParts.push(data.locale === "de" ? "Noch kein fester Termin — Beratung gewünscht." : "No fixed dates yet — advice requested.");
@@ -100,12 +129,11 @@ export async function POST(request: Request) {
   const contactName = `${data.first_name} ${data.last_name}`.trim();
   const itemName = data.school_name ? `${data.school_name} // ${contactName}` : contactName;
 
-  // Also set School Name as a separate column
   if (data.school_name) {
     columnValues.text_mm5ah6a8 = data.school_name;
   }
 
-  // Build Insightly description
+  // 3. Build Insightly description
   const descParts2: string[] = [];
   if (data.message) descParts2.push(data.message);
   if (data.school_name) descParts2.push(`School: ${data.school_name}`);
@@ -115,14 +143,17 @@ export async function POST(request: Request) {
   if (data.num_groups) descParts2.push(`Groups: ${data.num_groups}`);
   if (data.preferred_dates) descParts2.push(`Dates: ${data.preferred_dates}`);
 
-  // Run Monday and Insightly in parallel
-  const [result, insightlyResult] = await Promise.all([
+  // 4. Run Monday and Insightly in parallel
+  const [mondayResult, insightlyResult] = await Promise.all([
     mondayQuery(
       `mutation ($b: ID!, $n: String!, $c: JSON!, $g: String!) {
         create_item(board_id: $b, item_name: $n, column_values: $c, group_id: $g, create_labels_if_missing: true) { id }
       }`,
       { b: LEADS_BOARD, n: itemName, c: JSON.stringify(columnValues), g: "topics" }
-    ),
+    ).catch((err) => {
+      console.error("[LEAD] Monday error:", err);
+      return null;
+    }),
     createInsightlyLead({
       first_name: data.first_name || "",
       last_name: data.last_name || "",
@@ -148,13 +179,27 @@ export async function POST(request: Request) {
     }),
   ]);
 
-  if (result?.data?.create_item) {
-    return NextResponse.json({
-      ok: true,
-      id: result.data.create_item.id,
-      insightly: insightlyResult ? "ok" : "failed",
-    });
+  // 5. Update Supabase with sync status
+  const mondayItemId = mondayResult?.data?.create_item?.id || null;
+  const insightlyLeadId = insightlyResult?.LEAD_ID || null;
+
+  if (leadId) {
+    await adminClient
+      .from("leads")
+      .update({
+        monday_item_id: mondayItemId ? String(mondayItemId) : null,
+        insightly_lead_id: insightlyLeadId ? String(insightlyLeadId) : null,
+        monday_ok: !!mondayItemId,
+        insightly_ok: !!insightlyLeadId,
+      })
+      .eq("id", leadId);
   }
 
-  return NextResponse.json({ error: "Failed to create lead", details: result }, { status: 500 });
+  return NextResponse.json({
+    ok: true,
+    id: mondayItemId,
+    insightly: insightlyLeadId ? "ok" : "failed",
+    monday: mondayItemId ? "ok" : "failed",
+    saved: !!leadId,
+  });
 }
