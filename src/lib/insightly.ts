@@ -130,8 +130,8 @@ export async function createInsightlyLead(data: {
   if (data.proposed_end) {
     customFields.push({ FIELD_NAME: "Proposed_end_date__c", FIELD_VALUE: data.proposed_end });
   }
-  if (data.num_days && data.num_days > 0) {
-    customFields.push({ FIELD_NAME: "Number_of_project_days_1__c", FIELD_VALUE: String(data.num_days) });
+  if (data.num_days && data.num_days > 0 && data.num_days <= 7) {
+    customFields.push({ FIELD_NAME: "Number_of_project_days_1__c", FIELD_VALUE: `${data.num_days} Day${data.num_days > 1 ? "s" : ""}` });
   }
   customFields.push({ FIELD_NAME: "New_or_returning_Client__c", FIELD_VALUE: "New Client" });
 
