@@ -40,6 +40,9 @@ export async function createInsightlyLead(data: {
   num_students?: string;
   num_groups?: string;
   school_year?: string;
+  proposed_start?: string;
+  proposed_end?: string;
+  num_days?: number;
 }) {
   const auth = getAuthHeader();
   if (!auth) {
@@ -119,6 +122,16 @@ export async function createInsightlyLead(data: {
     // Insightly expects "2026 / 2027" format (spaces around slash)
     const formattedYear = data.school_year.replace(/\s*\/\s*/, " / ");
     customFields.push({ FIELD_NAME: "School_Year__c", FIELD_VALUE: formattedYear });
+  }
+  if (data.proposed_start) {
+    customFields.push({ FIELD_NAME: "Proposed_dates_project__c", FIELD_VALUE: data.proposed_start });
+    customFields.push({ FIELD_NAME: "Prosposed_start_date_1__c", FIELD_VALUE: data.proposed_start });
+  }
+  if (data.proposed_end) {
+    customFields.push({ FIELD_NAME: "Proposed_end_date__c", FIELD_VALUE: data.proposed_end });
+  }
+  if (data.num_days && data.num_days > 0) {
+    customFields.push({ FIELD_NAME: "Number_of_project_days_1__c", FIELD_VALUE: String(data.num_days) });
   }
   customFields.push({ FIELD_NAME: "New_or_returning_Client__c", FIELD_VALUE: "New Client" });
 

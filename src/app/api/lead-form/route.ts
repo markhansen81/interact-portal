@@ -173,7 +173,19 @@ export async function POST(request: Request) {
       grades: data.grades,
       num_students: data.num_students,
       num_groups: data.num_groups,
-      school_year: data.school_year,
+      school_year: data.school_year || (data.has_dates === true && data.preferred_dates ? (() => {
+        const s = new Date(data.preferred_dates);
+        const m = s.getMonth();
+        const y = s.getFullYear();
+        return m >= 7 ? `${y}/${y+1}` : `${y-1}/${y}`;
+      })() : undefined),
+      proposed_start: data.has_dates === true ? data.preferred_dates : undefined,
+      proposed_end: data.has_dates === true ? (data.num_days || data.preferred_dates) : undefined,
+      num_days: data.has_dates === true && data.preferred_dates ? (() => {
+        const s = new Date(data.preferred_dates);
+        const e = new Date(data.num_days || data.preferred_dates);
+        return Math.ceil((e.getTime() - s.getTime()) / (1000*60*60*24)) + 1;
+      })() : undefined,
     }).catch((err) => {
       console.error("[LEAD] Insightly error:", err);
       return null;
