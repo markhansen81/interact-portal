@@ -30,8 +30,6 @@ export async function addToMailchimp(data: {
           merge_fields: {
             FNAME: data.first_name || "",
             LNAME: data.last_name || "",
-            ...(data.school_name ? { SCHOOL: data.school_name } : {}),
-            ...(data.state ? { STATE: data.state } : {}),
           },
         }),
       }
