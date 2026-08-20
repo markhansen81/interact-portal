@@ -3,6 +3,7 @@ import { mondayQuery } from "@/lib/monday";
 import { createInsightlyLead } from "@/lib/insightly";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyNewLead } from "@/lib/slack";
+import { addToMailchimp } from "@/lib/mailchimp";
 
 const LEADS_BOARD = "6976340556";
 
@@ -144,8 +145,8 @@ export async function POST(request: Request) {
   if (data.num_groups) descParts2.push(`Groups: ${data.num_groups}`);
   if (data.preferred_dates) descParts2.push(`Dates: ${data.preferred_dates}`);
 
-  // 4. Run Monday and Insightly in parallel
-  const [mondayResult, insightlyResult] = await Promise.all([
+  // 4. Run Monday, Insightly, and Mailchimp in parallel
+  const [mondayResult, insightlyResult, mailchimpResult] = await Promise.all([
     mondayQuery(
       `mutation ($b: ID!, $n: String!, $c: JSON!, $g: String!) {
         create_item(board_id: $b, item_name: $n, column_values: $c, group_id: $g, create_labels_if_missing: true) { id }
@@ -190,6 +191,19 @@ export async function POST(request: Request) {
       console.error("[LEAD] Insightly error:", err);
       return null;
     }),
+    // Mailchimp — only if newsletter checked
+    data.newsletter
+      ? addToMailchimp({
+          email: data.email,
+          first_name: data.first_name,
+          last_name: data.last_name,
+          school_name: data.school_name,
+          state: data.state,
+        }).catch((err) => {
+          console.error("[LEAD] Mailchimp error:", err);
+          return null;
+        })
+      : Promise.resolve(null),
   ]);
 
   // 5. Update Supabase with sync status
