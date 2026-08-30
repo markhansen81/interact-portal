@@ -137,27 +137,33 @@ export async function createInsightlyLead(data: {
 
   lead.CUSTOMFIELDS = customFields;
 
-  try {
-    const res = await fetch(`${INSIGHTLY_API_URL}/Leads`, {
-      method: "POST",
-      headers: {
-        Authorization: auth,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(lead),
-    });
+  const maxAttempts = 2;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const res = await fetch(`${INSIGHTLY_API_URL}/Leads`, {
+        method: "POST",
+        headers: {
+          Authorization: auth,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(lead),
+      });
 
-    if (!res.ok) {
-      const error = await res.text();
-      console.error("[INSIGHTLY] Failed to create lead:", res.status, error);
+      if (!res.ok) {
+        const error = await res.text();
+        console.error(`[INSIGHTLY] Failed to create lead (attempt ${attempt}/${maxAttempts}):`, res.status, error);
+        if (attempt < maxAttempts && res.status >= 500) continue;
+        return null;
+      }
+
+      const result = await res.json();
+      console.log("[INSIGHTLY] Lead created:", result.LEAD_ID);
+      return result;
+    } catch (error) {
+      console.error(`[INSIGHTLY] Error (attempt ${attempt}/${maxAttempts}):`, error);
+      if (attempt < maxAttempts) continue;
       return null;
     }
-
-    const result = await res.json();
-    console.log("[INSIGHTLY] Lead created:", result.LEAD_ID);
-    return result;
-  } catch (error) {
-    console.error("[INSIGHTLY] Error:", error);
-    return null;
   }
+  return null;
 }
