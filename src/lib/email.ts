@@ -21,7 +21,7 @@ export async function sendEmail({
 }) {
   const resend = getResend();
   if (!resend) {
-    return;
+    return { ok: false, error: "No API key" };
   }
 
   try {
@@ -32,8 +32,10 @@ export async function sendEmail({
       html,
       ...(attachments && { attachments }),
     });
+    return { ok: true };
   } catch (error) {
     console.error("[EMAIL] Failed:", error);
+    return { ok: false, error };
   }
 }
 

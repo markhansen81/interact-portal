@@ -147,7 +147,7 @@ export async function POST(request: Request) {
   if (data.preferred_dates) descParts2.push(`Dates: ${data.preferred_dates}`);
 
   // 4. Run Monday, Insightly, and Mailchimp in parallel
-  const [mondayResult, insightlyResult, mailchimpResult] = await Promise.all([
+  const [mondayResult, insightlyResult, mailchimpResult, emailResult] = await Promise.all([
     mondayQuery(
       `mutation ($b: ID!, $n: String!, $c: JSON!, $g: String!) {
         create_item(board_id: $b, item_name: $n, column_values: $c, group_id: $g, create_labels_if_missing: true) { id }
@@ -246,6 +246,7 @@ export async function POST(request: Request) {
   }
 
   // 6. Notify Slack
+  const emailOk = !!emailResult?.ok;
   await notifyNewLead({
     name: `${data.first_name} ${data.last_name}`.trim(),
     email: data.email,
@@ -254,6 +255,7 @@ export async function POST(request: Request) {
     state: data.state,
     mondayOk: !!mondayItemId,
     insightlyOk: !!insightlyLeadId,
+    emailOk,
   });
 
   return NextResponse.json({
