@@ -12,6 +12,19 @@ const LEAD_SOURCES: Record<string, number> = {
   Unknown: 2809481,
 };
 
+// German → English lead source mapping
+const LEAD_SOURCE_DE_TO_EN: Record<string, string> = {
+  Empfehlung: "Referral",
+  Fortbildung: "Professional Development Workshop",
+  "Messe / Event": "Tradeshow Event",
+  "Flyer / Broschüre": "Flyer / Brochure",
+  "B2B Partner": "B2B Partners",
+};
+
+function normalizeLeadSource(source: string): string {
+  return LEAD_SOURCE_DE_TO_EN[source] || source;
+}
+
 // New lead = NotContacted
 const NEW_LEAD_STATUS_ID = 870351;
 
@@ -67,13 +80,13 @@ export async function createInsightlyLead(data: {
   if (data.postcode) lead.ADDRESS_POSTCODE = data.postcode;
   if (data.description) lead.LEAD_DESCRIPTION = data.description;
 
-  // Map lead source string to ID
-  const sourceId = LEAD_SOURCES[data.lead_source || "Web"] || LEAD_SOURCES.Web;
+  // Map lead source string to ID (normalize German labels first)
+  const source = normalizeLeadSource(data.lead_source || "Web");
+  const sourceId = LEAD_SOURCES[source] || LEAD_SOURCES.Web;
   lead.LEAD_SOURCE_ID = sourceId;
 
   // Custom fields — match existing Insightly patterns
   const customFields: Array<{ FIELD_NAME: string; FIELD_VALUE: unknown }> = [];
-  const source = data.lead_source || "Web";
   customFields.push({ FIELD_NAME: "LEAD_SOURCE__c", FIELD_VALUE: source });
   customFields.push({ FIELD_NAME: "LEAD__OPP_SOURCE__c", FIELD_VALUE: source });
 
