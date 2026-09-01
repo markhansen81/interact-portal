@@ -21,6 +21,7 @@ export async function notifyNewLead(data: {
   state?: string;
   mondayOk: boolean;
   insightlyOk: boolean;
+  emailOk: boolean;
 }) {
   const webhookUrl = process.env.SLACK_LEADS_WEBHOOK_URL;
   if (!webhookUrl) return;
@@ -30,8 +31,10 @@ export async function notifyNewLead(data: {
   else syncStatus.push("\u274c Monday FAILED");
   if (data.insightlyOk) syncStatus.push("\u2705 Insightly");
   else syncStatus.push("\u274c Insightly FAILED");
+  if (data.emailOk) syncStatus.push("\u2705 Email sent");
+  else syncStatus.push("\u274c Email FAILED");
 
-  const hasFailed = !data.mondayOk || !data.insightlyOk;
+  const hasFailed = !data.mondayOk || !data.insightlyOk || !data.emailOk;
 
   await sendSlackMessage(webhookUrl, {
     text: hasFailed
