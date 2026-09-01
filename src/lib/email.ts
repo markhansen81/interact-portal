@@ -114,6 +114,55 @@ export function newMessageEmail(recipientName: string, senderName: string) {
   };
 }
 
+export function newLeadEmail(data: {
+  name: string;
+  email?: string;
+  phone?: string;
+  school?: string;
+  state?: string;
+  programs?: string[];
+  grades?: string[];
+  num_students?: string;
+  num_groups?: string;
+  school_year?: string;
+  preferred_dates?: string;
+  message?: string;
+}) {
+  const rows = [
+    { label: "Name", value: data.name },
+    { label: "Email", value: data.email },
+    { label: "Phone", value: data.phone },
+    { label: "School", value: data.school },
+    { label: "State", value: data.state },
+    { label: "Programs", value: data.programs?.join(", ") },
+    { label: "Grades", value: data.grades?.join(", ") },
+    { label: "Students", value: data.num_students },
+    { label: "Groups", value: data.num_groups },
+    { label: "School Year", value: data.school_year },
+    { label: "Preferred Dates", value: data.preferred_dates },
+    { label: "Message", value: data.message },
+  ].filter((r) => r.value);
+
+  const tableRows = rows
+    .map(
+      (r) =>
+        `<tr><td style="color: #71717a; padding: 6px 12px 6px 0; vertical-align: top; white-space: nowrap;">${r.label}:</td><td style="padding: 6px 0; font-weight: 500;">${r.value}</td></tr>`
+    )
+    .join("");
+
+  return {
+    subject: `New Lead: ${data.school || data.name}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #18181b;">New Lead Inquiry</h2>
+        <table style="width: 100%; font-size: 14px; border-collapse: collapse;">${tableRows}</table>
+        <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 20px 0;" />
+        <p style="color: #71717a; font-size: 12px;">This lead was submitted via the InterACT Portal contact form.</p>
+      </div>
+    `,
+  };
+}
+
 export function insuranceOrderConfirmationEmail(
   customerName: string,
   orderNumber: string,

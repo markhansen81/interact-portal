@@ -4,6 +4,7 @@ import { createInsightlyLead } from "@/lib/insightly";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyNewLead } from "@/lib/slack";
 import { addToMailchimp } from "@/lib/mailchimp";
+import { sendEmail, newLeadEmail } from "@/lib/email";
 
 const LEADS_BOARD = "6976340556";
 
@@ -204,6 +205,28 @@ export async function POST(request: Request) {
           return null;
         })
       : Promise.resolve(null),
+    // Email to sales team
+    (() => {
+      const contactName = `${data.first_name} ${data.last_name}`.trim();
+      const { subject, html } = newLeadEmail({
+        name: contactName,
+        email: data.email,
+        phone: data.phone,
+        school: data.school_name,
+        state: data.state,
+        programs: data.programs,
+        grades: data.grades,
+        num_students: data.num_students,
+        num_groups: data.num_groups,
+        school_year: data.school_year,
+        preferred_dates: data.preferred_dates,
+        message: data.message,
+      });
+      return sendEmail({ to: "connect@interactenglish.de", subject, html });
+    })().catch((err) => {
+      console.error("[LEAD] Email error:", err);
+      return null;
+    }),
   ]);
 
   // 5. Update Supabase with sync status
