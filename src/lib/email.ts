@@ -25,14 +25,26 @@ export async function sendEmail({
   }
 
   try {
-    await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to,
       subject,
       html,
       ...(attachments && { attachments }),
     });
-    return { ok: true };
+
+    if (error) {
+      console.error("[EMAIL] Resend error:", error);
+      return { ok: false, error };
+    }
+
+    if (!data?.id) {
+      console.error("[EMAIL] No email ID returned from Resend");
+      return { ok: false, error: "No email ID returned" };
+    }
+
+    console.log("[EMAIL] Sent:", data.id, "to:", to);
+    return { ok: true, id: data.id };
   } catch (error) {
     console.error("[EMAIL] Failed:", error);
     return { ok: false, error };
