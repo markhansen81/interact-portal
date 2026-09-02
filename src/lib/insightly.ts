@@ -3,7 +3,7 @@ const INSIGHTLY_API_URL = "https://api.insightly.com/v3.1";
 // Lead source IDs
 const LEAD_SOURCES: Record<string, number> = {
   Web: 878385,
-  Referral: 3221134,
+  "Referral from Colleague": 3221134,
   "B2B Partners": 3221135,
   "Professional Development Workshop": 2668702,
   "Social Media": 2996253,
@@ -12,17 +12,22 @@ const LEAD_SOURCES: Record<string, number> = {
   Unknown: 2809481,
 };
 
-// German → English lead source mapping
-const LEAD_SOURCE_DE_TO_EN: Record<string, string> = {
-  Empfehlung: "Referral",
+// Map form lead source labels (DE + EN) to exact Insightly dropdown values
+const LEAD_SOURCE_TO_INSIGHTLY: Record<string, string> = {
+  // German form labels
+  Empfehlung: "Referral from Colleague",
   Fortbildung: "Professional Development Workshop",
   "Messe / Event": "Tradeshow Event",
   "Flyer / Broschüre": "Flyer / Brochure",
   "B2B Partner": "B2B Partners",
+  // English form labels that differ from Insightly
+  Referral: "Referral from Colleague",
+  "Referral from Colleague": "Referral from Colleague",
+  "Tradeshow / Event": "Tradeshow Event",
 };
 
 function normalizeLeadSource(source: string): string {
-  return LEAD_SOURCE_DE_TO_EN[source] || source;
+  return LEAD_SOURCE_TO_INSIGHTLY[source] || source;
 }
 
 // New lead = NotContacted
