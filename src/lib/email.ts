@@ -177,6 +177,65 @@ export function newLeadEmail(data: {
   };
 }
 
+export function workOrderSignedEmailToTA(taName: string, projectName: string, schoolName: string) {
+  return {
+    subject: `Work Order Signed: ${projectName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #18181b;">Work Order Signed</h2>
+        <p>Hi ${taName},</p>
+        <p>Your work order for <strong>${projectName}</strong> at <strong>${schoolName}</strong> has been signed successfully.</p>
+        <p>Your signed document is attached to this email.</p>
+        <p><a href="${APP_URL}/portal/work-orders" style="display: inline-block; background: #18181b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">View Work Orders</a></p>
+        <p style="color: #71717a; font-size: 14px;">InterACT English gGmbH</p>
+      </div>
+    `,
+  };
+}
+
+export function workOrderSignedEmailToAdmin(taName: string, projectName: string, schoolName: string) {
+  return {
+    subject: `Work Order Signed: ${taName} — ${projectName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #18181b;">Work Order Signed</h2>
+        <p><strong>${taName}</strong> has signed the work order for <strong>${projectName}</strong> at <strong>${schoolName}</strong>.</p>
+        <p><a href="${APP_URL}/admin/work-orders" style="display: inline-block; background: #18181b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">View Work Orders</a></p>
+      </div>
+    `,
+  };
+}
+
+export function workOrderDeclinedEmailToAdmin(taName: string, projectName: string, schoolName: string, reason?: string) {
+  return {
+    subject: `Work Order Declined: ${taName} — ${projectName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #dc2626;">Work Order Declined</h2>
+        <p><strong>${taName}</strong> has declined the work order for <strong>${projectName}</strong> at <strong>${schoolName}</strong>.</p>
+        ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ""}
+        <p><a href="${APP_URL}/admin/work-orders" style="display: inline-block; background: #18181b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">View Work Orders</a></p>
+      </div>
+    `,
+  };
+}
+
+export function workOrderCancelledEmail(taName: string, projectName: string, reason?: string) {
+  return {
+    subject: `Work Order Cancelled: ${projectName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #dc2626;">Work Order Cancelled</h2>
+        <p>Hi ${taName},</p>
+        <p>Your work order for <strong>${projectName}</strong> has been cancelled.</p>
+        ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ""}
+        <p>If you have questions, please contact us through the portal.</p>
+        <p style="color: #71717a; font-size: 14px;">InterACT English gGmbH</p>
+      </div>
+    `,
+  };
+}
+
 export function insuranceOrderConfirmationEmail(
   customerName: string,
   orderNumber: string,

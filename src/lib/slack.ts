@@ -13,6 +13,66 @@ export async function sendSlackMessage(webhookUrl: string, message: {
   }
 }
 
+export async function notifyWorkOrderEvent(data: {
+  event: "signed" | "declined" | "sent" | "cancelled";
+  taName: string;
+  projectName: string;
+  school: string;
+  reason?: string;
+}) {
+  const webhookUrl = process.env.SLACK_WORKORDERS_WEBHOOK_URL;
+  if (!webhookUrl) return;
+
+  const emojiMap: Record<string, string> = {
+    signed: "\u2705",
+    declined: "\u274c",
+    sent: "\ud83d\udce8",
+    cancelled: "\ud83d\udeab",
+  };
+
+  const labelMap: Record<string, string> = {
+    signed: "Signed",
+    declined: "Declined",
+    sent: "Sent",
+    cancelled: "Cancelled",
+  };
+
+  const emoji = emojiMap[data.event];
+  const label = labelMap[data.event];
+
+  const fields = [
+    { type: "mrkdwn" as const, text: `*TA:*\n${data.taName}` },
+    { type: "mrkdwn" as const, text: `*Project:*\n${data.projectName}` },
+    { type: "mrkdwn" as const, text: `*School:*\n${data.school}` },
+  ];
+
+  const blocks: Array<Record<string, unknown>> = [
+    {
+      type: "header",
+      text: {
+        type: "plain_text",
+        text: `${emoji} Work Order ${label}`,
+      },
+    },
+    {
+      type: "section",
+      fields,
+    },
+  ];
+
+  if (data.reason) {
+    blocks.push({
+      type: "section",
+      text: { type: "mrkdwn", text: `*Reason:* ${data.reason}` },
+    });
+  }
+
+  await sendSlackMessage(webhookUrl, {
+    text: `${emoji} Work Order ${label}: ${data.taName} — ${data.projectName}`,
+    blocks,
+  });
+}
+
 export async function notifyNewLead(data: {
   name: string;
   email?: string;

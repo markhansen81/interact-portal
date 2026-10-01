@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { logActivity } from "@/lib/activity-log";
 import { notifyAdmins } from "@/lib/notifications";
+import { sendEmail, workOrderDeclinedEmailToAdmin } from "@/lib/email";
+import { notifyWorkOrderEvent } from "@/lib/slack";
 
 export async function POST(
   request: Request,
@@ -29,7 +32,7 @@ export async function POST(
 
   const { data: wo } = await supabase
     .from("work_orders")
-    .select("id, ta_id, status, project_name, job_id")
+    .select("id, ta_id, status, project_name, school, job_id")
     .eq("id", id)
     .eq("ta_id", user.id)
     .eq("status", "sent")
@@ -56,6 +59,32 @@ export async function POST(
     .single();
 
   const taName = ta ? `${ta.first_name || ""} ${ta.last_name || ""}`.trim() || ta.email : "Unknown";
+
+  // Send decline email to admins
+  const adminClient = createAdminClient();
+  const { data: admins } = await adminClient
+    .from("profiles")
+    .select("id, email")
+    .eq("role", "admin");
+
+  if (admins) {
+    const emailTemplate = workOrderDeclinedEmailToAdmin(taName, wo.project_name, wo.school, reason || undefined);
+    for (const admin of admins) {
+      await sendEmail({
+        to: admin.email,
+        ...emailTemplate,
+      });
+    }
+  }
+
+  // Slack notification
+  await notifyWorkOrderEvent({
+    event: "declined",
+    taName,
+    projectName: wo.project_name,
+    school: wo.school,
+    reason: reason || undefined,
+  });
 
   await logActivity({
     jobId: wo.job_id,
