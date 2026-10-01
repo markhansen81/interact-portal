@@ -50,7 +50,7 @@ export async function POST(
   // Notify TA
   const ta = wo.profiles as { id: string; first_name: string; last_name: string; email: string };
   const taName = `${ta.first_name || ""} ${ta.last_name || ""}`.trim() || ta.email;
-  const emailTemplate = workOrderSentEmail(taName, wo.project_name, wo.sign_by);
+  const emailTemplate = workOrderSentEmail(taName, wo.project_name, wo.sign_by, id);
 
   await notify({
     userId: ta.id,
