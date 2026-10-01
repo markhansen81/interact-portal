@@ -11,9 +11,10 @@ interface SignaturePadProps {
     timestamp: string;
   }) => void;
   signerName: string;
+  loading?: boolean;
 }
 
-export function SignaturePad({ onSign, signerName }: SignaturePadProps) {
+export function SignaturePad({ onSign, signerName, loading }: SignaturePadProps) {
   const [mode, setMode] = useState<"draw" | "type">("draw");
   const [typedName, setTypedName] = useState(signerName);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -139,9 +140,10 @@ export function SignaturePad({ onSign, signerName }: SignaturePadProps) {
       {/* Sign Button */}
       <button
         onClick={handleSign}
-        className="w-full rounded-lg bg-green-600 px-4 py-3 text-sm font-medium text-white hover:bg-green-700"
+        disabled={loading}
+        className="w-full rounded-lg bg-green-600 px-4 py-3 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Sign Document
+        {loading ? "Signing & Generating PDF..." : "Sign Document"}
       </button>
     </div>
   );
