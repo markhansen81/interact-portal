@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notify } from "@/lib/notifications";
 import { logActivity } from "@/lib/activity-log";
+import { workOrderCancelledEmail } from "@/lib/email";
+import { notifyWorkOrderEvent } from "@/lib/slack";
 
 export async function PATCH(
   request: Request,
@@ -50,6 +52,8 @@ export async function PATCH(
       const ta = wo.profiles as { id: string; first_name: string; last_name: string; email: string };
       const taName = `${ta.first_name || ""} ${ta.last_name || ""}`.trim() || ta.email;
 
+      const emailTemplate = workOrderCancelledEmail(taName, wo.project_name, body.reason || undefined);
+
       await notify({
         userId: ta.id,
         type: "work_order_cancelled",
@@ -57,18 +61,17 @@ export async function PATCH(
         body: `Your work order for ${wo.project_name} has been cancelled by InterACT.${body.reason ? ` Reason: ${body.reason}` : ""}`,
         email: {
           to: ta.email,
-          subject: `Work Order Cancelled: ${wo.project_name}`,
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #dc2626;">Work Order Cancelled</h2>
-              <p>Hi ${taName},</p>
-              <p>Your work order for <strong>${wo.project_name}</strong> has been cancelled.</p>
-              ${body.reason ? `<p><strong>Reason:</strong> ${body.reason}</p>` : ""}
-              <p>If you have questions, please contact us through the portal.</p>
-              <p style="color: #71717a; font-size: 14px;">InterACT English gGmbH</p>
-            </div>
-          `,
+          ...emailTemplate,
         },
+      });
+
+      // Slack notification
+      await notifyWorkOrderEvent({
+        event: "cancelled",
+        taName,
+        projectName: wo.project_name,
+        school: wo.school,
+        reason: body.reason || undefined,
       });
     }
 
