@@ -21,6 +21,13 @@ export default async function TAWorkOrdersPage() {
     declined: "bg-red-100 text-red-700",
   };
 
+  const statusLabels: Record<string, string> = {
+    draft: "draft",
+    sent: "unsigned",
+    signed: "signed",
+    declined: "declined",
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
@@ -62,7 +69,7 @@ export default async function TAWorkOrdersPage() {
                 </Link>
                 <div className="flex items-center gap-3">
                   <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[wo.status] || ""}`}>
-                    {wo.status}
+                    {statusLabels[wo.status] || wo.status}
                   </span>
                   <div className="flex gap-2">
                     <Link href={`/portal/work-orders/${wo.id}`} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${wo.status === "sent" ? "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900" : "border border-zinc-300 text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"}`}>
