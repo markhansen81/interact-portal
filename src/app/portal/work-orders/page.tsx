@@ -14,5 +14,16 @@ export default async function TAWorkOrdersPage() {
     .eq("ta_id", profile.id)
     .order("created_at", { ascending: false });
 
-  return <WorkOrderTable workOrders={workOrders || []} />;
+  // Find linked projects for signed WOs
+  const { data: projects } = await supabase
+    .from("projects")
+    .select("id, work_order_id")
+    .eq("ta_id", profile.id);
+
+  const projectMap: Record<string, string> = {};
+  for (const p of projects || []) {
+    if (p.work_order_id) projectMap[p.work_order_id] = p.id;
+  }
+
+  return <WorkOrderTable workOrders={workOrders || []} projectMap={projectMap} />;
 }
