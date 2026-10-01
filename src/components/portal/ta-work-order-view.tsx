@@ -254,66 +254,70 @@ export function TAWorkOrderView({
           )}
 
           {wo.status === "sent" && showDecline && (
-            <div className="space-y-4">
-              <h3 className="font-semibold text-zinc-900 dark:text-zinc-50">
-                Decline Work Order
-              </h3>
-              <p className="text-sm text-zinc-500">
-                Please select a reason for declining. We may have other projects available for you.
-              </p>
-              <div className="space-y-3">
-                <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors ${declineReason === "not_available" ? "border-red-400 bg-red-50 dark:bg-red-900/10" : "border-zinc-200 hover:border-zinc-400 dark:border-zinc-700"}`}>
-                  <input
-                    type="radio"
-                    name="decline_reason"
-                    value="not_available"
-                    checked={declineReason === "not_available"}
-                    onChange={() => setDeclineReason("not_available")}
-                    className="mt-0.5"
-                  />
-                  <div>
-                    <p className="font-medium text-zinc-900 dark:text-zinc-50">I am no longer available on these dates</p>
-                    <p className="text-xs text-zinc-500">Your availability will be automatically updated to unavailable for {wo.start_date} — {wo.end_date}</p>
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+              <div className="w-full max-w-lg rounded-2xl bg-white p-8 shadow-xl dark:bg-zinc-900">
+                <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
+                  Decline Work Order
+                </h3>
+                <p className="mt-2 text-sm text-zinc-500">
+                  Please select a reason for declining. We may have other projects available for you.
+                </p>
+                <div className="mt-6 space-y-3">
+                  <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors ${declineReason === "not_available" ? "border-red-400 bg-red-50 dark:bg-red-900/10" : "border-zinc-200 hover:border-zinc-400 dark:border-zinc-700"}`}>
+                    <input
+                      type="radio"
+                      name="decline_reason"
+                      value="not_available"
+                      checked={declineReason === "not_available"}
+                      onChange={() => setDeclineReason("not_available")}
+                      className="mt-0.5"
+                    />
+                    <div>
+                      <p className="font-medium text-zinc-900 dark:text-zinc-50">I am no longer available on these dates</p>
+                      <p className="text-xs text-zinc-500">Your availability will be automatically updated to unavailable for {wo.start_date} — {wo.end_date}</p>
+                    </div>
+                  </label>
+                  <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors ${declineReason === "prefer_not" ? "border-red-400 bg-red-50 dark:bg-red-900/10" : "border-zinc-200 hover:border-zinc-400 dark:border-zinc-700"}`}>
+                    <input
+                      type="radio"
+                      name="decline_reason"
+                      value="prefer_not"
+                      checked={declineReason === "prefer_not"}
+                      onChange={() => setDeclineReason("prefer_not")}
+                      className="mt-0.5"
+                    />
+                    <div>
+                      <p className="font-medium text-zinc-900 dark:text-zinc-50">I would prefer not to go on this project</p>
+                      <p className="text-xs text-zinc-500">Keep sending me other work orders — I am still available</p>
+                    </div>
+                  </label>
+                </div>
+                {declineReason && (
+                  <div className="mt-4">
+                    <textarea
+                      value={declineDetails}
+                      onChange={(e) => setDeclineDetails(e.target.value)}
+                      placeholder="Add a comment (optional)..."
+                      className="w-full rounded-lg border border-zinc-300 p-3 text-sm dark:border-zinc-600 dark:bg-zinc-800"
+                      rows={3}
+                    />
                   </div>
-                </label>
-                <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors ${declineReason === "prefer_not" ? "border-red-400 bg-red-50 dark:bg-red-900/10" : "border-zinc-200 hover:border-zinc-400 dark:border-zinc-700"}`}>
-                  <input
-                    type="radio"
-                    name="decline_reason"
-                    value="prefer_not"
-                    checked={declineReason === "prefer_not"}
-                    onChange={() => setDeclineReason("prefer_not")}
-                    className="mt-0.5"
-                  />
-                  <div className="w-full">
-                    <p className="font-medium text-zinc-900 dark:text-zinc-50">I would prefer not to go on this project</p>
-                    <p className="text-xs text-zinc-500">Keep sending me other work orders — I am still available</p>
-                    {declineReason === "prefer_not" && (
-                      <textarea
-                        value={declineDetails}
-                        onChange={(e) => setDeclineDetails(e.target.value)}
-                        placeholder="Optional: tell us why so we can find a better match..."
-                        className="mt-2 w-full rounded-lg border border-zinc-300 p-2 text-sm dark:border-zinc-600 dark:bg-zinc-800"
-                        rows={2}
-                      />
-                    )}
-                  </div>
-                </label>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={handleDecline}
-                  disabled={declining || !declineReason}
-                  className="rounded-lg bg-red-600 px-6 py-3 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {declining ? "Declining..." : "Confirm Decline"}
-                </button>
-                <button
-                  onClick={() => { setShowDecline(false); setDeclineReason(""); setDeclineDetails(""); }}
-                  className="text-sm text-zinc-500 hover:text-zinc-700"
-                >
-                  Cancel
-                </button>
+                )}
+                <div className="mt-6 flex gap-3">
+                  <button
+                    onClick={handleDecline}
+                    disabled={declining || !declineReason}
+                    className="rounded-lg bg-red-600 px-6 py-3 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {declining ? "Declining..." : "Confirm Decline"}
+                  </button>
+                  <button
+                    onClick={() => { setShowDecline(false); setDeclineReason(""); setDeclineDetails(""); }}
+                    className="rounded-lg border border-zinc-300 px-6 py-3 text-sm text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           )}
