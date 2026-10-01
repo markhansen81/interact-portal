@@ -64,28 +64,16 @@ export default async function TAWorkOrdersPage() {
                   <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[wo.status] || ""}`}>
                     {wo.status}
                   </span>
-                  {wo.status === "sent" && (
-                    <div className="flex gap-2">
-                      <Link href={`/portal/work-orders/${wo.id}`} className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700">
-                        Sign
-                      </Link>
-                      <Link href={`/portal/work-orders/${wo.id}`} className="rounded-lg border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">
-                        Decline
-                      </Link>
-                    </div>
-                  )}
-                  {wo.status === "signed" && (
-                    <div className="flex gap-2">
-                      <Link href={`/portal/work-orders/${wo.id}`} className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800">
-                        View
-                      </Link>
-                      {wo.pdf_url && (
-                        <a href={wo.pdf_url} target="_blank" className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700">
-                          Download PDF
-                        </a>
-                      )}
-                    </div>
-                  )}
+                  <div className="flex gap-2">
+                    <Link href={`/portal/work-orders/${wo.id}`} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${wo.status === "sent" ? "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900" : "border border-zinc-300 text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"}`}>
+                      View
+                    </Link>
+                    {wo.status === "signed" && wo.pdf_url && (
+                      <a href={wo.pdf_url} target="_blank" className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700">
+                        Download PDF
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
               {wo.total && (
