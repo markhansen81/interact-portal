@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import Link from "next/link";
+import { RichTextEditor } from "@/components/shared/rich-text-editor";
 
 interface Project {
   id: string;
@@ -36,7 +37,9 @@ interface Document {
   id: string;
   name: string;
   description: string | null;
-  file_url: string;
+  file_url: string | null;
+  content: string | null;
+  doc_type: "file" | "native";
   published: boolean;
   created_at: string;
 }
@@ -68,6 +71,11 @@ export function AdminProjectView({
   const [saving, setSaving] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showCreateDoc, setShowCreateDoc] = useState(false);
+  const [editingDoc, setEditingDoc] = useState<Document | null>(null);
+  const [nativeDocName, setNativeDocName] = useState("");
+  const [nativeDocContent, setNativeDocContent] = useState("");
+  const [savingNativeDoc, setSavingNativeDoc] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Add task form state
@@ -135,6 +143,59 @@ export function AdminProjectView({
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
+  }
+
+  async function createNativeDocument() {
+    if (!nativeDocName.trim()) return;
+    setSavingNativeDoc(true);
+    try {
+      const res = await fetch(`/api/admin/projects/${project.id}/documents`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: nativeDocName, content: nativeDocContent, doc_type: "native" }),
+      });
+      if (res.ok) {
+        const { document } = await res.json();
+        setDocuments((prev) => [document, ...prev]);
+        setShowCreateDoc(false);
+        setNativeDocName("");
+        setNativeDocContent("");
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSavingNativeDoc(false);
+    }
+  }
+
+  async function updateNativeDocument() {
+    if (!editingDoc) return;
+    setSavingNativeDoc(true);
+    try {
+      const res = await fetch(`/api/admin/projects/${project.id}/documents/${editingDoc.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: nativeDocName, content: nativeDocContent }),
+      });
+      if (res.ok) {
+        const { document } = await res.json();
+        setDocuments((prev) => prev.map((d) => (d.id === document.id ? document : d)));
+        setEditingDoc(null);
+        setNativeDocName("");
+        setNativeDocContent("");
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSavingNativeDoc(false);
+    }
+  }
+
+  function openEditDoc(doc: Document) {
+    setEditingDoc(doc);
+    setNativeDocName(doc.name);
+    setNativeDocContent(doc.content || "");
+    setShowCreateDoc(false);
   }
 
   async function togglePublish(docId: string, published: boolean) {
@@ -352,7 +413,13 @@ export function AdminProjectView({
       <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Documents</h2>
-          <div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { setShowCreateDoc(true); setEditingDoc(null); setNativeDocName(""); setNativeDocContent(""); }}
+              className="rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            >
+              Create Document
+            </button>
             <input
               ref={fileInputRef}
               type="file"
@@ -362,15 +429,58 @@ export function AdminProjectView({
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+              className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
-              {uploading ? "Uploading..." : "Upload Document"}
+              {uploading ? "Uploading..." : "Upload File"}
             </button>
           </div>
         </div>
 
+        {/* Create / Edit native document form */}
+        {(showCreateDoc || editingDoc) && (
+          <div className="mb-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
+            <h3 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+              {editingDoc ? "Edit Document" : "Create Document"}
+            </h3>
+            <div className="mb-3">
+              <label className="mb-1 block text-xs font-medium text-zinc-500">Document Name</label>
+              <input
+                type="text"
+                value={nativeDocName}
+                onChange={(e) => setNativeDocName(e.target.value)}
+                placeholder="Document title..."
+                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+              />
+            </div>
+            <div className="mb-3">
+              <label className="mb-1 block text-xs font-medium text-zinc-500">Content</label>
+              <RichTextEditor
+                content={nativeDocContent}
+                onChange={setNativeDocContent}
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={editingDoc ? updateNativeDocument : createNativeDocument}
+                disabled={savingNativeDoc || !nativeDocName.trim()}
+                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+              >
+                {savingNativeDoc ? "Saving..." : editingDoc ? "Update" : "Save"}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowCreateDoc(false); setEditingDoc(null); setNativeDocName(""); setNativeDocContent(""); }}
+                className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
         {documents.length === 0 ? (
-          <p className="text-sm text-zinc-500">No documents uploaded yet.</p>
+          <p className="text-sm text-zinc-500">No documents yet.</p>
         ) : (
           <ul className="space-y-2">
             {documents.map((doc) => (
@@ -379,6 +489,7 @@ export function AdminProjectView({
                   <div>
                     <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{doc.name}</p>
                     {doc.description && <p className="text-xs text-zinc-500">{doc.description}</p>}
+                    <span className="text-[10px] text-zinc-400">{doc.doc_type === "native" ? "Native" : "File"}</span>
                   </div>
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${doc.published ? "bg-green-100 text-green-700" : "bg-zinc-100 text-zinc-500"}`}>
                     {doc.published ? "Published" : "Draft"}
@@ -391,14 +502,23 @@ export function AdminProjectView({
                   >
                     {doc.published ? "Unpublish" : "Publish"}
                   </button>
-                  <a
-                    href={doc.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                  >
-                    Download
-                  </a>
+                  {doc.doc_type === "native" ? (
+                    <button
+                      onClick={() => openEditDoc(doc)}
+                      className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    >
+                      Edit
+                    </button>
+                  ) : doc.file_url ? (
+                    <a
+                      href={doc.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    >
+                      Download
+                    </a>
+                  ) : null}
                 </div>
               </li>
             ))}

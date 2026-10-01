@@ -27,6 +27,37 @@ export async function POST(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const contentType = request.headers.get("content-type") || "";
+
+  const adminClient = createAdminClient();
+
+  // Native document (JSON body)
+  if (contentType.includes("application/json")) {
+    const body = await request.json();
+    const name = body.name || "Untitled";
+    const content = body.content || "";
+
+    const { data: document, error } = await adminClient
+      .from("project_documents")
+      .insert({
+        project_id: id,
+        name,
+        content,
+        doc_type: "native",
+        published: false,
+        uploaded_by: user.id,
+      })
+      .select("*")
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    return NextResponse.json({ document });
+  }
+
+  // File upload (FormData)
   const formData = await request.formData();
   const file = formData.get("file") as File | null;
   const name = (formData.get("name") as string) || "Untitled";
@@ -35,8 +66,6 @@ export async function POST(
   if (!file) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
   }
-
-  const adminClient = createAdminClient();
 
   // Upload to Supabase storage
   const fileBuffer = Buffer.from(await file.arrayBuffer());
@@ -64,6 +93,7 @@ export async function POST(
       name,
       description,
       file_url: urlData.publicUrl,
+      doc_type: "file",
       published: false,
       uploaded_by: user.id,
     })
