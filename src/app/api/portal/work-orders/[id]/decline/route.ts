@@ -23,16 +23,20 @@ export async function POST(
 
   // Get reason if provided
   let reason = "";
+  let reasonType = "";
+  let updateAvailability = false;
   try {
     const body = await request.json();
     reason = body.reason || "";
+    reasonType = body.reason_type || "";
+    updateAvailability = body.update_availability || false;
   } catch {
     // No body is fine
   }
 
   const { data: wo } = await supabase
     .from("work_orders")
-    .select("id, ta_id, status, project_name, school, job_id")
+    .select("id, ta_id, status, project_name, school, job_id, start_date, end_date")
     .eq("id", id)
     .eq("ta_id", user.id)
     .eq("status", "sent")
@@ -49,6 +53,27 @@ export async function POST(
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  // Auto-update availability if TA said they're no longer available
+  if (updateAvailability && wo.start_date && wo.end_date) {
+    const start = new Date(wo.start_date);
+    const end = new Date(wo.end_date);
+    const dates: string[] = [];
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const day = d.getDay();
+      if (day !== 0 && day !== 6) { // Skip weekends
+        dates.push(d.toISOString().split("T")[0]);
+      }
+    }
+    // Delete availability entries (unavailable = no row)
+    if (dates.length > 0) {
+      await supabase
+        .from("availability")
+        .delete()
+        .eq("ta_id", user.id)
+        .in("date", dates);
+    }
   }
 
   // Get TA name for log
