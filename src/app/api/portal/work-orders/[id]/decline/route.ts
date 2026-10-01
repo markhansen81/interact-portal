@@ -99,6 +99,7 @@ export async function POST(
     type: "work_order_declined",
     title: "Work Order Declined",
     body: `${taName} declined the work order for ${wo.project_name}${reason ? `. Reason: ${reason}` : ""}`,
+    payload: { link: `/admin/work-orders/${id}` },
   });
 
   return NextResponse.json({ success: true });
