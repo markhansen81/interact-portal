@@ -170,50 +170,81 @@ export function TACalendar({ workOrders }: { workOrders: WorkOrder[] }) {
 
           {/* Grid */}
           <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            {grid.map((row, ri) => (
-              <div key={ri} className="grid grid-cols-7 divide-x divide-zinc-100 dark:divide-zinc-800">
-                {row.map((date, ci) => {
-                  if (!date) {
-                    return <div key={ci} className="min-h-[100px] bg-zinc-50/50 dark:bg-zinc-900/50" />;
+            {grid.map((row, ri) => {
+              // Calculate spanning bars for this row
+              const bars: Array<{ wo: WorkOrder; startCol: number; endCol: number }> = [];
+              const seen = new Set<string>();
+              row.forEach((date, ci) => {
+                if (!date) return;
+                const dayOrders = getWorkOrdersForDay(date, workOrders);
+                dayOrders.forEach((wo) => {
+                  if (seen.has(wo.id)) return;
+                  seen.add(wo.id);
+                  const woStart = new Date(wo.start_date + "T00:00:00");
+                  const woEnd = new Date(wo.end_date + "T00:00:00");
+                  let endCol = ci;
+                  for (let c = ci + 1; c < 7; c++) {
+                    const nextDate = row[c];
+                    if (nextDate && nextDate.getTime() >= woStart.getTime() && nextDate.getTime() <= woEnd.getTime()) {
+                      endCol = c;
+                    } else break;
                   }
+                  bars.push({ wo, startCol: ci, endCol });
+                });
+              });
 
-                  const isToday = isSameDay(date, today);
-                  const dayOrders = getWorkOrdersForDay(date, workOrders);
-
-                  return (
-                    <div
-                      key={ci}
-                      className={`min-h-[100px] p-1.5 ${isToday ? "bg-blue-50/60 dark:bg-blue-950/20" : ""}`}
-                    >
-                      <span
-                        className={`mb-1 inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
-                          isToday
-                            ? "bg-blue-600 text-white"
-                            : "text-zinc-700 dark:text-zinc-300"
-                        }`}
-                      >
-                        {date.getDate()}
-                      </span>
-                      <div className="space-y-0.5">
-                        {dayOrders.map((wo) => (
-                          <Link
-                            key={wo.id}
-                            href={`/portal/work-orders/${wo.id}`}
-                            className={`block truncate rounded px-1.5 py-0.5 text-[11px] font-medium leading-tight transition-opacity hover:opacity-80 ${
-                              wo.status === "signed"
-                                ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
-                                : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300"
+              return (
+                <div key={ri} className="relative">
+                  <div className="grid grid-cols-7 divide-x divide-zinc-100 dark:divide-zinc-800">
+                    {row.map((date, ci) => {
+                      if (!date) {
+                        return <div key={ci} className="min-h-[90px] bg-zinc-50/50 dark:bg-zinc-900/50" />;
+                      }
+                      const isToday = isSameDay(date, today);
+                      return (
+                        <div
+                          key={ci}
+                          className={`min-h-[90px] p-1.5 ${isToday ? "bg-blue-50/60 dark:bg-blue-950/20" : ""}`}
+                        >
+                          <span
+                            className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+                              isToday
+                                ? "bg-blue-600 text-white"
+                                : "text-zinc-700 dark:text-zinc-300"
                             }`}
                           >
-                            {wo.project_name}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+                            {date.getDate()}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {/* Spanning project bars */}
+                  {bars.map((bar) => {
+                    const leftPct = (bar.startCol / 7) * 100;
+                    const widthPct = ((bar.endCol - bar.startCol + 1) / 7) * 100;
+                    return (
+                      <Link
+                        key={bar.wo.id}
+                        href={`/portal/work-orders/${bar.wo.id}`}
+                        className={`absolute left-0 truncate rounded-md px-2 py-1 text-[11px] font-medium leading-tight transition-opacity hover:opacity-80 ${
+                          bar.wo.status === "signed"
+                            ? "bg-green-200 text-green-900 dark:bg-green-800/60 dark:text-green-200"
+                            : "bg-yellow-200 text-yellow-900 dark:bg-yellow-800/60 dark:text-yellow-200"
+                        }`}
+                        style={{
+                          left: `calc(${leftPct}% + 6px)`,
+                          width: `calc(${widthPct}% - 12px)`,
+                          top: "36px",
+                        }}
+                      >
+                        {bar.wo.project_name}
+                      </Link>
+                    );
+                  })}
+                </div>
+              );
+            })}
           </div>
         </div>
 
