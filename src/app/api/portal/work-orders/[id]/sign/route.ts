@@ -138,6 +138,7 @@ export async function POST(
     type: "work_order_signed",
     title: "Work Order Signed",
     body: `${taName} signed the work order for ${wo.project_name}`,
+    payload: { link: `/admin/work-orders/${id}` },
   });
 
   return NextResponse.json({ success: true });
