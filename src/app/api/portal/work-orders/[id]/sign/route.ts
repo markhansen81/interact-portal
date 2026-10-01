@@ -24,7 +24,7 @@ export async function POST(
   // Verify this work order belongs to the TA and is in "sent" status
   const { data: wo } = await supabase
     .from("work_orders")
-    .select("id, ta_id, status, job_id, project_name, school, pdf_url")
+    .select("id, ta_id, status, job_id, project_name, school, school_address, location, program_type, start_date, end_date, days, pdf_url")
     .eq("id", id)
     .eq("ta_id", user.id)
     .eq("status", "sent")
@@ -140,6 +140,50 @@ export async function POST(
     body: `${taName} signed the work order for ${wo.project_name}`,
     payload: { link: `/admin/work-orders/${id}` },
   });
+
+  // Auto-create project from signed work order
+  try {
+    const { data: project } = await adminClient
+      .from("projects")
+      .insert({
+        work_order_id: id,
+        ta_id: wo.ta_id,
+        name: wo.project_name,
+        school: wo.school,
+        school_address: wo.school_address,
+        location: wo.location,
+        program_type: wo.program_type,
+        start_date: wo.start_date,
+        end_date: wo.end_date,
+        days: wo.days,
+        status: "upcoming",
+      })
+      .select("id")
+      .single();
+
+    if (project) {
+      // Copy task templates as project tasks
+      const { data: templates } = await adminClient
+        .from("project_task_templates")
+        .select("title, description, type, url, required, sort_order");
+
+      if (templates && templates.length > 0) {
+        await adminClient.from("project_tasks").insert(
+          templates.map((t) => ({
+            project_id: project.id,
+            title: t.title,
+            description: t.description,
+            type: t.type,
+            url: t.url,
+            required: t.required,
+            sort_order: t.sort_order,
+          }))
+        );
+      }
+    }
+  } catch (err) {
+    console.error("[SIGN] Failed to auto-create project:", err);
+  }
 
   return NextResponse.json({ success: true });
 }
