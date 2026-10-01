@@ -53,7 +53,8 @@ export async function sendEmail({
 
 // --- Email Templates ---
 
-export function workOrderSentEmail(taName: string, projectName: string, signByDate: string | null) {
+export function workOrderSentEmail(taName: string, projectName: string, signByDate: string | null, workOrderId?: string) {
+  const woUrl = workOrderId ? `${APP_URL}/portal/work-orders/${workOrderId}` : `${APP_URL}/portal/work-orders`;
   return {
     subject: `New Work Order: ${projectName}`,
     html: `
@@ -62,7 +63,7 @@ export function workOrderSentEmail(taName: string, projectName: string, signByDa
         <p>Hi ${taName},</p>
         <p>You have a new work order for <strong>${projectName}</strong> waiting for your signature.</p>
         ${signByDate ? `<p style="color: #b45309; font-weight: bold;">Please sign by ${signByDate}</p>` : ""}
-        <p><a href="${APP_URL}/portal/work-orders" style="display: inline-block; background: #18181b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">View Work Order</a></p>
+        <p><a href="${woUrl}" style="display: inline-block; background: #18181b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">View & Sign Work Order</a></p>
         <p style="color: #71717a; font-size: 14px;">InterACT English gGmbH</p>
       </div>
     `,
