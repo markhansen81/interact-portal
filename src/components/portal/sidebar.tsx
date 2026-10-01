@@ -17,6 +17,7 @@ const navItems = [
   { href: "/portal/work-orders", label: "Work Orders", icon: "file-text" },
   { href: "/portal/invoices", label: "Invoices", icon: "receipt" },
   { href: "/portal/expenses", label: "Expenses", icon: "credit-card" },
+  { href: "/portal/calendar", label: "Calendar", icon: "calendar-grid" },
   { href: "/portal/availability", label: "Availability", icon: "calendar" },
   { href: "/portal/messages", label: "Messages", icon: "message" },
 ];
@@ -27,6 +28,7 @@ const iconPaths: Record<string, React.ReactNode> = {
   folder: <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />,
   "file-text": <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" />,
   receipt: <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1zM16 8H8M16 12H8M16 16H8" />,
+  "calendar-grid": <path d="M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM16 2v4M8 2v4M3 10h18M12 10v12M3 16h18" />,
   calendar: <path d="M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM16 2v4M8 2v4M3 10h18" />,
   message: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
   "credit-card": <path d="M1 4h22v16H1zM1 10h22" />,
