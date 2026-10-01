@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { sendEmail, workOrderSignedEmailToTA, workOrderSignedEmailToAdmin } from "@/lib/email";
+import { notifyWorkOrderEvent } from "@/lib/slack";
 
 export async function POST(
   request: Request,
@@ -21,7 +24,7 @@ export async function POST(
   // Verify this work order belongs to the TA and is in "sent" status
   const { data: wo } = await supabase
     .from("work_orders")
-    .select("id, ta_id, status, job_id")
+    .select("id, ta_id, status, job_id, project_name, school, pdf_url")
     .eq("id", id)
     .eq("ta_id", user.id)
     .eq("status", "sent")
@@ -34,12 +37,14 @@ export async function POST(
   // Get IP from request headers
   const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
 
+  const pdfUrl = body.pdf_url || null;
+
   const { error } = await supabase
     .from("work_orders")
     .update({
       status: "signed",
       signed_at: new Date().toISOString(),
-      pdf_url: body.pdf_url || null,
+      pdf_url: pdfUrl,
       signature_data: {
         signature_png: body.signature_png,
         signature_type: body.signature_type,
@@ -55,6 +60,67 @@ export async function POST(
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
+  // Get TA profile
+  const { data: taProfile } = await supabase
+    .from("profiles")
+    .select("first_name, last_name, email")
+    .eq("id", user.id)
+    .single();
+
+  const taName = taProfile
+    ? `${taProfile.first_name || ""} ${taProfile.last_name || ""}`.trim() || taProfile.email
+    : "Unknown";
+  const taEmail = taProfile?.email || "";
+
+  // Fetch signed PDF as attachment if available
+  let attachments: Array<{ filename: string; content: Buffer }> | undefined;
+  if (pdfUrl) {
+    try {
+      const pdfRes = await fetch(pdfUrl);
+      if (pdfRes.ok) {
+        const pdfBuffer = Buffer.from(await pdfRes.arrayBuffer());
+        attachments = [{ filename: `work-order-${wo.project_name}.pdf`, content: pdfBuffer }];
+      }
+    } catch (err) {
+      console.error("[SIGN] Failed to fetch PDF for attachment:", err);
+    }
+  }
+
+  // Send email to TA with signed PDF attached
+  if (taEmail) {
+    const taEmailTemplate = workOrderSignedEmailToTA(taName, wo.project_name, wo.school);
+    await sendEmail({
+      to: taEmail,
+      ...taEmailTemplate,
+      attachments,
+    });
+  }
+
+  // Send email to admins
+  const adminClient = createAdminClient();
+  const { data: admins } = await adminClient
+    .from("profiles")
+    .select("id, email")
+    .eq("role", "admin");
+
+  if (admins) {
+    const adminEmailTemplate = workOrderSignedEmailToAdmin(taName, wo.project_name, wo.school);
+    for (const admin of admins) {
+      await sendEmail({
+        to: admin.email,
+        ...adminEmailTemplate,
+      });
+    }
+  }
+
+  // Slack notification
+  await notifyWorkOrderEvent({
+    event: "signed",
+    taName,
+    projectName: wo.project_name,
+    school: wo.school,
+  });
+
   // Log activity
   const { logActivity } = await import("@/lib/activity-log");
   await logActivity({
@@ -66,12 +132,12 @@ export async function POST(
     performedBy: user.id,
   });
 
-  // Notify admins
+  // Notify admins (in-app notifications)
   const { notifyAdmins } = await import("@/lib/notifications");
   await notifyAdmins({
     type: "work_order_signed",
     title: "Work Order Signed",
-    body: `Work order ${id.slice(0, 8)} has been signed`,
+    body: `${taName} signed the work order for ${wo.project_name}`,
   });
 
   return NextResponse.json({ success: true });

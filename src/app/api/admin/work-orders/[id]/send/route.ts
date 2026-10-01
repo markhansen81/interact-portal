@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notify } from "@/lib/notifications";
 import { workOrderSentEmail } from "@/lib/email";
+import { notifyWorkOrderEvent } from "@/lib/slack";
 
 export async function POST(
   _request: Request,
@@ -58,6 +59,14 @@ export async function POST(
     body: `You have a new work order for ${wo.project_name}`,
     payload: { work_order_id: id },
     email: { to: ta.email, ...emailTemplate },
+  });
+
+  // Slack notification
+  await notifyWorkOrderEvent({
+    event: "sent",
+    taName,
+    projectName: wo.project_name,
+    school: wo.school,
   });
 
   const { logActivity } = await import("@/lib/activity-log");
