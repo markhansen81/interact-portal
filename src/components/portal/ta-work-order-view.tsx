@@ -39,8 +39,11 @@ export function TAWorkOrderView({
 }) {
   const router = useRouter();
   const [showSign, setShowSign] = useState(false);
+  const [showDecline, setShowDecline] = useState(false);
   const [declining, setDeclining] = useState(false);
   const [signing, setSigning] = useState(false);
+  const [declineReason, setDeclineReason] = useState("");
+  const [declineDetails, setDeclineDetails] = useState("");
   const generatePDF = useGenerateSignedPDF();
 
   async function handleSign(signatureData: {
@@ -89,10 +92,23 @@ export function TAWorkOrderView({
   }
 
   async function handleDecline() {
+    if (!declineReason) return;
     setDeclining(true);
     try {
+      const reason = declineReason === "not_available"
+        ? "I am no longer available on these dates"
+        : declineReason === "prefer_not"
+        ? `I would prefer not to go on this project${declineDetails ? `: ${declineDetails}` : ""}`
+        : declineDetails || declineReason;
+
       await fetch(`/api/portal/work-orders/${wo.id}/decline`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reason,
+          reason_type: declineReason,
+          update_availability: declineReason === "not_available",
+        }),
       });
       router.push("/portal/work-orders");
       router.refresh();
@@ -207,17 +223,16 @@ export function TAWorkOrderView({
               </p>
               <div className="flex gap-3">
                 <button
-                  onClick={() => setShowSign(true)}
+                  onClick={() => { setShowSign(true); setShowDecline(false); }}
                   className="rounded-lg bg-green-600 px-6 py-3 text-sm font-medium text-white hover:bg-green-700"
                 >
                   Accept & Sign
                 </button>
                 <button
-                  onClick={handleDecline}
-                  disabled={declining}
+                  onClick={() => { setShowDecline(true); setShowSign(false); }}
                   className="rounded-lg border border-red-300 px-6 py-3 text-sm text-red-600 hover:bg-red-50"
                 >
-                  {declining ? "Declining..." : "Decline"}
+                  Decline
                 </button>
               </div>
             </div>
@@ -235,6 +250,71 @@ export function TAWorkOrderView({
               >
                 Cancel
               </button>
+            </div>
+          )}
+
+          {wo.status === "sent" && showDecline && (
+            <div className="space-y-4">
+              <h3 className="font-semibold text-zinc-900 dark:text-zinc-50">
+                Decline Work Order
+              </h3>
+              <p className="text-sm text-zinc-500">
+                Please select a reason for declining. We may have other projects available for you.
+              </p>
+              <div className="space-y-3">
+                <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors ${declineReason === "not_available" ? "border-red-400 bg-red-50 dark:bg-red-900/10" : "border-zinc-200 hover:border-zinc-400 dark:border-zinc-700"}`}>
+                  <input
+                    type="radio"
+                    name="decline_reason"
+                    value="not_available"
+                    checked={declineReason === "not_available"}
+                    onChange={() => setDeclineReason("not_available")}
+                    className="mt-0.5"
+                  />
+                  <div>
+                    <p className="font-medium text-zinc-900 dark:text-zinc-50">I am no longer available on these dates</p>
+                    <p className="text-xs text-zinc-500">Your availability will be automatically updated to unavailable for {wo.start_date} — {wo.end_date}</p>
+                  </div>
+                </label>
+                <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors ${declineReason === "prefer_not" ? "border-red-400 bg-red-50 dark:bg-red-900/10" : "border-zinc-200 hover:border-zinc-400 dark:border-zinc-700"}`}>
+                  <input
+                    type="radio"
+                    name="decline_reason"
+                    value="prefer_not"
+                    checked={declineReason === "prefer_not"}
+                    onChange={() => setDeclineReason("prefer_not")}
+                    className="mt-0.5"
+                  />
+                  <div className="w-full">
+                    <p className="font-medium text-zinc-900 dark:text-zinc-50">I would prefer not to go on this project</p>
+                    <p className="text-xs text-zinc-500">Keep sending me other work orders — I am still available</p>
+                    {declineReason === "prefer_not" && (
+                      <textarea
+                        value={declineDetails}
+                        onChange={(e) => setDeclineDetails(e.target.value)}
+                        placeholder="Optional: tell us why so we can find a better match..."
+                        className="mt-2 w-full rounded-lg border border-zinc-300 p-2 text-sm dark:border-zinc-600 dark:bg-zinc-800"
+                        rows={2}
+                      />
+                    )}
+                  </div>
+                </label>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleDecline}
+                  disabled={declining || !declineReason}
+                  className="rounded-lg bg-red-600 px-6 py-3 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {declining ? "Declining..." : "Confirm Decline"}
+                </button>
+                <button
+                  onClick={() => { setShowDecline(false); setDeclineReason(""); setDeclineDetails(""); }}
+                  className="text-sm text-zinc-500 hover:text-zinc-700"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           )}
 
