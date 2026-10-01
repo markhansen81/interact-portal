@@ -15,6 +15,7 @@ const navItems = [
   { href: "/portal/profile", label: "My Profile", icon: "user" },
   { href: "/portal/documents", label: "Documents", icon: "folder" },
   { href: "/portal/work-orders", label: "Work Orders", icon: "file-text" },
+  { href: "/portal/projects", label: "Projects", icon: "clipboard" },
   { href: "/portal/invoices", label: "Invoices", icon: "receipt" },
   { href: "/portal/expenses", label: "Expenses", icon: "credit-card" },
   { href: "/portal/calendar", label: "Calendar", icon: "calendar-grid" },
@@ -32,6 +33,7 @@ const iconPaths: Record<string, React.ReactNode> = {
   calendar: <path d="M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM16 2v4M8 2v4M3 10h18" />,
   message: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
   "credit-card": <path d="M1 4h22v16H1zM1 10h22" />,
+  clipboard: <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M9 2h6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" />,
 };
 
 export function PortalSidebar({ profile }: { profile: Profile }) {
