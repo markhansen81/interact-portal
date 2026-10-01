@@ -66,12 +66,24 @@ export default async function TAWorkOrdersPage() {
                   </span>
                   {wo.status === "sent" && (
                     <div className="flex gap-2">
-                      <button className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700">
+                      <Link href={`/portal/work-orders/${wo.id}`} className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700">
                         Sign
-                      </button>
-                      <button className="rounded-lg border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">
+                      </Link>
+                      <Link href={`/portal/work-orders/${wo.id}`} className="rounded-lg border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">
                         Decline
-                      </button>
+                      </Link>
+                    </div>
+                  )}
+                  {wo.status === "signed" && (
+                    <div className="flex gap-2">
+                      <Link href={`/portal/work-orders/${wo.id}`} className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800">
+                        View
+                      </Link>
+                      {wo.pdf_url && (
+                        <a href={wo.pdf_url} target="_blank" className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700">
+                          Download PDF
+                        </a>
+                      )}
                     </div>
                   )}
                 </div>
