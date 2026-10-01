@@ -141,48 +141,92 @@ export async function POST(
     payload: { link: `/admin/work-orders/${id}` },
   });
 
-  // Auto-create project from signed work order
+  // Link TA to existing project (created by Monday webhook), or fallback to creating one
   try {
-    const { data: project } = await adminClient
-      .from("projects")
-      .insert({
-        work_order_id: id,
-        ta_id: wo.ta_id,
-        name: wo.project_name,
-        school: wo.school,
-        school_address: wo.school_address,
-        location: wo.location,
-        program_type: wo.program_type,
-        start_date: wo.start_date,
-        end_date: wo.end_date,
-        days: wo.days,
-        status: "upcoming",
-      })
-      .select("id")
-      .single();
+    // Try to find an existing project for this work order's job
+    let existingProject = null;
 
-    if (project) {
-      // Copy task templates as project tasks
-      const { data: templates } = await adminClient
-        .from("project_task_templates")
-        .select("title, description, type, url, required, sort_order");
+    if (wo.job_id) {
+      // Look up the job to get its monday_item_id, then find the project
+      const { data: job } = await adminClient
+        .from("jobs")
+        .select("monday_item_id")
+        .eq("id", wo.job_id)
+        .single();
 
-      if (templates && templates.length > 0) {
-        await adminClient.from("project_tasks").insert(
-          templates.map((t) => ({
-            project_id: project.id,
-            title: t.title,
-            description: t.description,
-            type: t.type,
-            url: t.url,
-            required: t.required,
-            sort_order: t.sort_order,
-          }))
-        );
+      if (job?.monday_item_id) {
+        const { data: proj } = await adminClient
+          .from("projects")
+          .select("id")
+          .eq("monday_item_id", job.monday_item_id)
+          .single();
+        existingProject = proj;
+      }
+    }
+
+    // Also check by work_order_id directly
+    if (!existingProject) {
+      const { data: proj } = await adminClient
+        .from("projects")
+        .select("id")
+        .eq("work_order_id", id)
+        .single();
+      existingProject = proj;
+    }
+
+    if (existingProject) {
+      // Link the TA to the existing project
+      await adminClient
+        .from("projects")
+        .update({
+          ta_id: wo.ta_id,
+          work_order_id: id,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existingProject.id);
+    } else {
+      // Fallback: create project if none exists (e.g. deal wasn't tracked in Monday)
+      const { data: newProject } = await adminClient
+        .from("projects")
+        .insert({
+          work_order_id: id,
+          ta_id: wo.ta_id,
+          name: wo.project_name,
+          school: wo.school,
+          school_address: wo.school_address,
+          location: wo.location,
+          program_type: wo.program_type,
+          start_date: wo.start_date,
+          end_date: wo.end_date,
+          days: wo.days,
+          status: "upcoming",
+        })
+        .select("id")
+        .single();
+
+      if (newProject) {
+        // Copy task templates as project tasks
+        const { data: templates } = await adminClient
+          .from("project_task_templates")
+          .select("title, description, type, url, required, sort_order");
+
+        if (templates && templates.length > 0) {
+          await adminClient.from("project_tasks").insert(
+            templates.map((t) => ({
+              project_id: newProject.id,
+              title: t.title,
+              description: t.description,
+              type: t.type,
+              url: t.url,
+              required: t.required,
+              sort_order: t.sort_order,
+            }))
+          );
+        }
       }
     }
   } catch (err) {
-    console.error("[SIGN] Failed to auto-create project:", err);
+    console.error("[SIGN] Failed to link/create project:", err);
   }
 
   return NextResponse.json({ success: true });
