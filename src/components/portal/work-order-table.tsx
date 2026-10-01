@@ -67,7 +67,7 @@ function DeadlineBadge({ signBy, status }: { signBy: string | null; status: stri
   return <span className="text-xs text-zinc-500">{days}d left</span>;
 }
 
-export function WorkOrderTable({ workOrders }: { workOrders: WorkOrder[] }) {
+export function WorkOrderTable({ workOrders, projectMap = {} }: { workOrders: WorkOrder[]; projectMap?: Record<string, string> }) {
   const [filter, setFilter] = useState("all");
 
   const filtered = filter === "all" ? workOrders : workOrders.filter((wo) => wo.status === filter);
@@ -166,6 +166,14 @@ export function WorkOrderTable({ workOrders }: { workOrders: WorkOrder[] }) {
                         >
                           PDF
                         </a>
+                      )}
+                      {wo.status === "signed" && projectMap[wo.id] && (
+                        <Link
+                          href={`/portal/projects/${projectMap[wo.id]}`}
+                          className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700"
+                        >
+                          Project
+                        </Link>
                       )}
                     </div>
                   </td>
