@@ -47,6 +47,11 @@ function daysUntil(dateStr: string): number {
   return Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 }
 
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr + "T00:00:00");
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
 function DeadlineBadge({ signBy, status }: { signBy: string | null; status: string }) {
   if (!signBy || status !== "sent") return null;
   const days = daysUntil(signBy);
@@ -130,8 +135,8 @@ export function WorkOrderTable({ workOrders }: { workOrders: WorkOrder[] }) {
                     <div>{wo.school}</div>
                     <div className="text-xs text-zinc-400">{wo.location}</div>
                   </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
-                    <div>{wo.start_date} — {wo.end_date}</div>
+                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+                    <div>{formatDate(wo.start_date)} — {formatDate(wo.end_date)}</div>
                     <div className="text-xs text-zinc-400">{wo.days} day{wo.days > 1 ? "s" : ""}</div>
                   </td>
                   <td className="px-4 py-3 text-right font-semibold text-zinc-900 dark:text-zinc-50">
