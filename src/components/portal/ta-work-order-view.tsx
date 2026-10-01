@@ -26,6 +26,7 @@ interface WorkOrder {
   total: number;
   status: string;
   sign_by: string | null;
+  pdf_url: string | null;
   created_at: string;
 }
 
@@ -239,9 +240,20 @@ export function TAWorkOrderView({
 
           {wo.status === "signed" && (
             <div className="rounded-lg bg-green-50 p-4 dark:bg-green-900/10">
-              <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                This work order has been signed.
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-green-700 dark:text-green-400">
+                  This work order has been signed.
+                </p>
+                {wo.pdf_url && (
+                  <a
+                    href={wo.pdf_url}
+                    target="_blank"
+                    className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                  >
+                    Download Signed PDF
+                  </a>
+                )}
+              </div>
             </div>
           )}
 
