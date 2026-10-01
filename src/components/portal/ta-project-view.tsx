@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { RichTextViewer } from "@/components/shared/rich-text-viewer";
 
 interface Project {
   id: string;
@@ -33,7 +34,9 @@ interface Document {
   id: string;
   name: string;
   description: string | null;
-  file_url: string;
+  file_url: string | null;
+  content: string | null;
+  doc_type: "file" | "native";
 }
 
 const statusStyles: Record<string, string> = {
@@ -58,6 +61,7 @@ export function TAProjectView({
 }) {
   const [tasks, setTasks] = useState(initialTasks);
   const [loading, setLoading] = useState<string | null>(null);
+  const [expandedDoc, setExpandedDoc] = useState<string | null>(null);
 
   const completedCount = tasks.filter((t) => t.completed).length;
   const totalCount = tasks.length;
@@ -198,19 +202,35 @@ export function TAProjectView({
         ) : (
           <ul className="space-y-2">
             {documents.map((doc) => (
-              <li key={doc.id} className="flex items-center justify-between rounded-lg border border-zinc-100 p-3 dark:border-zinc-800">
-                <div>
-                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{doc.name}</p>
-                  {doc.description && <p className="text-xs text-zinc-500">{doc.description}</p>}
+              <li key={doc.id} className="rounded-lg border border-zinc-100 dark:border-zinc-800">
+                <div className="flex items-center justify-between p-3">
+                  <div>
+                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{doc.name}</p>
+                    {doc.description && <p className="text-xs text-zinc-500">{doc.description}</p>}
+                  </div>
+                  {doc.doc_type === "native" ? (
+                    <button
+                      onClick={() => setExpandedDoc(expandedDoc === doc.id ? null : doc.id)}
+                      className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    >
+                      {expandedDoc === doc.id ? "Close" : "Read"}
+                    </button>
+                  ) : doc.file_url ? (
+                    <a
+                      href={doc.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    >
+                      Download
+                    </a>
+                  ) : null}
                 </div>
-                <a
-                  href={doc.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                >
-                  Download
-                </a>
+                {doc.doc_type === "native" && expandedDoc === doc.id && doc.content && (
+                  <div className="border-t border-zinc-100 px-4 py-3 dark:border-zinc-800">
+                    <RichTextViewer content={doc.content} />
+                  </div>
+                )}
               </li>
             ))}
           </ul>

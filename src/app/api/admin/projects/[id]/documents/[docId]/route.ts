@@ -30,9 +30,15 @@ export async function PATCH(
   const body = await request.json();
   const adminClient = createAdminClient();
 
+  // Build update object - support both publish toggle and content update
+  const updateData: Record<string, unknown> = {};
+  if (body.published !== undefined) updateData.published = Boolean(body.published);
+  if (body.name !== undefined) updateData.name = body.name;
+  if (body.content !== undefined) updateData.content = body.content;
+
   const { data: document, error } = await adminClient
     .from("project_documents")
-    .update({ published: Boolean(body.published) })
+    .update(updateData)
     .eq("id", docId)
     .eq("project_id", id)
     .select("*")
