@@ -21,7 +21,7 @@ const DAY_HEADERS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 function formatDateShort(dateStr: string): string {
   const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
 function isSameDay(a: Date, b: Date): boolean {
@@ -70,8 +70,22 @@ export function TACalendar({ workOrders }: { workOrders: WorkOrder[] }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth());
+  // Start on the month of the next upcoming project, or today
+  const initialMonth = useMemo(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const next = workOrders
+      .filter((wo) => new Date(wo.end_date + "T00:00:00") >= now)
+      .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())[0];
+    if (next) {
+      const d = new Date(next.start_date + "T00:00:00");
+      return { year: d.getFullYear(), month: d.getMonth() };
+    }
+    return { year: now.getFullYear(), month: now.getMonth() };
+  }, [workOrders]);
+
+  const [year, setYear] = useState(initialMonth.year);
+  const [month, setMonth] = useState(initialMonth.month);
 
   const grid = useMemo(() => getMonthGrid(year, month), [year, month]);
 
