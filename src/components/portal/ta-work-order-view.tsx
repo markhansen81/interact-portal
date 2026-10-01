@@ -228,7 +228,7 @@ export function TAWorkOrderView({
               <h3 className="font-semibold text-zinc-900 dark:text-zinc-50">
                 Sign Work Order
               </h3>
-              <SignaturePad onSign={handleSign} signerName={taName} />
+              <SignaturePad onSign={handleSign} signerName={taName} loading={signing} />
               <button
                 onClick={() => setShowSign(false)}
                 className="text-sm text-zinc-500 hover:text-zinc-700"
