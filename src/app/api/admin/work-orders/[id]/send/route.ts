@@ -57,7 +57,7 @@ export async function POST(
     type: "work_order_sent",
     title: "New Work Order",
     body: `You have a new work order for ${wo.project_name}`,
-    payload: { work_order_id: id },
+    payload: { link: `/portal/work-orders/${id}` },
     email: { to: ta.email, ...emailTemplate },
   });
 

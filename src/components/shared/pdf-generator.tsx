@@ -177,11 +177,36 @@ export function useGenerateSignedPDF() {
       y += 5;
       addText(`Signed: ${new Date(signature.timestamp).toLocaleString()}`, margin, y, { fontSize: 8, color: "#999999" });
 
-      // Company signature (right side)
+      // Company auto-signature (right side)
       const rightX = pageWidth / 2 + 10;
       let ry = y - 22;
-      addText(`Berlin, ${new Date(wo.created_at).toLocaleDateString("de-DE")}`, rightX, ry, { fontSize: 11, fontStyle: "bold" });
-      ry += 10;
+
+      // Generate company signature image (typed style)
+      try {
+        const sigCanvas = document.createElement("canvas");
+        sigCanvas.width = 600;
+        sigCanvas.height = 200;
+        const sigCtx = sigCanvas.getContext("2d");
+        if (sigCtx) {
+          sigCtx.fillStyle = "white";
+          sigCtx.fillRect(0, 0, 600, 200);
+          sigCtx.fillStyle = "#1a1a1a";
+          sigCtx.font = "italic 52px Georgia, serif";
+          sigCtx.fillText("C. Justin Beard", 20, 120);
+          const companySigPng = sigCanvas.toDataURL("image/png");
+          doc.addImage(companySigPng, "PNG", rightX, ry - 5, 55, 18);
+        }
+      } catch {
+        // Fallback to text if canvas fails
+      }
+
+      // Signature line
+      doc.setDrawColor(51, 51, 51);
+      doc.line(rightX, ry + 16, rightX + 60, ry + 16);
+      ry += 20;
+
+      addText(`Berlin, ${new Date(signature.timestamp).toLocaleDateString("de-DE")}`, rightX, ry, { fontSize: 9, color: "#666666" });
+      ry += 6;
       addText("C. Justin Beard", rightX, ry, { fontSize: 11, fontStyle: "bold" });
       ry += 5;
       addText("Chief Executive Officer", rightX, ry, { fontSize: 9 });
