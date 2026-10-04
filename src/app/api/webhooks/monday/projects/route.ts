@@ -247,6 +247,22 @@ export async function POST(request: Request) {
       },
     ]);
 
+    // Copy teacher task templates as teacher_tasks for this project
+    const { data: teacherTemplates } = await adminClient
+      .from("teacher_task_templates")
+      .select("title, description, sort_order");
+
+    if (teacherTemplates && teacherTemplates.length > 0) {
+      await adminClient.from("teacher_tasks").insert(
+        teacherTemplates.map((t) => ({
+          project_id: projectId,
+          title: t.title,
+          description: t.description,
+          sort_order: t.sort_order,
+        }))
+      );
+    }
+
     // Auto-attach template documents
     const { data: docTemplates } = await adminClient
       .from("document_templates")

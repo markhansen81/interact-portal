@@ -35,6 +35,13 @@ export default async function SchoolProjectPage({
     .eq("published", true)
     .order("created_at", { ascending: false });
 
+  // Fetch teacher tasks
+  const { data: teacherTasks } = await adminClient
+    .from("teacher_tasks")
+    .select("*")
+    .eq("project_id", project.id)
+    .order("sort_order", { ascending: true });
+
   // Fetch team members with full profile data
   const { data: teamData } = await adminClient
     .from("project_tas")
@@ -79,6 +86,7 @@ export default async function SchoolProjectPage({
       documents={documents || []}
       token={token}
       teamMembers={teamMembers}
+      teacherTasks={teacherTasks || []}
     />
   );
 }
