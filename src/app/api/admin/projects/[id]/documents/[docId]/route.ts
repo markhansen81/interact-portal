@@ -35,6 +35,7 @@ export async function PATCH(
   if (body.published !== undefined) updateData.published = Boolean(body.published);
   if (body.name !== undefined) updateData.name = body.name;
   if (body.content !== undefined) updateData.content = body.content;
+  if (body.visibility !== undefined) updateData.visibility = body.visibility;
 
   const { data: document, error } = await adminClient
     .from("project_documents")
