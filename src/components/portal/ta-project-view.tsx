@@ -5,6 +5,7 @@ import Link from "next/link";
 import { RichTextViewer } from "@/components/shared/rich-text-viewer";
 import { ProjectTeam } from "@/components/portal/project-team";
 import { AttendanceRoll } from "@/components/portal/attendance-roll";
+import { TAProfileCard, type TAProfile } from "@/components/shared/ta-profile-card";
 
 interface Project {
   id: string;
@@ -47,12 +48,26 @@ interface TeamMember {
   ta_id: string;
   role: string;
   profile: {
+    id: string;
     first_name: string | null;
     last_name: string | null;
     preferred_name: string | null;
     photo_url: string | null;
     phone: string | null;
     phone_consent: boolean;
+    where_from: string | null;
+    moved_to_germany: string | null;
+    likes_germany: string | null;
+    vacation_spot: string | null;
+    great_at: string | null;
+    not_great_at: string | null;
+    art_type: string | null;
+    superpower: string | null;
+    famous_last_words: string | null;
+    dietary_restrictions: string | null;
+    dietary_options: string[] | null;
+    hometown_city: string | null;
+    hometown_country: string | null;
   };
 }
 
@@ -200,6 +215,41 @@ export function TAProjectView({
         <div className="space-y-6">
           {/* Team */}
           <ProjectTeam members={teamMembers} />
+
+          {/* TA Profile Cards */}
+          {teamMembers.length > 0 && (
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Teaching Artist Profiles</h2>
+              {teamMembers.map((m) => (
+                <TAProfileCard
+                  key={m.id}
+                  profile={{
+                    id: m.profile.id,
+                    first_name: m.profile.first_name || "",
+                    last_name: m.profile.last_name || "",
+                    preferred_name: m.profile.preferred_name,
+                    phone: m.profile.phone,
+                    phone_consent: m.profile.phone_consent,
+                    photo_url: m.profile.photo_url,
+                    where_from: m.profile.where_from,
+                    moved_to_germany: m.profile.moved_to_germany,
+                    likes_germany: m.profile.likes_germany,
+                    vacation_spot: m.profile.vacation_spot,
+                    great_at: m.profile.great_at,
+                    not_great_at: m.profile.not_great_at,
+                    art_type: m.profile.art_type,
+                    superpower: m.profile.superpower,
+                    famous_last_words: m.profile.famous_last_words,
+                    dietary_restrictions: m.profile.dietary_restrictions,
+                    dietary_options: m.profile.dietary_options,
+                    hometown_city: m.profile.hometown_city,
+                    hometown_country: m.profile.hometown_country,
+                  }}
+                  variant="school"
+                />
+              ))}
+            </div>
+          )}
 
           {/* Quick tasks summary */}
           <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
