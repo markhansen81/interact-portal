@@ -20,6 +20,20 @@ interface Project {
   work_order_id: string | null;
 }
 
+interface TeamMember {
+  ta_id: string;
+  role: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+}
+
+interface GroupSummary {
+  id: string;
+  name: string;
+  student_count: number;
+}
+
 interface Task {
   id: string;
   project_id: string;
@@ -59,10 +73,14 @@ export function AdminProjectView({
   project,
   tasks: initialTasks,
   documents: initialDocs,
+  teamMembers = [],
+  groupSummaries = [],
 }: {
   project: Project;
   tasks: Task[];
   documents: Document[];
+  teamMembers?: TeamMember[];
+  groupSummaries?: GroupSummary[];
 }) {
   const [tasks, setTasks] = useState(initialTasks);
   const [documents, setDocuments] = useState(initialDocs);
@@ -252,6 +270,54 @@ export function AdminProjectView({
           </div>
         </div>
       </div>
+
+      {/* Team section */}
+      {teamMembers.length > 0 && (
+        <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+          <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">Assigned TAs</h2>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {teamMembers.map((m) => (
+              <div key={m.ta_id} className="flex items-center gap-3 rounded-lg border border-zinc-100 p-3 dark:border-zinc-800">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-sm font-semibold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                  {(m.first_name?.charAt(0) || "").toUpperCase()}{(m.last_name?.charAt(0) || "").toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                    {[m.first_name, m.last_name].filter(Boolean).join(" ") || m.email || "Unknown"}
+                  </p>
+                  <span className="text-[10px] capitalize text-zinc-500">{m.role}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Attendance summary */}
+      {groupSummaries.length > 0 && (
+        <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Attendance</h2>
+            <Link
+              href={`/admin/projects/${project.id}#attendance`}
+              className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+            >
+              View full attendance
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {groupSummaries.map((g) => (
+              <div key={g.id} className="rounded-lg border border-zinc-100 p-3 dark:border-zinc-800">
+                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{g.name}</p>
+                <p className="text-xs text-zinc-500">{g.student_count} student{g.student_count !== 1 ? "s" : ""}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-zinc-400">
+            {groupSummaries.length} group{groupSummaries.length !== 1 ? "s" : ""}, {groupSummaries.reduce((sum, g) => sum + g.student_count, 0)} total students
+          </p>
+        </div>
+      )}
 
       {/* Tasks section */}
       <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
