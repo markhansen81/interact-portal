@@ -23,16 +23,68 @@ export async function POST(
   }
 
   const body = await request.json();
-  const { group_id, first_name, last_name, needs_notes } = body;
+  const { group_id, first_name, last_name, needs_notes, students } = body;
 
+  const adminClient = createAdminClient();
+
+  // Bulk import: array of students
+  if (Array.isArray(students) && students.length > 0) {
+    if (!group_id) {
+      return NextResponse.json(
+        { error: "group_id is required for bulk import" },
+        { status: 400 }
+      );
+    }
+
+    // Verify the group belongs to this project
+    const { data: group } = await adminClient
+      .from("project_groups")
+      .select("id")
+      .eq("id", group_id)
+      .eq("project_id", project.id)
+      .single();
+
+    if (!group) {
+      return NextResponse.json(
+        { error: "Group not found in this project" },
+        { status: 404 }
+      );
+    }
+
+    const rows = students
+      .filter((s: { first_name?: string }) => s.first_name?.trim())
+      .map((s: { first_name: string; last_name?: string }) => ({
+        group_id,
+        first_name: s.first_name.trim(),
+        last_name: s.last_name?.trim() || null,
+      }));
+
+    if (rows.length === 0) {
+      return NextResponse.json(
+        { error: "No valid students to import" },
+        { status: 400 }
+      );
+    }
+
+    const { data: imported, error } = await adminClient
+      .from("project_students")
+      .insert(rows)
+      .select("*");
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    return NextResponse.json({ students: imported });
+  }
+
+  // Single student insert (existing behavior)
   if (!group_id || !first_name?.trim()) {
     return NextResponse.json(
       { error: "group_id and first_name are required" },
       { status: 400 }
     );
   }
-
-  const adminClient = createAdminClient();
 
   // Verify the group belongs to this project
   const { data: group } = await adminClient
