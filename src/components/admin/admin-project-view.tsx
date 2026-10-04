@@ -723,17 +723,39 @@ export function AdminProjectView({
                     {doc.published ? "Published" : "Draft"}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <select
-                    value={doc.visibility || "both"}
-                    onChange={(e) => changeVisibility(doc.id, e.target.value)}
-                    className="rounded-lg border border-zinc-300 px-2 py-1 text-xs text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-                  >
-                    <option value="both">TA + Teacher</option>
-                    <option value="ta">TA only</option>
-                    <option value="teacher">Teacher only</option>
-                    <option value="admin">Admin only</option>
-                  </select>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 text-xs">
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={doc.visibility === "ta" || doc.visibility === "both"}
+                        onChange={() => {
+                          const taOn = doc.visibility === "ta" || doc.visibility === "both";
+                          const teacherOn = doc.visibility === "teacher" || doc.visibility === "both";
+                          const newTa = !taOn;
+                          const vis = newTa && teacherOn ? "both" : newTa ? "ta" : teacherOn ? "teacher" : "admin";
+                          changeVisibility(doc.id, vis);
+                        }}
+                        className="rounded"
+                      />
+                      <span className="text-zinc-600 dark:text-zinc-400">TA</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={doc.visibility === "teacher" || doc.visibility === "both"}
+                        onChange={() => {
+                          const taOn = doc.visibility === "ta" || doc.visibility === "both";
+                          const teacherOn = doc.visibility === "teacher" || doc.visibility === "both";
+                          const newTeacher = !teacherOn;
+                          const vis = taOn && newTeacher ? "both" : taOn ? "ta" : newTeacher ? "teacher" : "admin";
+                          changeVisibility(doc.id, vis);
+                        }}
+                        className="rounded"
+                      />
+                      <span className="text-zinc-600 dark:text-zinc-400">Teacher</span>
+                    </label>
+                  </div>
                   <button
                     onClick={() => togglePublish(doc.id, doc.published)}
                     className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
