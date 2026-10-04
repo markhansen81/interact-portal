@@ -33,6 +33,7 @@ export async function POST(request: Request) {
     .insert({
       ta_id: body.ta_id,
       job_id: body.job_id || null,
+      project_id: body.project_id || null,
       project_id_internal: projectId,
       project_name: body.project_name,
       school: body.school,

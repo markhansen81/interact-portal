@@ -25,7 +25,7 @@ export async function POST(
   // Verify this work order belongs to the TA and is in "sent" status
   const { data: wo } = await supabase
     .from("work_orders")
-    .select("id, ta_id, status, job_id, project_name, school, school_address, location, program_type, start_date, end_date, days, pdf_url")
+    .select("id, ta_id, status, job_id, project_id, project_name, school, school_address, location, program_type, start_date, end_date, days, pdf_url")
     .eq("id", id)
     .eq("ta_id", user.id)
     .eq("status", "sent")
@@ -145,11 +145,21 @@ export async function POST(
   // Link TA to existing project (created by Monday webhook), or fallback to creating one
   let linkedProjectId: string | null = null;
   try {
-    // Try to find an existing project for this work order's job
+    // Try to find an existing project for this work order
     let existingProject = null;
 
-    if (wo.job_id) {
-      // Look up the job to get its monday_item_id, then find the project
+    // FIRST: check if the WO has a direct project_id link
+    if (wo.project_id) {
+      const { data: proj } = await adminClient
+        .from("projects")
+        .select("id")
+        .eq("id", wo.project_id)
+        .single();
+      existingProject = proj;
+    }
+
+    // SECOND: fallback to job_id → monday_item_id lookup
+    if (!existingProject && wo.job_id) {
       const { data: job } = await adminClient
         .from("jobs")
         .select("monday_item_id")
