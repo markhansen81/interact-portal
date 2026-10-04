@@ -4,6 +4,16 @@ import { useState, useCallback } from "react";
 import { RichTextViewer } from "@/components/shared/rich-text-viewer";
 import { TAProfileCard, type TAProfile } from "@/components/shared/ta-profile-card";
 
+interface TeacherTask {
+  id: string;
+  project_id: string;
+  title: string;
+  description: string | null;
+  completed: boolean;
+  completed_at: string | null;
+  sort_order: number;
+}
+
 interface Student {
   id: string;
   group_id: string;
@@ -92,12 +102,14 @@ export function SchoolProjectView({
   documents,
   token,
   teamMembers = [],
+  teacherTasks: initialTasks = [],
 }: {
   project: Project;
   groups: Group[];
   documents: Document[];
   token: string;
   teamMembers?: SchoolTeamMember[];
+  teacherTasks?: TeacherTask[];
 }) {
   const [groups, setGroups] = useState<Group[]>(initialGroups);
   const [showAddGroup, setShowAddGroup] = useState(false);
@@ -125,6 +137,16 @@ export function SchoolProjectView({
 
   // Per-group dynamics text
   const [groupDynamics, setGroupDynamics] = useState<Record<string, string>>({});
+
+  // Teacher tasks
+  const [tasks, setTasks] = useState<TeacherTask[]>(initialTasks);
+  const [togglingTask, setTogglingTask] = useState<string | null>(null);
+
+  // Bulk import state per group
+  const [bulkImportMode, setBulkImportMode] = useState<Record<string, "paste" | "csv" | null>>({});
+  const [pasteText, setPasteText] = useState<Record<string, string>>({});
+  const [parsedStudents, setParsedStudents] = useState<Record<string, Array<{ first_name: string; last_name: string }>>>({});
+  const [importing, setImporting] = useState<Record<string, boolean>>({});
 
   // Document viewer
   const [viewingDoc, setViewingDoc] = useState<Document | null>(null);
@@ -297,6 +319,159 @@ export function SchoolProjectView({
     }
   }
 
+  // --- Teacher task toggle ---
+
+  async function toggleTask(taskId: string) {
+    setTogglingTask(taskId);
+    try {
+      const res = await fetch(`${apiBase}/tasks/${taskId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      if (res.ok) {
+        const { task } = await res.json();
+        setTasks((prev) =>
+          prev.map((t) => (t.id === taskId ? task : t))
+        );
+      }
+    } catch {
+      // ignore
+    } finally {
+      setTogglingTask(null);
+    }
+  }
+
+  // --- Bulk import helpers ---
+
+  function parsePastedNames(groupId: string) {
+    const text = pasteText[groupId] || "";
+    const lines = text
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+    const parsed = lines.map((line) => {
+      // Try tab-separated first, then comma, then space
+      let parts: string[];
+      if (line.includes("\t")) {
+        parts = line.split("\t").map((p) => p.trim()).filter(Boolean);
+      } else if (line.includes(",")) {
+        parts = line.split(",").map((p) => p.trim()).filter(Boolean);
+      } else {
+        parts = line.split(/\s+/);
+      }
+      const first_name = parts[0] || "";
+      const last_name = parts.slice(1).join(" ") || "";
+      return { first_name, last_name };
+    });
+    setParsedStudents((prev) => ({ ...prev, [groupId]: parsed }));
+  }
+
+  function handleCsvUpload(groupId: string, file: File) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      if (!text) return;
+      const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+      if (lines.length === 0) return;
+
+      // Detect header
+      const headerLine = lines[0].toLowerCase();
+      const hasHeader =
+        headerLine.includes("first") ||
+        headerLine.includes("last") ||
+        headerLine.includes("name") ||
+        headerLine.includes("vorname") ||
+        headerLine.includes("nachname");
+
+      const dataLines = hasHeader ? lines.slice(1) : lines;
+      const separator = lines[0].includes(";") ? ";" : ",";
+      const headers = hasHeader
+        ? lines[0].split(separator).map((h) => h.trim().toLowerCase())
+        : [];
+
+      // Find column indices
+      let firstNameIdx = headers.findIndex(
+        (h) => h.includes("first") || h === "vorname"
+      );
+      let lastNameIdx = headers.findIndex(
+        (h) => h.includes("last") || h === "nachname" || h === "surname"
+      );
+      const nameIdx = headers.findIndex(
+        (h) => h === "name" || h === "student" || h === "student name"
+      );
+
+      const parsed = dataLines
+        .map((line) => {
+          const cols = line.split(separator).map((c) => c.trim());
+          if (firstNameIdx >= 0 && lastNameIdx >= 0) {
+            return {
+              first_name: cols[firstNameIdx] || "",
+              last_name: cols[lastNameIdx] || "",
+            };
+          } else if (nameIdx >= 0) {
+            const parts = (cols[nameIdx] || "").split(/\s+/);
+            return {
+              first_name: parts[0] || "",
+              last_name: parts.slice(1).join(" ") || "",
+            };
+          } else if (cols.length >= 2 && !hasHeader) {
+            // Assume first col = first name, second = last name
+            return { first_name: cols[0], last_name: cols[1] };
+          } else {
+            // Single column, split by space
+            const parts = (cols[0] || "").split(/\s+/);
+            return {
+              first_name: parts[0] || "",
+              last_name: parts.slice(1).join(" ") || "",
+            };
+          }
+        })
+        .filter((s) => s.first_name);
+
+      setParsedStudents((prev) => ({ ...prev, [groupId]: parsed }));
+    };
+    reader.readAsText(file);
+  }
+
+  function removeParsedStudent(groupId: string, index: number) {
+    setParsedStudents((prev) => ({
+      ...prev,
+      [groupId]: (prev[groupId] || []).filter((_, i) => i !== index),
+    }));
+  }
+
+  async function importStudents(groupId: string) {
+    const students = parsedStudents[groupId];
+    if (!students || students.length === 0) return;
+    setImporting((prev) => ({ ...prev, [groupId]: true }));
+    try {
+      const res = await fetch(`${apiBase}/students`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ group_id: groupId, students }),
+      });
+      if (res.ok) {
+        const { students: imported } = await res.json();
+        setGroups((prev) =>
+          prev.map((g) =>
+            g.id === groupId
+              ? { ...g, project_students: [...g.project_students, ...imported] }
+              : g
+          )
+        );
+        // Clear import state
+        setParsedStudents((prev) => ({ ...prev, [groupId]: [] }));
+        setPasteText((prev) => ({ ...prev, [groupId]: "" }));
+        setBulkImportMode((prev) => ({ ...prev, [groupId]: null }));
+      }
+    } catch {
+      // ignore
+    } finally {
+      setImporting((prev) => ({ ...prev, [groupId]: false }));
+    }
+  }
+
   // --- Helpers for special needs / allergies tables ---
 
   function addSpecialNeedsRow(groupId: string) {
@@ -466,6 +641,71 @@ export function SchoolProjectView({
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Teacher Task Checklist */}
+      {tasks.length > 0 && (
+        <div className="rounded-xl border border-zinc-200 bg-white p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-zinc-900">Your Tasks</h2>
+            <span className="text-sm text-zinc-500">
+              {tasks.filter((t) => t.completed).length} of {tasks.length} completed
+            </span>
+          </div>
+          {/* Progress bar */}
+          <div className="mb-4 h-2 w-full overflow-hidden rounded-full bg-zinc-100">
+            <div
+              className="h-full rounded-full bg-green-500 transition-all duration-300"
+              style={{
+                width: `${tasks.length > 0 ? (tasks.filter((t) => t.completed).length / tasks.length) * 100 : 0}%`,
+              }}
+            />
+          </div>
+          <ul className="space-y-2">
+            {tasks.map((task) => (
+              <li
+                key={task.id}
+                className={`flex items-start gap-3 rounded-lg border p-3 transition-colors ${
+                  task.completed
+                    ? "border-green-100 bg-green-50"
+                    : "border-zinc-100 bg-white"
+                }`}
+              >
+                <button
+                  onClick={() => toggleTask(task.id)}
+                  disabled={togglingTask === task.id}
+                  className="mt-0.5 flex-shrink-0"
+                >
+                  {task.completed ? (
+                    <svg className="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  ) : (
+                    <svg className="h-5 w-5 text-zinc-300 hover:text-zinc-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" />
+                    </svg>
+                  )}
+                </button>
+                <div className="min-w-0 flex-1">
+                  <p
+                    className={`text-sm font-medium ${
+                      task.completed ? "text-zinc-400 line-through" : "text-zinc-900"
+                    }`}
+                  >
+                    {task.title}
+                  </p>
+                  {task.description && (
+                    <p className="mt-0.5 text-xs text-zinc-500">{task.description}</p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -711,6 +951,146 @@ export function SchoolProjectView({
                     </tr>
                   </tbody>
                 </table>
+
+                {/* Bulk import section */}
+                <div className="mt-3 border-t border-zinc-100 pt-3">
+                  {!bulkImportMode[group.id] ? (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() =>
+                          setBulkImportMode((prev) => ({ ...prev, [group.id]: "paste" }))
+                        }
+                        className="rounded border border-zinc-200 px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-50"
+                      >
+                        Paste student list
+                      </button>
+                      <button
+                        onClick={() =>
+                          setBulkImportMode((prev) => ({ ...prev, [group.id]: "csv" }))
+                        }
+                        className="rounded border border-zinc-200 px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-50"
+                      >
+                        Upload CSV
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+                      <div className="mb-3 flex items-center justify-between">
+                        <h4 className="text-sm font-medium text-zinc-900">
+                          {bulkImportMode[group.id] === "paste"
+                            ? "Paste Student Names"
+                            : "Upload CSV File"}
+                        </h4>
+                        <button
+                          onClick={() => {
+                            setBulkImportMode((prev) => ({ ...prev, [group.id]: null }));
+                            setParsedStudents((prev) => ({ ...prev, [group.id]: [] }));
+                            setPasteText((prev) => ({ ...prev, [group.id]: "" }));
+                          }}
+                          className="text-xs text-zinc-500 hover:text-zinc-700"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+
+                      {bulkImportMode[group.id] === "paste" && (
+                        <>
+                          <textarea
+                            value={pasteText[group.id] || ""}
+                            onChange={(e) =>
+                              setPasteText((prev) => ({
+                                ...prev,
+                                [group.id]: e.target.value,
+                              }))
+                            }
+                            rows={6}
+                            placeholder={"Paste student names, one per line:\nMax Mustermann\nAnna Schmidt\nLukas Weber"}
+                            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm focus:border-zinc-400 focus:outline-none"
+                          />
+                          <button
+                            onClick={() => parsePastedNames(group.id)}
+                            disabled={!(pasteText[group.id] || "").trim()}
+                            className="mt-2 rounded bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 disabled:opacity-30"
+                          >
+                            Parse Names
+                          </button>
+                        </>
+                      )}
+
+                      {bulkImportMode[group.id] === "csv" && (
+                        <div>
+                          <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-zinc-300 bg-white p-4 text-center hover:bg-zinc-50">
+                            <svg className="h-5 w-5 text-zinc-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                              <path d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span className="text-sm text-zinc-600">Choose a CSV file</span>
+                            <input
+                              type="file"
+                              accept=".csv"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleCsvUpload(group.id, file);
+                              }}
+                            />
+                          </label>
+                          <p className="mt-1 text-xs text-zinc-400">
+                            CSV with first_name, last_name columns or a single Name column
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Preview parsed students */}
+                      {(parsedStudents[group.id] || []).length > 0 && (
+                        <div className="mt-3">
+                          <h5 className="mb-2 text-xs font-medium text-zinc-600">
+                            Preview ({parsedStudents[group.id].length} students)
+                          </h5>
+                          <div className="max-h-48 overflow-y-auto rounded border border-zinc-200 bg-white">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b border-zinc-200">
+                                  <th className="w-10 py-1.5 pl-3 text-left text-xs font-medium text-zinc-500">#</th>
+                                  <th className="py-1.5 text-left text-xs font-medium text-zinc-500">First Name</th>
+                                  <th className="py-1.5 text-left text-xs font-medium text-zinc-500">Last Name</th>
+                                  <th className="w-8 py-1.5"></th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {parsedStudents[group.id].map((s, i) => (
+                                  <tr key={i} className="border-b border-zinc-100">
+                                    <td className="py-1.5 pl-3 text-zinc-400">{i + 1}</td>
+                                    <td className="py-1.5 text-zinc-900">{s.first_name}</td>
+                                    <td className="py-1.5 text-zinc-900">{s.last_name}</td>
+                                    <td className="py-1.5 pr-2 text-right">
+                                      <button
+                                        onClick={() => removeParsedStudent(group.id, i)}
+                                        className="text-zinc-400 hover:text-red-500"
+                                      >
+                                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                          <path d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          <button
+                            onClick={() => importStudents(group.id)}
+                            disabled={importing[group.id]}
+                            className="mt-3 rounded bg-green-600 px-4 py-2 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                          >
+                            {importing[group.id]
+                              ? "Importing..."
+                              : `Import ${parsedStudents[group.id].length} Students`}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 {/* Special needs section */}
                 <div className="mt-4">
