@@ -236,6 +236,26 @@ export async function POST(request: Request) {
         published: false,
       },
     ]);
+
+    // Auto-attach template documents
+    const { data: docTemplates } = await adminClient
+      .from("document_templates")
+      .select("name, doc_type, file_url, content, visibility")
+      .eq("auto_attach", true);
+
+    if (docTemplates && docTemplates.length > 0) {
+      await adminClient.from("project_documents").insert(
+        docTemplates.map((t) => ({
+          project_id: projectId,
+          name: t.name,
+          doc_type: t.doc_type,
+          file_url: t.file_url || null,
+          content: t.content || null,
+          published: true,
+          visibility: t.visibility || "both",
+        }))
+      );
+    }
   }
 
   console.log(`[WEBHOOK/PROJECTS] Project ${isNew ? "created" : "updated"}: ${projectId} (Monday item ${itemId})`);

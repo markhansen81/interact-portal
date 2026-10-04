@@ -184,6 +184,14 @@ export async function POST(
           updated_at: new Date().toISOString(),
         })
         .eq("id", existingProject.id);
+
+      // Also add to project_tas for multi-TA support (ignore if already exists)
+      await adminClient
+        .from("project_tas")
+        .upsert(
+          { project_id: existingProject.id, ta_id: wo.ta_id, role: "ta" },
+          { onConflict: "project_id,ta_id", ignoreDuplicates: true }
+        );
     } else {
       // Fallback: create project if none exists (e.g. deal wasn't tracked in Monday)
       const { data: newProject } = await adminClient
@@ -205,6 +213,14 @@ export async function POST(
         .single();
 
       if (newProject) {
+        // Add TA to project_tas for multi-TA support
+        await adminClient
+          .from("project_tas")
+          .upsert(
+            { project_id: newProject.id, ta_id: wo.ta_id, role: "ta" },
+            { onConflict: "project_id,ta_id", ignoreDuplicates: true }
+          );
+
         // Copy task templates as project tasks
         const { data: templates } = await adminClient
           .from("project_task_templates")
