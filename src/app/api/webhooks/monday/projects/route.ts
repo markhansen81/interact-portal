@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { mondayQuery, extractColumnValue, extractTimelineValue } from "@/lib/monday";
 
@@ -84,6 +85,11 @@ export async function POST(request: Request) {
     extractTimelineValue(item, "timeline") ||
     extractTimelineValue(item, "date__1");
 
+  // Teacher / contact fields
+  const teacherEmail = extractColumnValue(item, "opp_email") || null;
+  const teacherName = extractColumnValue(item, "opp_primary_contact") || null;
+  const teacherPhone = extractColumnValue(item, "opp_phone") || null;
+
   const projectData = {
     name: item.name,
     school: school || null,
@@ -97,6 +103,10 @@ export async function POST(request: Request) {
     monday_board_id: boardId,
     status: "upcoming",
     updated_at: new Date().toISOString(),
+    teacher_email: teacherEmail,
+    teacher_name: teacherName,
+    teacher_phone: teacherPhone,
+    teacher_token: crypto.randomUUID(),
   };
 
   const adminClient = createAdminClient();

@@ -18,6 +18,9 @@ interface Project {
   notes: string | null;
   ta_name: string;
   work_order_id: string | null;
+  teacher_email: string | null;
+  teacher_name: string | null;
+  teacher_invited_at: string | null;
 }
 
 interface TeamMember {
@@ -99,6 +102,12 @@ export function AdminProjectView({
   // Add task form state
   const [newTask, setNewTask] = useState({ title: "", description: "", type: "checkbox", url: "", required: false });
 
+  // Teacher invite state
+  const [inviting, setInviting] = useState(false);
+  const [teacherEmailInput, setTeacherEmailInput] = useState(project.teacher_email || "");
+  const [teacherInvitedAt, setTeacherInvitedAt] = useState(project.teacher_invited_at);
+  const [inviteError, setInviteError] = useState("");
+
   const completedCount = tasks.filter((t) => t.completed).length;
   const totalCount = tasks.length;
   const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
@@ -115,6 +124,30 @@ export function AdminProjectView({
       // ignore
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function inviteTeacher() {
+    setInviting(true);
+    setInviteError("");
+    try {
+      const res = await fetch(`/api/admin/projects/${project.id}/invite-teacher`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          teacher_email: teacherEmailInput || undefined,
+        }),
+      });
+      if (res.ok) {
+        setTeacherInvitedAt(new Date().toISOString());
+      } else {
+        const data = await res.json();
+        setInviteError(data.error || "Failed to send invite");
+      }
+    } catch {
+      setInviteError("Failed to send invite");
+    } finally {
+      setInviting(false);
     }
   }
 
@@ -292,6 +325,45 @@ export function AdminProjectView({
           </div>
         </div>
       )}
+
+      {/* Teacher invite section */}
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">Teacher / School Contact</h2>
+        <div className="space-y-3">
+          {project.teacher_name && (
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              <span className="font-medium text-zinc-900 dark:text-zinc-50">Name:</span> {project.teacher_name}
+            </p>
+          )}
+          <div className="flex items-end gap-3">
+            <div className="flex-1">
+              <label className="mb-1 block text-xs font-medium text-zinc-500">Teacher Email</label>
+              <input
+                type="email"
+                value={teacherEmailInput}
+                onChange={(e) => setTeacherEmailInput(e.target.value)}
+                placeholder="teacher@school.de"
+                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+              />
+            </div>
+            <button
+              onClick={inviteTeacher}
+              disabled={inviting || !teacherEmailInput.trim()}
+              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+            >
+              {inviting ? "Sending..." : teacherInvitedAt ? "Resend Invite" : "Invite Teacher"}
+            </button>
+          </div>
+          {teacherInvitedAt && (
+            <p className="text-xs text-green-600 dark:text-green-400">
+              Invited on {new Date(teacherInvitedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+            </p>
+          )}
+          {inviteError && (
+            <p className="text-xs text-red-600 dark:text-red-400">{inviteError}</p>
+          )}
+        </div>
+      </div>
 
       {/* Attendance summary */}
       {groupSummaries.length > 0 && (
