@@ -710,79 +710,91 @@ export function AdminProjectView({
         {documents.length === 0 ? (
           <p className="text-sm text-zinc-500">No documents yet.</p>
         ) : (
-          <ul className="space-y-2">
-            {documents.map((doc) => (
-              <li key={doc.id} className="flex items-center justify-between rounded-lg border border-zinc-100 p-3 dark:border-zinc-800">
-                <div className="flex items-center gap-3">
-                  <div>
-                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{doc.name}</p>
-                    {doc.description && <p className="text-xs text-zinc-500">{doc.description}</p>}
-                    <span className="text-[10px] text-zinc-400">{doc.doc_type === "native" ? "Native" : "File"}</span>
-                  </div>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${doc.published ? "bg-green-100 text-green-700" : "bg-zinc-100 text-zinc-500"}`}>
-                    {doc.published ? "Published" : "Draft"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-3 text-xs">
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={doc.visibility === "ta" || doc.visibility === "both"}
-                        onChange={() => {
-                          const taOn = doc.visibility === "ta" || doc.visibility === "both";
-                          const teacherOn = doc.visibility === "teacher" || doc.visibility === "both";
-                          const newTa = !taOn;
-                          const vis = newTa && teacherOn ? "both" : newTa ? "ta" : teacherOn ? "teacher" : "admin";
-                          changeVisibility(doc.id, vis);
-                        }}
-                        className="rounded"
-                      />
-                      <span className="text-zinc-600 dark:text-zinc-400">TA</span>
-                    </label>
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={doc.visibility === "teacher" || doc.visibility === "both"}
-                        onChange={() => {
-                          const taOn = doc.visibility === "ta" || doc.visibility === "both";
-                          const teacherOn = doc.visibility === "teacher" || doc.visibility === "both";
-                          const newTeacher = !teacherOn;
-                          const vis = taOn && newTeacher ? "both" : taOn ? "ta" : newTeacher ? "teacher" : "admin";
-                          changeVisibility(doc.id, vis);
-                        }}
-                        className="rounded"
-                      />
-                      <span className="text-zinc-600 dark:text-zinc-400">Teacher</span>
-                    </label>
-                  </div>
-                  <button
-                    onClick={() => togglePublish(doc.id, doc.published)}
-                    className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                  >
-                    {doc.published ? "Unpublish" : "Publish"}
-                  </button>
-                  {doc.doc_type === "native" ? (
-                    <button
-                      onClick={() => openEditDoc(doc)}
-                      className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                    >
-                      Edit
-                    </button>
-                  ) : doc.file_url ? (
-                    <a
-                      href={doc.file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                    >
-                      Download
-                    </a>
-                  ) : null}
-                </div>
-              </li>
-            ))}
-          </ul>
+          <div className="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
+                  <th className="px-4 py-2 text-left font-medium text-zinc-500">Document</th>
+                  <th className="px-4 py-2 text-center font-medium text-zinc-500 w-16">TA</th>
+                  <th className="px-4 py-2 text-center font-medium text-zinc-500 w-16">Teacher</th>
+                  <th className="px-4 py-2 text-right font-medium text-zinc-500">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                {documents.map((doc) => {
+                  const taOn = doc.visibility === "ta" || doc.visibility === "both";
+                  const teacherOn = doc.visibility === "teacher" || doc.visibility === "both";
+                  return (
+                    <tr key={doc.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-zinc-900 dark:text-zinc-50">{doc.name}</p>
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${doc.published ? "bg-green-100 text-green-700" : "bg-zinc-100 text-zinc-500"}`}>
+                            {doc.published ? "Live" : "Draft"}
+                          </span>
+                          {!taOn && !teacherOn && (
+                            <span className="rounded-full px-2 py-0.5 text-[10px] font-medium bg-yellow-100 text-yellow-700">Admin only</span>
+                          )}
+                        </div>
+                        {doc.description && <p className="text-xs text-zinc-500">{doc.description}</p>}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <input
+                          type="checkbox"
+                          checked={taOn}
+                          onChange={() => {
+                            const newTa = !taOn;
+                            const vis = newTa && teacherOn ? "both" : newTa ? "ta" : teacherOn ? "teacher" : "admin";
+                            changeVisibility(doc.id, vis);
+                          }}
+                          className="h-4 w-4 rounded cursor-pointer"
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <input
+                          type="checkbox"
+                          checked={teacherOn}
+                          onChange={() => {
+                            const newTeacher = !teacherOn;
+                            const vis = taOn && newTeacher ? "both" : taOn ? "ta" : newTeacher ? "teacher" : "admin";
+                            changeVisibility(doc.id, vis);
+                          }}
+                          className="h-4 w-4 rounded cursor-pointer"
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => togglePublish(doc.id, doc.published)}
+                            className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                          >
+                            {doc.published ? "Unpublish" : "Publish"}
+                          </button>
+                          {doc.doc_type === "native" ? (
+                            <button
+                              onClick={() => openEditDoc(doc)}
+                              className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                            >
+                              Edit
+                            </button>
+                          ) : doc.file_url ? (
+                            <a
+                              href={doc.file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                            >
+                              Download
+                            </a>
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
