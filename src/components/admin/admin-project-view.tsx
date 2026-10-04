@@ -81,6 +81,7 @@ interface Document {
   content: string | null;
   doc_type: "file" | "native";
   published: boolean;
+  visibility: "ta" | "teacher" | "both" | "admin";
   created_at: string;
 }
 
@@ -281,6 +282,21 @@ export function AdminProjectView({
       });
       if (res.ok) {
         setDocuments((prev) => prev.map((d) => (d.id === docId ? { ...d, published: !published } : d)));
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  async function changeVisibility(docId: string, visibility: string) {
+    try {
+      const res = await fetch(`/api/admin/projects/${project.id}/documents/${docId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ visibility }),
+      });
+      if (res.ok) {
+        setDocuments((prev) => prev.map((d) => (d.id === docId ? { ...d, visibility: visibility as Document["visibility"] } : d)));
       }
     } catch {
       // ignore
@@ -708,6 +724,16 @@ export function AdminProjectView({
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
+                  <select
+                    value={doc.visibility || "both"}
+                    onChange={(e) => changeVisibility(doc.id, e.target.value)}
+                    className="rounded-lg border border-zinc-300 px-2 py-1 text-xs text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                  >
+                    <option value="both">TA + Teacher</option>
+                    <option value="ta">TA only</option>
+                    <option value="teacher">Teacher only</option>
+                    <option value="admin">Admin only</option>
+                  </select>
                   <button
                     onClick={() => togglePublish(doc.id, doc.published)}
                     className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
