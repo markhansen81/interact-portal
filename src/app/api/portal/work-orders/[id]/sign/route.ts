@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, workOrderSignedEmailToTA, workOrderSignedEmailToAdmin } from "@/lib/email";
 import { notifyWorkOrderEvent } from "@/lib/slack";
+import { generateSchoolProfile, generateHomestayProfile, PROFILE_FIELDS } from "@/lib/ta-profile-docs";
 
 export async function POST(
   request: Request,
@@ -142,6 +143,7 @@ export async function POST(
   });
 
   // Link TA to existing project (created by Monday webhook), or fallback to creating one
+  let linkedProjectId: string | null = null;
   try {
     // Try to find an existing project for this work order's job
     let existingProject = null;
@@ -192,6 +194,8 @@ export async function POST(
           { project_id: existingProject.id, ta_id: wo.ta_id, role: "ta" },
           { onConflict: "project_id,ta_id", ignoreDuplicates: true }
         );
+
+      linkedProjectId = existingProject.id;
     } else {
       // Fallback: create project if none exists (e.g. deal wasn't tracked in Monday)
       const { data: newProject } = await adminClient
@@ -239,10 +243,70 @@ export async function POST(
             }))
           );
         }
+
+        linkedProjectId = newProject.id;
       }
     }
   } catch (err) {
     console.error("[SIGN] Failed to link/create project:", err);
+  }
+
+  // Auto-generate TA profile documents for the project
+  if (linkedProjectId) {
+    try {
+      // Fetch full TA profile
+      const { data: fullProfile } = await adminClient
+        .from("profiles")
+        .select(PROFILE_FIELDS)
+        .eq("id", wo.ta_id)
+        .single();
+
+      if (fullProfile) {
+        const schoolDoc = generateSchoolProfile(fullProfile as unknown as Parameters<typeof generateSchoolProfile>[0]);
+        const homestayDoc = generateHomestayProfile(fullProfile as unknown as Parameters<typeof generateHomestayProfile>[0]);
+
+        // Check if profile docs already exist for this TA + project (avoid duplicates)
+        const { data: existingDocs } = await adminClient
+          .from("project_documents")
+          .select("name")
+          .eq("project_id", linkedProjectId)
+          .in("name", [schoolDoc.name, homestayDoc.name]);
+
+        const existingNames = new Set((existingDocs || []).map((d) => d.name));
+
+        const docsToInsert = [];
+
+        if (!existingNames.has(schoolDoc.name)) {
+          docsToInsert.push({
+            project_id: linkedProjectId,
+            name: schoolDoc.name,
+            content: schoolDoc.content,
+            doc_type: "native",
+            published: true,
+            visibility: "both",
+            uploaded_by: wo.ta_id,
+          });
+        }
+
+        if (!existingNames.has(homestayDoc.name)) {
+          docsToInsert.push({
+            project_id: linkedProjectId,
+            name: homestayDoc.name,
+            content: homestayDoc.content,
+            doc_type: "native",
+            published: true,
+            visibility: "teacher",
+            uploaded_by: wo.ta_id,
+          });
+        }
+
+        if (docsToInsert.length > 0) {
+          await adminClient.from("project_documents").insert(docsToInsert);
+        }
+      }
+    } catch (err) {
+      console.error("[SIGN] Failed to generate TA profile documents:", err);
+    }
   }
 
   return NextResponse.json({ success: true });

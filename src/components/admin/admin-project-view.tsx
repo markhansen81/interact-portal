@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { RichTextEditor } from "@/components/shared/rich-text-editor";
+import { TAProfileCard, type TAProfile } from "@/components/shared/ta-profile-card";
 
 interface Project {
   id: string;
@@ -29,6 +30,28 @@ interface TeamMember {
   first_name: string | null;
   last_name: string | null;
   email: string | null;
+  profile?: {
+    id: string;
+    first_name: string | null;
+    last_name: string | null;
+    preferred_name: string | null;
+    photo_url: string | null;
+    phone: string | null;
+    phone_consent: boolean;
+    where_from: string | null;
+    moved_to_germany: string | null;
+    likes_germany: string | null;
+    vacation_spot: string | null;
+    great_at: string | null;
+    not_great_at: string | null;
+    art_type: string | null;
+    superpower: string | null;
+    famous_last_words: string | null;
+    dietary_restrictions: string | null;
+    dietary_options: string[] | null;
+    hometown_city: string | null;
+    hometown_country: string | null;
+  };
 }
 
 interface GroupSummary {
@@ -306,22 +329,73 @@ export function AdminProjectView({
 
       {/* Team section */}
       {teamMembers.length > 0 && (
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">Assigned TAs</h2>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {teamMembers.map((m) => (
-              <div key={m.ta_id} className="flex items-center gap-3 rounded-lg border border-zinc-100 p-3 dark:border-zinc-800">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-sm font-semibold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
-                  {(m.first_name?.charAt(0) || "").toUpperCase()}{(m.last_name?.charAt(0) || "").toUpperCase()}
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                    {[m.first_name, m.last_name].filter(Boolean).join(" ") || m.email || "Unknown"}
-                  </p>
-                  <span className="text-[10px] capitalize text-zinc-500">{m.role}</span>
-                </div>
-              </div>
-            ))}
+        <div className="space-y-6">
+          <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+            <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">Assigned TAs — School Profiles</h2>
+            <div className="space-y-4">
+              {teamMembers.map((m) => {
+                if (!m.profile) return null;
+                const taProfile: TAProfile = {
+                  id: m.profile.id,
+                  first_name: m.profile.first_name || "",
+                  last_name: m.profile.last_name || "",
+                  preferred_name: m.profile.preferred_name,
+                  phone: m.profile.phone,
+                  phone_consent: m.profile.phone_consent,
+                  photo_url: m.profile.photo_url,
+                  where_from: m.profile.where_from,
+                  moved_to_germany: m.profile.moved_to_germany,
+                  likes_germany: m.profile.likes_germany,
+                  vacation_spot: m.profile.vacation_spot,
+                  great_at: m.profile.great_at,
+                  not_great_at: m.profile.not_great_at,
+                  art_type: m.profile.art_type,
+                  superpower: m.profile.superpower,
+                  famous_last_words: m.profile.famous_last_words,
+                  dietary_restrictions: m.profile.dietary_restrictions,
+                  dietary_options: m.profile.dietary_options,
+                  hometown_city: m.profile.hometown_city,
+                  hometown_country: m.profile.hometown_country,
+                };
+                return (
+                  <TAProfileCard key={m.ta_id} profile={taProfile} variant="school" />
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+            <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">Assigned TAs — Homestay Profiles</h2>
+            <div className="space-y-4">
+              {teamMembers.map((m) => {
+                if (!m.profile) return null;
+                const taProfile: TAProfile = {
+                  id: m.profile.id,
+                  first_name: m.profile.first_name || "",
+                  last_name: m.profile.last_name || "",
+                  preferred_name: m.profile.preferred_name,
+                  phone: m.profile.phone,
+                  phone_consent: m.profile.phone_consent,
+                  photo_url: m.profile.photo_url,
+                  where_from: m.profile.where_from,
+                  moved_to_germany: m.profile.moved_to_germany,
+                  likes_germany: m.profile.likes_germany,
+                  vacation_spot: m.profile.vacation_spot,
+                  great_at: m.profile.great_at,
+                  not_great_at: m.profile.not_great_at,
+                  art_type: m.profile.art_type,
+                  superpower: m.profile.superpower,
+                  famous_last_words: m.profile.famous_last_words,
+                  dietary_restrictions: m.profile.dietary_restrictions,
+                  dietary_options: m.profile.dietary_options,
+                  hometown_city: m.profile.hometown_city,
+                  hometown_country: m.profile.hometown_country,
+                };
+                return (
+                  <TAProfileCard key={m.ta_id} profile={taProfile} variant="homestay" />
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
