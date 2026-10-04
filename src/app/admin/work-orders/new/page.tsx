@@ -17,12 +17,18 @@ export default async function NewWorkOrderPage() {
     .order("scale_type")
     .order("level", { ascending: true });
 
+  const { data: projects } = await supabase
+    .from("projects")
+    .select("id, name, school, school_address, location, program_type, start_date, end_date, days")
+    .in("status", ["upcoming", "active"])
+    .order("start_date", { ascending: true });
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
         Create Work Order
       </h2>
-      <WorkOrderForm tas={tas || []} payScales={payScales || []} />
+      <WorkOrderForm tas={tas || []} payScales={payScales || []} projects={projects || []} />
     </div>
   );
 }

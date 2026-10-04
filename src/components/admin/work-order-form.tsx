@@ -20,6 +20,18 @@ interface PayScale {
   rates: Record<string, number | null>;
 }
 
+interface Project {
+  id: string;
+  name: string;
+  school: string | null;
+  school_address: string | null;
+  location: string | null;
+  program_type: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  days: number | null;
+}
+
 const PROGRAM_TYPES = [
   "Native Speaker Week",
   "Art in Action Week",
@@ -41,9 +53,11 @@ const PROGRAM_TYPES = [
 export function WorkOrderForm({
   tas,
   payScales,
+  projects,
 }: {
   tas: TA[];
   payScales: PayScale[];
+  projects: Project[];
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -51,6 +65,7 @@ export function WorkOrderForm({
 
   const [form, setForm] = useState({
     ta_id: "",
+    project_id: "",
     project_name: "",
     school: "",
     school_address: "",
@@ -102,6 +117,7 @@ export function WorkOrderForm({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...form,
+        project_id: form.project_id || null,
         daily_rate: calculatedRate ? calculatedRate / form.days : null,
         total: calculatedRate,
       }),
@@ -143,6 +159,50 @@ export function WorkOrderForm({
               ))}
             </select>
           </div>
+        </div>
+      </Section>
+
+      {/* Link to Project */}
+      <Section title="Link to Project">
+        <div>
+          <Label>Select Project (optional)</Label>
+          <select
+            value={form.project_id}
+            onChange={(e) => {
+              const projectId = e.target.value;
+              if (!projectId) {
+                update("project_id", "");
+                return;
+              }
+              const proj = projects.find((p) => p.id === projectId);
+              if (proj) {
+                setForm((prev) => ({
+                  ...prev,
+                  project_id: projectId,
+                  project_name: proj.name || prev.project_name,
+                  school: proj.school || prev.school,
+                  school_address: proj.school_address || prev.school_address,
+                  school_state: proj.location || prev.school_state,
+                  location: proj.location || prev.location,
+                  program_type: proj.program_type || prev.program_type,
+                  start_date: proj.start_date || prev.start_date,
+                  end_date: proj.end_date || prev.end_date,
+                  days: proj.days || prev.days,
+                }));
+              }
+            }}
+            className="input"
+          >
+            <option value="">No project linked</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} — {p.school || "No school"}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-zinc-400">
+            Selecting a project auto-fills details below. You can still edit them.
+          </p>
         </div>
       </Section>
 
