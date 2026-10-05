@@ -90,6 +90,15 @@ export async function POST(request: Request) {
   const teacherName = extractColumnValue(item, "opp_primary_contact") || null;
   const teacherPhone = extractColumnValue(item, "opp_phone") || null;
 
+  // Pricing fields
+  const pricePPStr = extractColumnValue(item, "opp_price_pp");
+  const pricePP = pricePPStr ? parseFloat(pricePPStr.replace(/[^0-9.,]/g, "").replace(",", ".")) || null : null;
+  const minParticipantsStr = extractColumnValue(item, "opp_min_participants");
+  const minParticipants = minParticipantsStr ? parseInt(minParticipantsStr) || null : null;
+  const minPaymentStr = extractColumnValue(item, "opp_min_payment");
+  const minPayment = minPaymentStr ? parseFloat(minPaymentStr.replace(/[^0-9.,]/g, "").replace(",", ".")) || null : null;
+  const tarif = extractColumnValue(item, "opp_tarif") || null;
+
   const projectData = {
     name: item.name,
     school: school || null,
@@ -107,6 +116,10 @@ export async function POST(request: Request) {
     teacher_name: teacherName,
     teacher_phone: teacherPhone,
     teacher_token: crypto.randomUUID(),
+    price_pp: pricePP,
+    min_participants: minParticipants,
+    min_payment: minPayment,
+    tarif,
   };
 
   const adminClient = createAdminClient();

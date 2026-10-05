@@ -39,6 +39,16 @@ interface Document {
   doc_type: "file" | "native";
 }
 
+interface SchoolInvoice {
+  id: string;
+  invoice_number: string;
+  invoice_date: string;
+  due_date: string;
+  total: number;
+  status: string;
+  pdf_url: string | null;
+}
+
 interface SchoolTeamMember {
   id: string;
   ta_id: string;
@@ -103,6 +113,7 @@ export function SchoolProjectView({
   token,
   teamMembers = [],
   teacherTasks: initialTasks = [],
+  schoolInvoices = [],
 }: {
   project: Project;
   groups: Group[];
@@ -110,6 +121,7 @@ export function SchoolProjectView({
   token: string;
   teamMembers?: SchoolTeamMember[];
   teacherTasks?: TeacherTask[];
+  schoolInvoices?: SchoolInvoice[];
 }) {
   const [groups, setGroups] = useState<Group[]>(initialGroups);
   const [showAddGroup, setShowAddGroup] = useState(false);
@@ -152,6 +164,11 @@ export function SchoolProjectView({
   const [viewingDoc, setViewingDoc] = useState<Document | null>(null);
 
   const [savingNotes, setSavingNotes] = useState<Record<string, boolean>>({});
+
+  // Invoice forward state
+  const [invoiceForwardEmail, setInvoiceForwardEmail] = useState("");
+  const [forwardingInvoice, setForwardingInvoice] = useState<string | null>(null);
+  const [forwardSuccess, setForwardSuccess] = useState<string | null>(null);
 
   const apiBase = `/api/school/project/${token}`;
 
@@ -469,6 +486,28 @@ export function SchoolProjectView({
       // ignore
     } finally {
       setImporting((prev) => ({ ...prev, [groupId]: false }));
+    }
+  }
+
+  // --- Invoice forward ---
+  async function forwardInvoice(invoiceId: string) {
+    if (!invoiceForwardEmail.trim()) return;
+    setForwardingInvoice(invoiceId);
+    setForwardSuccess(null);
+    try {
+      const res = await fetch(`${apiBase}/invoice/${invoiceId}/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: invoiceForwardEmail }),
+      });
+      if (res.ok) {
+        setForwardSuccess(invoiceId);
+        setInvoiceForwardEmail("");
+      }
+    } catch {
+      // ignore
+    } finally {
+      setForwardingInvoice(null);
     }
   }
 
@@ -1396,6 +1435,71 @@ export function SchoolProjectView({
               <RichTextViewer content={viewingDoc.content} />
             </div>
           )}
+        </div>
+      )}
+
+      {/* Invoice section */}
+      {schoolInvoices.length > 0 && (
+        <div className="rounded-xl border border-zinc-200 bg-white p-6">
+          <h2 className="mb-4 text-lg font-semibold text-zinc-900">Invoice</h2>
+          <div className="space-y-4">
+            {schoolInvoices.map((inv) => (
+              <div key={inv.id} className="rounded-lg border border-zinc-100 p-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-zinc-900">
+                      Your invoice is ready
+                    </p>
+                    <div className="mt-2 space-y-1 text-sm text-zinc-600">
+                      <p>Invoice: <strong>{inv.invoice_number}</strong></p>
+                      <p>Amount: <strong>{"\u20AC"}{inv.total.toLocaleString("de-DE", { minimumFractionDigits: 2 })}</strong></p>
+                      <p>Due: <strong>{new Date(inv.due_date + "T00:00:00").toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })}</strong></p>
+                    </div>
+                  </div>
+                  {inv.pdf_url && (
+                    <a
+                      href={inv.pdf_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+                    >
+                      Download Invoice PDF
+                    </a>
+                  )}
+                </div>
+
+                <div className="mt-4 border-t border-zinc-100 pt-4">
+                  <p className="mb-2 text-xs font-medium text-zinc-500">
+                    Send to your finance team
+                  </p>
+                  <div className="flex items-end gap-2">
+                    <div className="flex-1">
+                      <input
+                        type="email"
+                        value={invoiceForwardEmail}
+                        onChange={(e) => setInvoiceForwardEmail(e.target.value)}
+                        placeholder="finance@school.de"
+                        className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <button
+                      onClick={() => forwardInvoice(inv.id)}
+                      disabled={forwardingInvoice === inv.id || !invoiceForwardEmail.trim()}
+                      className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {forwardingInvoice === inv.id ? "Sending..." : "Send"}
+                    </button>
+                  </div>
+                  {forwardSuccess === inv.id && (
+                    <p className="mt-2 text-xs text-green-600">Invoice sent successfully!</p>
+                  )}
+                  <p className="mt-2 text-xs text-zinc-400">
+                    Payment: Please transfer to Berliner Sparkasse, IBAN DE64100500000190650656, BIC BELADEBEXXX. Use the invoice number and school name as reference.
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

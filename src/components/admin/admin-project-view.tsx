@@ -23,6 +23,25 @@ interface Project {
   teacher_email: string | null;
   teacher_name: string | null;
   teacher_invited_at: string | null;
+  price_pp: number | null;
+}
+
+interface SchoolInvoice {
+  id: string;
+  project_id: string;
+  invoice_number: string;
+  invoice_date: string;
+  due_date: string;
+  num_students: number;
+  price_pp: number;
+  total: number;
+  status: string;
+  pdf_url: string | null;
+  sent_at: string | null;
+  sent_to: string | null;
+  paid_at: string | null;
+  notes: string | null;
+  contact_person: string | null;
 }
 
 interface TeamMember {
@@ -115,6 +134,7 @@ export function AdminProjectView({
   teamMembers = [],
   groupSummaries = [],
   adminTasks: initialAdminTasks = [],
+  schoolInvoices: initialInvoices = [],
 }: {
   project: Project;
   tasks: Task[];
@@ -122,6 +142,7 @@ export function AdminProjectView({
   teamMembers?: TeamMember[];
   groupSummaries?: GroupSummary[];
   adminTasks?: AdminTask[];
+  schoolInvoices?: SchoolInvoice[];
 }) {
   const [tasks, setTasks] = useState(initialTasks);
   const [documents, setDocuments] = useState(initialDocs);
@@ -141,6 +162,18 @@ export function AdminProjectView({
   const [newAdminTaskTitle, setNewAdminTaskTitle] = useState("");
   const [newAdminTaskDesc, setNewAdminTaskDesc] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Invoice state
+  const [invoices, setInvoices] = useState(initialInvoices);
+  const [invoiceStudents, setInvoiceStudents] = useState(
+    groupSummaries.reduce((sum, g) => sum + g.student_count, 0) || 0
+  );
+  const [invoicePricePP, setInvoicePricePP] = useState(project.price_pp || 0);
+  const [invoiceContactPerson, setInvoiceContactPerson] = useState("Justin Beard");
+  const [invoiceFinanceEmail, setInvoiceFinanceEmail] = useState("");
+  const [generatingInvoice, setGeneratingInvoice] = useState(false);
+  const [sendingInvoice, setSendingInvoice] = useState(false);
+  const [invoiceError, setInvoiceError] = useState("");
 
   // Add task form state
   const [newTask, setNewTask] = useState({ title: "", description: "", type: "checkbox", url: "", required: false });
@@ -264,6 +297,90 @@ export function AdminProjectView({
     );
     if (staffTask) {
       toggleAdminTask(staffTask.id);
+    }
+  }
+
+  async function generateInvoice() {
+    setGeneratingInvoice(true);
+    setInvoiceError("");
+    try {
+      const res = await fetch(`/api/admin/projects/${project.id}/school-invoice`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          num_students: invoiceStudents,
+          price_pp: invoicePricePP,
+          contact_person: invoiceContactPerson,
+          sent_to: invoiceFinanceEmail || undefined,
+        }),
+      });
+      if (res.ok) {
+        const { invoice } = await res.json();
+        setInvoices((prev) => [invoice, ...prev]);
+      } else {
+        const data = await res.json();
+        setInvoiceError(data.error || "Failed to generate invoice");
+      }
+    } catch {
+      setInvoiceError("Failed to generate invoice");
+    } finally {
+      setGeneratingInvoice(false);
+    }
+  }
+
+  async function sendInvoice(invoiceId: string) {
+    if (!invoiceFinanceEmail.trim()) {
+      setInvoiceError("Please enter a finance email");
+      return;
+    }
+    setSendingInvoice(true);
+    setInvoiceError("");
+    try {
+      const res = await fetch(
+        `/api/admin/projects/${project.id}/school-invoice/${invoiceId}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "send", sent_to: invoiceFinanceEmail }),
+        }
+      );
+      if (res.ok) {
+        setInvoices((prev) =>
+          prev.map((inv) =>
+            inv.id === invoiceId
+              ? { ...inv, status: "sent", sent_at: new Date().toISOString(), sent_to: invoiceFinanceEmail }
+              : inv
+          )
+        );
+      } else {
+        const data = await res.json();
+        setInvoiceError(data.error || "Failed to send invoice");
+      }
+    } catch {
+      setInvoiceError("Failed to send invoice");
+    } finally {
+      setSendingInvoice(false);
+    }
+  }
+
+  async function markInvoicePaid(invoiceId: string) {
+    try {
+      const res = await fetch(
+        `/api/admin/projects/${project.id}/school-invoice/${invoiceId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "paid" }),
+        }
+      );
+      if (res.ok) {
+        const { invoice } = await res.json();
+        setInvoices((prev) =>
+          prev.map((inv) => (inv.id === invoiceId ? invoice : inv))
+        );
+      }
+    } catch {
+      // ignore
     }
   }
 
@@ -553,6 +670,154 @@ export function AdminProjectView({
           </p>
         </div>
       )}
+
+      {/* Invoice section */}
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">Invoice</h2>
+
+        {invoices.length === 0 ? (
+          <div className="space-y-4">
+            <div className="rounded-lg border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-800/50">
+              <p className="mb-3 text-sm text-zinc-600 dark:text-zinc-400">
+                Calculated: <strong>{invoiceStudents}</strong> students x <strong>{"\u20AC"}{invoicePricePP.toFixed(2)}</strong> = <strong>{"\u20AC"}{(invoiceStudents * invoicePricePP).toLocaleString("de-DE", { minimumFractionDigits: 2 })}</strong>
+              </p>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-zinc-500">Students</label>
+                  <input
+                    type="number"
+                    value={invoiceStudents}
+                    onChange={(e) => setInvoiceStudents(parseInt(e.target.value) || 0)}
+                    className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-zinc-500">Price per Student</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={invoicePricePP}
+                    onChange={(e) => setInvoicePricePP(parseFloat(e.target.value) || 0)}
+                    className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-zinc-500">Contact Person</label>
+                  <input
+                    type="text"
+                    value={invoiceContactPerson}
+                    onChange={(e) => setInvoiceContactPerson(e.target.value)}
+                    className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-zinc-500">Finance Email</label>
+                  <input
+                    type="email"
+                    value={invoiceFinanceEmail}
+                    onChange={(e) => setInvoiceFinanceEmail(e.target.value)}
+                    placeholder="finance@school.de"
+                    className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                  />
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={generateInvoice}
+              disabled={generatingInvoice || !invoiceStudents || !invoicePricePP}
+              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+            >
+              {generatingInvoice ? "Generating..." : "Generate Invoice"}
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {invoices.map((inv) => {
+              const statusBadge: Record<string, string> = {
+                draft: "bg-zinc-100 text-zinc-600",
+                sent: "bg-blue-100 text-blue-700",
+                paid: "bg-green-100 text-green-700",
+                overdue: "bg-red-100 text-red-700",
+              };
+              return (
+                <div key={inv.id} className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                          {inv.invoice_number}
+                        </span>
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${statusBadge[inv.status] || statusBadge.draft}`}>
+                          {inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                        {"\u20AC"}{inv.total.toLocaleString("de-DE", { minimumFractionDigits: 2 })} &mdash; Due: {new Date(inv.due_date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                      </p>
+                      {inv.sent_at && (
+                        <p className="mt-0.5 text-xs text-zinc-400">
+                          Sent to {inv.sent_to} on {new Date(inv.sent_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                        </p>
+                      )}
+                      {inv.paid_at && (
+                        <p className="mt-0.5 text-xs text-green-600">
+                          Paid on {new Date(inv.paid_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {inv.pdf_url && (
+                        <a
+                          href={inv.pdf_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
+                        >
+                          Download PDF
+                        </a>
+                      )}
+                      {inv.status !== "paid" && (
+                        <button
+                          onClick={() => markInvoicePaid(inv.id)}
+                          className="rounded-lg border border-green-300 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-50"
+                        >
+                          Mark Paid
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {inv.status !== "paid" && (
+                    <div className="mt-3 flex items-end gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                      <div className="flex-1">
+                        <label className="mb-1 block text-xs font-medium text-zinc-500">Send to email</label>
+                        <input
+                          type="email"
+                          value={invoiceFinanceEmail}
+                          onChange={(e) => setInvoiceFinanceEmail(e.target.value)}
+                          placeholder="finance@school.de"
+                          className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                        />
+                      </div>
+                      <button
+                        onClick={() => sendInvoice(inv.id)}
+                        disabled={sendingInvoice || !invoiceFinanceEmail.trim()}
+                        className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {sendingInvoice ? "Sending..." : "Send to School"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {invoiceError && (
+          <p className="mt-2 text-xs text-red-600 dark:text-red-400">{invoiceError}</p>
+        )}
+      </div>
 
       {/* Admin Coordination section */}
       <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
