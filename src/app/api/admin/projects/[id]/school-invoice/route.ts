@@ -85,6 +85,9 @@ export async function POST(
   const pricePP = body.price_pp || project.price_pp || 0;
   const contactPerson = body.contact_person || "Justin Beard";
   const sentTo = body.sent_to || null;
+  const invoiceType = body.invoice_type || "full";
+  const depositAmount = body.deposit_amount || null;
+  const totalOverride = body.total_override || null;
 
   if (!numStudents || !pricePP) {
     return NextResponse.json(
@@ -93,7 +96,8 @@ export async function POST(
     );
   }
 
-  const total = numStudents * pricePP;
+  const subtotal = numStudents * pricePP;
+  const total = totalOverride || subtotal;
 
   // Get next invoice number from sequence
   const { data: seqResult, error: seqError } = await adminClient.rpc(
@@ -135,7 +139,8 @@ export async function POST(
   const schoolAddress = project.school_address || "";
 
   // Build program description
-  const programDescription = `${project.program_type || "English Project"} ${project.school || ""}, ${
+  const typePrefix = invoiceType === "deposit" ? "Anzahlung — " : invoiceType === "final" ? "Restzahlung — " : "";
+  const programDescription = `${typePrefix}${project.program_type || "English Project"} ${project.school || ""}, ${
     project.start_date
       ? `${formatDateDE(project.start_date)} - ${formatDateDE(project.end_date || project.start_date)}`
       : ""
@@ -191,7 +196,10 @@ export async function POST(
       due_date: dueDate,
       num_students: numStudents,
       price_pp: pricePP,
+      subtotal,
       total,
+      invoice_type: invoiceType,
+      deposit_amount: depositAmount,
       status: "draft",
       pdf_url: publicUrl,
       contact_person: contactPerson,
