@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import { RichTextEditor } from "@/components/shared/rich-text-editor";
 import { TAProfileCard, type TAProfile } from "@/components/shared/ta-profile-card";
+import { StaffingWizard } from "@/components/admin/staffing-wizard";
 
 interface Project {
   id: string;
@@ -73,6 +74,17 @@ interface Task {
   sort_order: number;
 }
 
+interface AdminTask {
+  id: string;
+  project_id: string;
+  title: string;
+  description: string | null;
+  completed: boolean;
+  completed_at: string | null;
+  completed_by: string | null;
+  sort_order: number;
+}
+
 interface Document {
   id: string;
   name: string;
@@ -102,15 +114,18 @@ export function AdminProjectView({
   documents: initialDocs,
   teamMembers = [],
   groupSummaries = [],
+  adminTasks: initialAdminTasks = [],
 }: {
   project: Project;
   tasks: Task[];
   documents: Document[];
   teamMembers?: TeamMember[];
   groupSummaries?: GroupSummary[];
+  adminTasks?: AdminTask[];
 }) {
   const [tasks, setTasks] = useState(initialTasks);
   const [documents, setDocuments] = useState(initialDocs);
+  const [adminTasks, setAdminTasks] = useState(initialAdminTasks);
   const [notes, setNotes] = useState(project.notes || "");
   const [status, setStatus] = useState(project.status);
   const [saving, setSaving] = useState(false);
@@ -121,6 +136,10 @@ export function AdminProjectView({
   const [nativeDocName, setNativeDocName] = useState("");
   const [nativeDocContent, setNativeDocContent] = useState("");
   const [savingNativeDoc, setSavingNativeDoc] = useState(false);
+  const [showStaffingWizard, setShowStaffingWizard] = useState(false);
+  const [showAddAdminTask, setShowAddAdminTask] = useState(false);
+  const [newAdminTaskTitle, setNewAdminTaskTitle] = useState("");
+  const [newAdminTaskDesc, setNewAdminTaskDesc] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Add task form state
@@ -191,6 +210,60 @@ export function AdminProjectView({
       }
     } catch {
       // ignore
+    }
+  }
+
+  // Admin task progress
+  const adminCompleted = adminTasks.filter((t) => t.completed).length;
+  const adminTotal = adminTasks.length;
+  const adminProgress = adminTotal > 0 ? Math.round((adminCompleted / adminTotal) * 100) : 0;
+
+  async function toggleAdminTask(taskId: string) {
+    try {
+      const res = await fetch(`/api/admin/projects/${project.id}/admin-tasks/${taskId}`, {
+        method: "PATCH",
+      });
+      if (res.ok) {
+        const { task } = await res.json();
+        setAdminTasks((prev) => prev.map((t) => (t.id === taskId ? task : t)));
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  async function addAdminTask(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newAdminTaskTitle.trim()) return;
+    try {
+      const res = await fetch(`/api/admin/projects/${project.id}/admin-tasks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: newAdminTaskTitle,
+          description: newAdminTaskDesc || null,
+          sort_order: adminTasks.length + 1,
+        }),
+      });
+      if (res.ok) {
+        const { task } = await res.json();
+        setAdminTasks((prev) => [...prev, task]);
+        setNewAdminTaskTitle("");
+        setNewAdminTaskDesc("");
+        setShowAddAdminTask(false);
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  function handleStaffingComplete() {
+    // Mark the "Staff project" admin task as complete
+    const staffTask = adminTasks.find(
+      (t) => t.title.toLowerCase().includes("staff project") && !t.completed
+    );
+    if (staffTask) {
+      toggleAdminTask(staffTask.id);
     }
   }
 
@@ -479,6 +552,148 @@ export function AdminProjectView({
             {groupSummaries.length} group{groupSummaries.length !== 1 ? "s" : ""}, {groupSummaries.reduce((sum, g) => sum + g.student_count, 0)} total students
           </p>
         </div>
+      )}
+
+      {/* Admin Coordination section */}
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Admin Coordination</h2>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-zinc-500">{adminCompleted}/{adminTotal} completed</span>
+            <button
+              onClick={() => setShowStaffingWizard(true)}
+              className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+            >
+              Staff Project
+            </button>
+            <button
+              onClick={() => setShowAddAdminTask(!showAddAdminTask)}
+              className="rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            >
+              Add Task
+            </button>
+          </div>
+        </div>
+
+        {/* Admin progress bar */}
+        {adminTotal > 0 && (
+          <div className="mb-4">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+              <div
+                className="h-full rounded-full bg-green-500 transition-all duration-300"
+                style={{ width: `${adminProgress}%` }}
+              />
+            </div>
+            <p className="mt-1 text-xs text-zinc-400">{adminProgress}% complete</p>
+          </div>
+        )}
+
+        {/* Add admin task form */}
+        {showAddAdminTask && (
+          <form onSubmit={addAdminTask} className="mb-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-zinc-500">Title</label>
+                <input
+                  type="text"
+                  required
+                  value={newAdminTaskTitle}
+                  onChange={(e) => setNewAdminTaskTitle(e.target.value)}
+                  className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                  placeholder="Task title..."
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-zinc-500">Description</label>
+                <input
+                  type="text"
+                  value={newAdminTaskDesc}
+                  onChange={(e) => setNewAdminTaskDesc(e.target.value)}
+                  className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                  placeholder="Optional description..."
+                />
+              </div>
+            </div>
+            <div className="mt-3 flex gap-2">
+              <button
+                type="submit"
+                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900"
+              >
+                Add
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAddAdminTask(false)}
+                className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+
+        {adminTasks.length === 0 ? (
+          <p className="text-sm text-zinc-500">No admin tasks yet.</p>
+        ) : (
+          <ul className="space-y-2">
+            {adminTasks.map((task) => {
+              const isStaffTask = task.title.toLowerCase().includes("staff project");
+              return (
+                <li
+                  key={task.id}
+                  className="flex items-center gap-3 rounded-lg border border-zinc-100 p-3 dark:border-zinc-800"
+                >
+                  <button
+                    onClick={() => toggleAdminTask(task.id)}
+                    className="flex-shrink-0"
+                  >
+                    <div
+                      className={`flex h-5 w-5 items-center justify-center rounded border transition-colors ${
+                        task.completed
+                          ? "border-green-500 bg-green-500 text-white"
+                          : "border-zinc-300 hover:border-zinc-400 dark:border-zinc-600"
+                      }`}
+                    >
+                      {task.completed && (
+                        <svg className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+                          <path d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                  </button>
+                  <div className="flex-1 min-w-0">
+                    <span className={`text-sm font-medium ${task.completed ? "text-zinc-400 line-through" : "text-zinc-900 dark:text-zinc-50"}`}>
+                      {task.title}
+                    </span>
+                    {task.description && <p className="mt-0.5 text-xs text-zinc-500">{task.description}</p>}
+                  </div>
+                  {isStaffTask && !task.completed && (
+                    <button
+                      onClick={() => setShowStaffingWizard(true)}
+                      className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+                    >
+                      Staff
+                    </button>
+                  )}
+                  {task.completed && task.completed_at && (
+                    <span className="text-[10px] text-zinc-400">
+                      {new Date(task.completed_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+
+      {/* Staffing Wizard Modal */}
+      {showStaffingWizard && (
+        <StaffingWizard
+          project={project}
+          onClose={() => setShowStaffingWizard(false)}
+          onComplete={handleStaffingComplete}
+        />
       )}
 
       {/* Tasks section */}
