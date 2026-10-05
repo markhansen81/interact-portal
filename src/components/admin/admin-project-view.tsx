@@ -24,6 +24,9 @@ interface Project {
   teacher_name: string | null;
   teacher_invited_at: string | null;
   price_pp: number | null;
+  deposit_enabled: boolean | null;
+  deposit_type: "percentage" | "fixed" | null;
+  deposit_value: number | null;
 }
 
 interface SchoolInvoice {
@@ -36,6 +39,8 @@ interface SchoolInvoice {
   price_pp: number;
   total: number;
   status: string;
+  invoice_type: "full" | "deposit" | "final";
+  deposit_amount: number | null;
   pdf_url: string | null;
   sent_at: string | null;
   sent_to: string | null;
@@ -174,6 +179,17 @@ export function AdminProjectView({
   const [generatingInvoice, setGeneratingInvoice] = useState(false);
   const [sendingInvoice, setSendingInvoice] = useState(false);
   const [invoiceError, setInvoiceError] = useState("");
+  const [depositEnabled, setDepositEnabled] = useState(project.deposit_enabled || false);
+  const [depositType, setDepositType] = useState<"percentage" | "fixed">(project.deposit_type || "percentage");
+  const [depositValue, setDepositValue] = useState(project.deposit_value || 50);
+
+  const fullTotal = invoiceStudents * invoicePricePP;
+  const depositAmount = depositEnabled
+    ? depositType === "percentage" ? Math.round(fullTotal * depositValue / 100 * 100) / 100 : depositValue
+    : 0;
+  const finalAmount = fullTotal - depositAmount;
+  const hasDeposit = invoices.some((inv) => inv.invoice_type === "deposit");
+  const hasFinal = invoices.some((inv) => inv.invoice_type === "final");
 
   // Add task form state
   const [newTask, setNewTask] = useState({ title: "", description: "", type: "checkbox", url: "", required: false });
@@ -300,10 +316,11 @@ export function AdminProjectView({
     }
   }
 
-  async function generateInvoice() {
+  async function generateInvoice(type: "full" | "deposit" | "final" = "full") {
     setGeneratingInvoice(true);
     setInvoiceError("");
     try {
+      const invoiceTotal = type === "deposit" ? depositAmount : type === "final" ? finalAmount : fullTotal;
       const res = await fetch(`/api/admin/projects/${project.id}/school-invoice`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -312,6 +329,9 @@ export function AdminProjectView({
           price_pp: invoicePricePP,
           contact_person: invoiceContactPerson,
           sent_to: invoiceFinanceEmail || undefined,
+          invoice_type: type,
+          deposit_amount: type !== "full" ? depositAmount : undefined,
+          total_override: invoiceTotal,
         }),
       });
       if (res.ok) {
@@ -722,13 +742,89 @@ export function AdminProjectView({
                 </div>
               </div>
             </div>
-            <button
-              onClick={generateInvoice}
-              disabled={generatingInvoice || !invoiceStudents || !invoicePricePP}
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
-            >
-              {generatingInvoice ? "Generating..." : "Generate Invoice"}
-            </button>
+            {/* Deposit toggle */}
+            <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={depositEnabled}
+                  onChange={(e) => setDepositEnabled(e.target.checked)}
+                  className="h-4 w-4 rounded"
+                />
+                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">Require deposit (Anzahlung)</span>
+              </label>
+              {depositEnabled && (
+                <div className="mt-3 flex items-center gap-3">
+                  <select
+                    value={depositType}
+                    onChange={(e) => setDepositType(e.target.value as "percentage" | "fixed")}
+                    className="rounded-lg border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+                  >
+                    <option value="percentage">Percentage</option>
+                    <option value="fixed">Fixed amount</option>
+                  </select>
+                  <input
+                    type="number"
+                    value={depositValue}
+                    onChange={(e) => setDepositValue(parseFloat(e.target.value) || 0)}
+                    className="w-24 rounded-lg border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+                  />
+                  <span className="text-sm text-zinc-500">{depositType === "percentage" ? "%" : "EUR"}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Totals summary */}
+            <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800/50">
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-zinc-500">Full amount:</span>
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-50">€{fullTotal.toLocaleString("de-DE", { minimumFractionDigits: 2 })}</span>
+                </div>
+                {depositEnabled && (
+                  <>
+                    <div className="flex justify-between text-blue-600">
+                      <span>Deposit ({depositType === "percentage" ? `${depositValue}%` : "fixed"}):</span>
+                      <span className="font-semibold">€{depositAmount.toLocaleString("de-DE", { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Remainder:</span>
+                      <span className="font-semibold text-zinc-900 dark:text-zinc-50">€{finalAmount.toLocaleString("de-DE", { minimumFractionDigits: 2 })}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Generate buttons */}
+            <div className="flex gap-2">
+              {depositEnabled ? (
+                <>
+                  <button
+                    onClick={() => generateInvoice("deposit")}
+                    disabled={generatingInvoice || !invoiceStudents || !invoicePricePP || hasDeposit}
+                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {hasDeposit ? "Deposit Created" : generatingInvoice ? "Generating..." : "Generate Deposit Invoice"}
+                  </button>
+                  <button
+                    onClick={() => generateInvoice("final")}
+                    disabled={generatingInvoice || !invoiceStudents || !invoicePricePP || hasFinal}
+                    className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+                  >
+                    {hasFinal ? "Final Created" : generatingInvoice ? "Generating..." : "Generate Final Invoice"}
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => generateInvoice("full")}
+                  disabled={generatingInvoice || !invoiceStudents || !invoicePricePP}
+                  className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+                >
+                  {generatingInvoice ? "Generating..." : "Generate Invoice"}
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
@@ -747,6 +843,11 @@ export function AdminProjectView({
                         <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
                           {inv.invoice_number}
                         </span>
+                        {inv.invoice_type !== "full" && (
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${inv.invoice_type === "deposit" ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"}`}>
+                            {inv.invoice_type === "deposit" ? "Anzahlung" : "Restzahlung"}
+                          </span>
+                        )}
                         <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${statusBadge[inv.status] || statusBadge.draft}`}>
                           {inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}
                         </span>
