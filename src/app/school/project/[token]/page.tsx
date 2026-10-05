@@ -42,6 +42,14 @@ export default async function SchoolProjectPage({
     .eq("project_id", project.id)
     .order("sort_order", { ascending: true });
 
+  // Fetch school invoices (only non-draft)
+  const { data: schoolInvoices } = await adminClient
+    .from("school_invoices")
+    .select("id, invoice_number, invoice_date, due_date, total, status, pdf_url")
+    .eq("project_id", project.id)
+    .neq("status", "draft")
+    .order("created_at", { ascending: false });
+
   // Fetch team members with full profile data
   const { data: teamData } = await adminClient
     .from("project_tas")
@@ -87,6 +95,7 @@ export default async function SchoolProjectPage({
       token={token}
       teamMembers={teamMembers}
       teacherTasks={teacherTasks || []}
+      schoolInvoices={schoolInvoices || []}
     />
   );
 }

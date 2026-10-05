@@ -221,6 +221,28 @@ export function workOrderDeclinedEmailToAdmin(taName: string, projectName: strin
   };
 }
 
+export function schoolInvoiceEmail(invoiceNumber: string, schoolName: string, total: string, dueDate: string) {
+  return {
+    subject: `Rechnung ${invoiceNumber} \u2014 InterACT English`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #18181b;">Rechnung ${invoiceNumber}</h2>
+        <p>Sehr geehrte Damen und Herren,</p>
+        <p>anbei erhalten Sie die Rechnung <strong>${invoiceNumber}</strong> f\u00fcr das Englischprojekt an der <strong>${schoolName}</strong>.</p>
+        <table style="width: 100%; font-size: 14px; margin: 16px 0;">
+          <tr><td style="color: #71717a; padding: 4px 0;">Rechnungsnummer:</td><td style="font-weight: bold;">${invoiceNumber}</td></tr>
+          <tr><td style="color: #71717a; padding: 4px 0;">Gesamtbetrag:</td><td style="font-weight: bold;">${total}</td></tr>
+          <tr><td style="color: #71717a; padding: 4px 0;">F\u00e4llig bis:</td><td style="font-weight: bold;">${dueDate}</td></tr>
+        </table>
+        <p>Bitte \u00fcberweisen Sie den Rechnungsbetrag bis zum <strong>${dueDate}</strong> auf das in der Rechnung angegebene Konto. Geben Sie als Verwendungszweck bitte die Rechnungsnummer und den Namen Ihrer Schule an.</p>
+        <p>Die Rechnung finden Sie als PDF im Anhang dieser E-Mail.</p>
+        <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 20px 0;" />
+        <p style="color: #71717a; font-size: 12px;">InterACT English gGmbH | Planufer 92B, 10967 Berlin | justin@interactenglish.de | Tel. 030 20 33 9702</p>
+      </div>
+    `,
+  };
+}
+
 export function workOrderCancelledEmail(taName: string, projectName: string, reason?: string) {
   return {
     subject: `Work Order Cancelled: ${projectName}`,
