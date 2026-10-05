@@ -20,7 +20,7 @@ export default async function AdminProjectDetailPage({
 
   if (!project) notFound();
 
-  const [tasksResult, documentsResult, teamResult, groupsResult] = await Promise.all([
+  const [tasksResult, documentsResult, teamResult, groupsResult, adminTasksResult] = await Promise.all([
     supabase
       .from("project_tasks")
       .select("*")
@@ -39,6 +39,11 @@ export default async function AdminProjectDetailPage({
       .from("project_groups")
       .select("id, name, project_students(id)")
       .eq("project_id", id),
+    adminClient
+      .from("admin_project_tasks")
+      .select("*")
+      .eq("project_id", id)
+      .order("sort_order", { ascending: true }),
   ]);
 
   const ta = project.profiles as { first_name: string; last_name: string; email: string } | null;
@@ -90,6 +95,7 @@ export default async function AdminProjectDetailPage({
       documents={documentsResult.data || []}
       teamMembers={teamMembers}
       groupSummaries={groupSummaries}
+      adminTasks={adminTasksResult.data || []}
     />
   );
 }

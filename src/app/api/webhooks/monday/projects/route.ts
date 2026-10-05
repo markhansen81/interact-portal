@@ -263,6 +263,22 @@ export async function POST(request: Request) {
       );
     }
 
+    // Copy admin task templates as admin_project_tasks
+    const { data: adminTemplates } = await adminClient
+      .from("admin_task_templates")
+      .select("title, description, sort_order");
+
+    if (adminTemplates && adminTemplates.length > 0) {
+      await adminClient.from("admin_project_tasks").insert(
+        adminTemplates.map((t) => ({
+          project_id: projectId,
+          title: t.title,
+          description: t.description,
+          sort_order: t.sort_order,
+        }))
+      );
+    }
+
     // Auto-attach template documents
     const { data: docTemplates } = await adminClient
       .from("document_templates")
