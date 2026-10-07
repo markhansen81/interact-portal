@@ -77,7 +77,29 @@ export async function PATCH(
     },
   });
 
-  // Push approved invoice to Monday for DATEV processing
+  // Send approved invoice PDF to DATEV
+  if (body.status === "approved" && invoice.uploaded_pdf_url) {
+    try {
+      const { sendToDATEV } = await import("@/lib/datev");
+      const pdfRes = await fetch(invoice.uploaded_pdf_url);
+      const pdfBuffer = Buffer.from(await pdfRes.arrayBuffer());
+      await sendToDATEV({
+        pdf: pdfBuffer,
+        filename: `${invoice.invoice_number || id}.pdf`,
+        belegNumber: invoice.invoice_number || id,
+        taName,
+        type: "invoice",
+      });
+      await adminClient
+        .from("invoices")
+        .update({ datev_sent_at: new Date().toISOString() })
+        .eq("id", id);
+    } catch (e) {
+      console.error("[DATEV] Failed to send invoice:", e);
+    }
+  }
+
+  // Push approved invoice to Monday
   if (body.status === "approved" && process.env.MONDAY_API_TOKEN) {
     try {
       const { pushInvoiceToMonday } = await import("@/lib/monday");

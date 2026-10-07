@@ -11,7 +11,7 @@ export function AdminHeader({ email }: { email: string }) {
   }
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-6 dark:border-zinc-800 dark:bg-zinc-900">
+    <header className="flex h-16 items-center justify-between border-b border-zinc-200 border-t-2 border-t-slate-500 bg-white px-6 dark:border-zinc-800 dark:border-t-slate-500 dark:bg-zinc-900">
       <div />
       <div className="flex items-center gap-4">
         <NotificationBell />
