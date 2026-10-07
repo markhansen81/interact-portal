@@ -16,7 +16,7 @@ export default async function InvoicesPage() {
 
   const { data: expenses } = await supabase
     .from("expense_claims")
-    .select("*, profiles!expense_claims_ta_id_fkey(id, first_name, last_name, email, photo_url)")
+    .select("*, profiles!expense_claims_ta_id_fkey(id, first_name, last_name, email, photo_url), expense_items(id, description, amount, category, receipt_url)")
     .order("created_at", { ascending: false });
 
   return (

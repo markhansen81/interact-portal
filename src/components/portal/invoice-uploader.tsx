@@ -21,6 +21,9 @@ interface Profile {
   last_name: string | null;
   email: string;
   address: string | null;
+  street: string | null;
+  city: string | null;
+  postal_code: string | null;
   pay_level: number;
 }
 
@@ -36,7 +39,14 @@ interface AICheckResult {
     has_address?: boolean;
     has_tax_number?: boolean;
     has_bank_details?: boolean;
-  };
+    line_items?: { description: string; total: number | null; type: string }[];
+    client_name?: string;
+    project_dates?: string;
+    has_kleinunternehmer?: boolean;
+    has_payment_terms?: boolean;
+    page_count?: number;
+  } | null;
+  ai_extraction_failed?: boolean;
 }
 
 export function InvoiceUploader({
@@ -92,12 +102,6 @@ export function InvoiceUploader({
         body: JSON.stringify({
           file_url: urlData.publicUrl,
           work_order: wo,
-          profile: {
-            name: `${profile.first_name} ${profile.last_name}`,
-            email: profile.email,
-            address: profile.address,
-            pay_level: profile.pay_level,
-          },
         }),
       });
 
@@ -197,7 +201,7 @@ export function InvoiceUploader({
             Checking your invoice...
           </p>
           <p className="mt-1 text-xs text-blue-500">
-            Verifying: name, address, tax number, bank details, correct rate, totals
+            Reading your invoice with AI and verifying: name, address, tax number, IBAN, rates, dates, legal clauses...
           </p>
         </div>
       )}
