@@ -13,6 +13,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    "/((?!_next/static|_next/image|favicon.ico|lead-form|school|api/lead-form|api/webhooks|api/health|api/cron|api/school|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|lead-form|school|api/lead-form|api/webhooks|api/health|api/cron|api/school|manifest\\.json|sw\\.js|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|json)$).*)",
   ],
 };

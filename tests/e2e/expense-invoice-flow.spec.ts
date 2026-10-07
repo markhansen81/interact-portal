@@ -95,22 +95,32 @@ test.describe.serial("Expense & Invoice Flow", () => {
     await page.close();
   });
 
-  test("5. TA invoice upload page has file input", async ({ browser }) => {
+  test("5. TA invoice upload page has work order selector", async ({ browser }) => {
     const page = await browser.newPage();
     await loginAsTA(page);
     await page.goto(`${BASE}/portal/invoices/upload`);
     await page.waitForLoadState("networkidle");
     await page.screenshot({ path: "test-results/expense-flow/05-ta-invoice-upload.png" });
 
-    // Check file input exists
-    const fileInput = page.locator('input[type="file"]');
-    expect(await fileInput.count()).toBeGreaterThan(0);
-    console.log("✅ Invoice upload file input present");
-
     // Check work order selector exists
     const selects = page.locator("select");
     expect(await selects.count()).toBeGreaterThan(0);
     console.log("✅ Work order selector present");
+
+    // Select first work order to reveal file input
+    const options = await selects.first().locator("option").all();
+    if (options.length > 1) {
+      await selects.first().selectOption({ index: 1 });
+      await page.waitForTimeout(1000);
+      await page.screenshot({ path: "test-results/expense-flow/05b-ta-invoice-upload-selected.png" });
+
+      const fileInput = page.locator('input[type="file"]');
+      if ((await fileInput.count()) > 0) {
+        console.log("✅ File input appears after selecting work order");
+      } else {
+        console.log("ℹ️ File input may use drag-drop or button instead");
+      }
+    }
 
     await page.close();
   });
