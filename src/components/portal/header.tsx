@@ -21,14 +21,15 @@ export function PortalHeader({ profile }: { profile: Profile }) {
     profile.preferred_name || profile.first_name || profile.email;
 
   return (
-    <header className="flex h-[72px] items-center justify-between border-b border-zinc-200/80 bg-white px-8 dark:border-zinc-800 dark:bg-zinc-900">
+    <header className="flex h-14 items-center justify-between border-b border-zinc-200/80 border-t-2 border-t-amber-500 bg-white px-4 md:h-[72px] md:px-8 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex items-center gap-3">
         <p className="text-sm text-zinc-500">
-          Welcome back, <span className="font-semibold text-zinc-900 dark:text-zinc-50">{displayName}</span>
+          <span className="hidden md:inline">Welcome back, </span>
+          <span className="font-semibold text-zinc-900 dark:text-zinc-50">{displayName}</span>
         </p>
       </div>
       <div className="flex items-center gap-2">
-        <span className="inline-flex items-center rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+        <span className="hidden items-center rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 md:inline-flex">
           Level {profile.pay_level}
         </span>
         <NotificationBell />
