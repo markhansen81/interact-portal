@@ -74,6 +74,7 @@ export function InvoiceCalculator({
   const [travelHours, setTravelHours] = useState("");
   const [loading, setLoading] = useState(false);
   const [notes, setNotes] = useState("");
+  const [downloading, setDownloading] = useState(false);
 
   const isCamp = wo.program_type.toLowerCase().includes("camp");
   const isTheatreOrFilm =
@@ -184,6 +185,126 @@ export function InvoiceCalculator({
           : a
       )
     );
+  }
+
+  async function handleDownloadPDF() {
+    setDownloading(true);
+    const { jsPDF } = await import("jspdf");
+    const doc = new jsPDF();
+    const level = isCamp ? profile.camp_level : profile.pay_level;
+    const taName = `${profile.first_name || ""} ${profile.last_name || ""}`.trim();
+
+    // Header
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text("Invoice Calculation", 20, 22);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100);
+    doc.text("Use this as a reference when creating your invoice.", 20, 30);
+    doc.text(`Generated: ${new Date().toLocaleDateString("de-DE")}`, 20, 36);
+    doc.setTextColor(0);
+
+    // TA & Project Info
+    let y = 48;
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("Teaching Artist", 20, y);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    y += 7;
+    doc.text(`${taName} | Level ${level} (${isCamp ? "Camp" : "Programs"})`, 20, y);
+
+    y += 12;
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("Project Details", 20, y);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    y += 7;
+    doc.text(`${wo.project_name}`, 20, y);
+    y += 6;
+    doc.text(`${wo.school}`, 20, y);
+    y += 6;
+    doc.text(`${wo.program_type} | ${wo.days} day${wo.days > 1 ? "s" : ""} | ${wo.start_date} to ${wo.end_date}`, 20, y);
+
+    // Billing to
+    y += 12;
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("Bill To", 20, y);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    y += 7;
+    doc.text("InterACT English gGmbH, Planufer 92B, 10967 Berlin", 20, y);
+
+    // Line items table
+    y += 14;
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("Breakdown", 20, y);
+    y += 3;
+    doc.setDrawColor(200);
+    doc.line(20, y, 190, y);
+    y += 7;
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+
+    const addLine = (label: string, amount: number) => {
+      doc.text(label, 22, y);
+      doc.text(`EUR ${amount.toFixed(2)}`, 188, y, { align: "right" });
+      y += 7;
+    };
+
+    addLine(`Instruction fee (Level ${level}, ${wo.days}d)`, baseRate);
+
+    for (const a of autoAddons) {
+      addLine(`${a.name} (auto)`, a.total);
+    }
+    if (theatreFilmBonus > 0) {
+      addLine(`Theatre/Film Week additional (${wo.days}d)`, theatreFilmBonus);
+    }
+    for (const a of addons) {
+      addLine(`${a.name}${a.quantity > 1 ? ` x${a.quantity}` : ""}`, a.total);
+    }
+    if (travelStipendAmount > 0) {
+      addLine(`Travel stipend (${travelHours}h round trip)`, travelStipendAmount);
+    }
+
+    // Total line
+    doc.setDrawColor(0);
+    doc.line(20, y, 190, y);
+    y += 8;
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.text("Total", 22, y);
+    doc.text(`EUR ${grandTotal.toFixed(2)}`, 188, y, { align: "right" });
+
+    // Required clauses reminder
+    y += 16;
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(120);
+    doc.text("Remember to include on your invoice:", 20, y);
+    y += 6;
+    const reminders = [
+      "Your name, address, and Steuernummer",
+      "Invoice number and date",
+      'Kunde: InterACT English gGmbH, Planufer 92B, 10967 Berlin',
+      `TA Level: ${level}`,
+      `Projektzeitraum: ${wo.start_date} - ${wo.end_date}`,
+      "Kleinunternehmerregelung clause (§19 UStG)",
+      "Payment terms: 30 Tage",
+      "Your IBAN and BIC",
+    ];
+    for (const r of reminders) {
+      doc.text(`  •  ${r}`, 20, y);
+      y += 5;
+    }
+
+    doc.save(`Berechnung_${wo.project_name.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`);
+    setDownloading(false);
   }
 
   async function handleSubmit() {
@@ -497,13 +618,22 @@ export function InvoiceCalculator({
           </div>
         </div>
 
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="mt-6 w-full rounded-lg bg-white px-4 py-3 text-sm font-medium text-zinc-900 hover:bg-zinc-100 disabled:opacity-50 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
-        >
-          {loading ? "Submitting..." : "Submit Invoice"}
-        </button>
+        <div className="mt-6 flex gap-3">
+          <button
+            onClick={handleDownloadPDF}
+            disabled={downloading}
+            className="flex-1 rounded-lg border border-white/30 px-4 py-3 text-sm font-medium text-white hover:bg-white/10 disabled:opacity-50 dark:border-zinc-900/30 dark:text-zinc-900 dark:hover:bg-zinc-900/10"
+          >
+            {downloading ? "Generating..." : "Download PDF"}
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="flex-1 rounded-lg bg-white px-4 py-3 text-sm font-medium text-zinc-900 hover:bg-zinc-100 disabled:opacity-50 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
+          >
+            {loading ? "Submitting..." : "Submit Invoice"}
+          </button>
+        </div>
       </div>
     </div>
   );
