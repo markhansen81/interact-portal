@@ -333,11 +333,11 @@ export async function generateInvoicePDF(
   doc.setFont(font, "bold");
   doc.text("Projekt:", detailLabelX, y);
   doc.setFont(font, "normal");
-  doc.text(
-    `${data.workOrder.project_name} – ${data.workOrder.school}`,
-    detailValueX,
-    y
-  );
+  // Avoid duplicating school name if project_name already contains it
+  const projectLabel = data.workOrder.project_name.toLowerCase().includes(data.workOrder.school.toLowerCase())
+    ? data.workOrder.project_name
+    : `${data.workOrder.project_name} – ${data.workOrder.school}`;
+  doc.text(projectLabel, detailValueX, y);
   y += 5;
 
   doc.setFont(font, "bold");
