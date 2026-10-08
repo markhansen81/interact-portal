@@ -120,6 +120,7 @@ export async function POST(request: Request) {
       description: item.description,
       amount: item.amount,
       category: item.category,
+      receipt_url: item.receipt_url || null,
     })),
   });
 
