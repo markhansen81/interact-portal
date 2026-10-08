@@ -26,6 +26,16 @@ type Upload = {
 
 type FilterTab = "all" | "pending" | "booked" | "paid" | "overdue";
 
+type ExtractedData = {
+  supplier: string | null;
+  amount: number | null;
+  invoice_number: string | null;
+  invoice_date: string | null;
+  due_date: string | null;
+  document_type: string | null;
+  description: string | null;
+};
+
 const STATUS_BADGES: Record<string, { label: string; className: string }> = {
   sent: {
     label: "Sent",
@@ -74,6 +84,24 @@ function formatDate(dateStr: string): string {
   });
 }
 
+const Spinner = ({ className = "h-4 w-4" }: { className?: string }) => (
+  <svg className={`animate-spin ${className}`} fill="none" viewBox="0 0 24 24">
+    <circle
+      className="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="4"
+    />
+    <path
+      className="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+    />
+  </svg>
+);
+
 export function AdminUploadForm() {
   const [file, setFile] = useState<File | null>(null);
   const [documentType, setDocumentType] = useState("eingangsrechnung");
@@ -84,6 +112,8 @@ export function AdminUploadForm() {
   const [invoiceDate, setInvoiceDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const [extracted, setExtracted] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -142,6 +172,71 @@ export function AdminUploadForm() {
     };
   }, [uploads, activeFilter]);
 
+  const resetForm = () => {
+    setFile(null);
+    setDescription("");
+    setSupplier("");
+    setInvoiceNumber("");
+    setAmount("");
+    setInvoiceDate("");
+    setDueDate("");
+    setDocumentType("eingangsrechnung");
+    setExtracted(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const extractInvoiceData = async (pdfFile: File) => {
+    setExtracting(true);
+    setMessage(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", pdfFile);
+
+      const res = await fetch("/api/admin/upload-invoices/extract", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMessage({
+          type: "error",
+          text: data.error || "Extraction failed. Fill in fields manually.",
+        });
+        setExtracted(true); // still show form so admin can fill manually
+        return;
+      }
+
+      const ext: ExtractedData = data.extracted;
+
+      // Auto-fill fields from extracted data
+      if (ext.supplier) setSupplier(ext.supplier);
+      if (ext.amount != null) setAmount(String(ext.amount));
+      if (ext.invoice_number) setInvoiceNumber(ext.invoice_number);
+      if (ext.invoice_date) setInvoiceDate(ext.invoice_date);
+      if (ext.due_date) setDueDate(ext.due_date);
+      if (ext.description) setDescription(ext.description);
+      if (
+        ext.document_type &&
+        DOCUMENT_TYPES.some((t) => t.value === ext.document_type)
+      ) {
+        setDocumentType(ext.document_type);
+      }
+
+      setExtracted(true);
+    } catch {
+      setMessage({
+        type: "error",
+        text: "Extraction failed. Fill in fields manually.",
+      });
+      setExtracted(true);
+    } finally {
+      setExtracting(false);
+    }
+  };
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setDragging(true);
@@ -158,6 +253,7 @@ export function AdminUploadForm() {
     const dropped = e.dataTransfer.files[0];
     if (dropped && dropped.type === "application/pdf") {
       setFile(dropped);
+      extractInvoiceData(dropped);
     } else {
       setMessage({ type: "error", text: "Only PDF files are accepted." });
     }
@@ -168,6 +264,7 @@ export function AdminUploadForm() {
     if (selected) {
       setFile(selected);
       setMessage(null);
+      extractInvoiceData(selected);
     }
   };
 
@@ -204,14 +301,7 @@ export function AdminUploadForm() {
           type: "success",
           text: `"${file.name}" sent to DATEV successfully.`,
         });
-        setFile(null);
-        setDescription("");
-        setSupplier("");
-        setInvoiceNumber("");
-        setAmount("");
-        setInvoiceDate("");
-        setDueDate("");
-        if (fileInputRef.current) fileInputRef.current.value = "";
+        resetForm();
         fetchUploads();
       }
     } catch {
@@ -290,164 +380,250 @@ export function AdminUploadForm() {
       </div>
 
       {/* Upload Form */}
-      <form
-        onSubmit={handleSubmit}
-        className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
-      >
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div className="space-y-5">
-          {/* Drop zone */}
-          <div
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors ${
-              dragging
-                ? "border-slate-500 bg-slate-50 dark:border-slate-400 dark:bg-slate-900/50"
-                : file
-                  ? "border-slate-400 bg-slate-50 dark:border-slate-600 dark:bg-slate-900/30"
+          {/* Step 1: Drop zone — always visible when no file or extracting */}
+          {!extracted && !extracting && (
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 transition-colors ${
+                dragging
+                  ? "border-slate-500 bg-slate-50 dark:border-slate-400 dark:bg-slate-900/50"
                   : "border-zinc-300 bg-zinc-50 hover:border-slate-400 hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-800/50 dark:hover:border-slate-600"
-            }`}
-          >
-            <svg
-              className="mb-3 h-10 w-10 text-slate-400"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.5}
-              viewBox="0 0 24 24"
+              }`}
             >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-            </svg>
-            {file ? (
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                {file.name}{" "}
-                <span className="text-zinc-400">
-                  ({(file.size / 1024).toFixed(0)} KB)
-                </span>
+              <svg
+                className="mb-3 h-12 w-12 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                viewBox="0 0 24 24"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+              </svg>
+              <p className="text-base font-medium text-slate-600 dark:text-slate-400">
+                Drop an invoice PDF here
               </p>
-            ) : (
-              <>
-                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                  Drop a PDF here or click to select
-                </p>
-                <p className="mt-1 text-xs text-zinc-400">PDF files only</p>
-              </>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="application/pdf"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-          </div>
-
-          {/* Document type */}
-          <div>
-            <label className={labelClass}>Document Type</label>
-            <select
-              value={documentType}
-              onChange={(e) => setDocumentType(e.target.value)}
-              className={inputClass}
-            >
-              {DOCUMENT_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Supplier & Invoice Number */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className={labelClass}>
-                Supplier <span className="text-red-500">*</span>
-              </label>
+              <p className="mt-1 text-sm text-zinc-400">
+                or click to select — AI will read it automatically
+              </p>
               <input
-                type="text"
-                value={supplier}
-                onChange={(e) => setSupplier(e.target.value)}
-                placeholder='e.g. "Amazon", "Telekom", "Landlord"'
-                required
-                className={inputClass}
+                ref={fileInputRef}
+                type="file"
+                accept="application/pdf"
+                onChange={handleFileChange}
+                className="hidden"
               />
             </div>
-            <div>
-              <label className={labelClass}>
-                Invoice Number{" "}
-                <span className="text-zinc-400 font-normal">(optional)</span>
-              </label>
-              <input
-                type="text"
-                value={invoiceNumber}
-                onChange={(e) => setInvoiceNumber(e.target.value)}
-                placeholder="Supplier's invoice number"
-                className={inputClass}
-              />
-            </div>
-          </div>
+          )}
 
-          {/* Amount, Invoice Date, Due Date */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div>
-              <label className={labelClass}>
-                Amount (&euro;) <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00"
-                required
-                className={inputClass}
-              />
+          {/* Step 2: Extracting spinner */}
+          {extracting && (
+            <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-12 dark:border-slate-700 dark:bg-slate-900/50">
+              <Spinner className="h-8 w-8 text-slate-500" />
+              <p className="mt-4 text-sm font-medium text-slate-600 dark:text-slate-400">
+                Reading invoice...
+              </p>
+              <p className="mt-1 text-xs text-zinc-400">
+                {file?.name}
+              </p>
             </div>
-            <div>
-              <label className={labelClass}>
-                Invoice Date{" "}
-                <span className="text-zinc-400 font-normal">(optional)</span>
-              </label>
-              <input
-                type="date"
-                value={invoiceDate}
-                onChange={(e) => setInvoiceDate(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>
-                Due Date{" "}
-                <span className="text-zinc-400 font-normal">(optional)</span>
-              </label>
-              <input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-          </div>
+          )}
 
-          {/* Description */}
-          <div>
-            <label className={labelClass}>
-              Description{" "}
-              <span className="text-zinc-400 font-normal">(optional)</span>
-            </label>
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder='e.g. "Office supplies" or "Rent October"'
-              className={inputClass}
-            />
-          </div>
+          {/* Step 3: Extracted data — editable fields + submit */}
+          {extracted && !extracting && (
+            <form onSubmit={handleSubmit}>
+              <div className="space-y-5">
+                {/* File indicator */}
+                <div className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3 dark:bg-slate-800/50">
+                  <div className="flex items-center gap-3">
+                    <svg
+                      className="h-5 w-5 text-slate-500"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      {file?.name}
+                    </span>
+                    <span className="text-xs text-zinc-400">
+                      ({file ? (file.size / 1024).toFixed(0) : 0} KB)
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                  >
+                    Change file
+                  </button>
+                </div>
 
-          {/* Message */}
-          {message && (
+                {/* Document type */}
+                <div>
+                  <label className={labelClass}>Document Type</label>
+                  <select
+                    value={documentType}
+                    onChange={(e) => setDocumentType(e.target.value)}
+                    className={inputClass}
+                  >
+                    {DOCUMENT_TYPES.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Supplier & Invoice Number */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className={labelClass}>
+                      Supplier <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={supplier}
+                      onChange={(e) => setSupplier(e.target.value)}
+                      placeholder='e.g. "Amazon", "Telekom", "Landlord"'
+                      required
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>
+                      Invoice Number{" "}
+                      <span className="text-zinc-400 font-normal">
+                        (optional)
+                      </span>
+                    </label>
+                    <input
+                      type="text"
+                      value={invoiceNumber}
+                      onChange={(e) => setInvoiceNumber(e.target.value)}
+                      placeholder="Supplier's invoice number"
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+
+                {/* Amount, Invoice Date, Due Date */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <div>
+                    <label className={labelClass}>
+                      Amount (&euro;) <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      placeholder="0.00"
+                      required
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>
+                      Invoice Date{" "}
+                      <span className="text-zinc-400 font-normal">
+                        (optional)
+                      </span>
+                    </label>
+                    <input
+                      type="date"
+                      value={invoiceDate}
+                      onChange={(e) => setInvoiceDate(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>
+                      Due Date{" "}
+                      <span className="text-zinc-400 font-normal">
+                        (optional)
+                      </span>
+                    </label>
+                    <input
+                      type="date"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className={labelClass}>
+                    Description{" "}
+                    <span className="text-zinc-400 font-normal">
+                      (optional)
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder='e.g. "Office supplies" or "Rent October"'
+                    className={inputClass}
+                  />
+                </div>
+
+                {/* Message */}
+                {message && (
+                  <div
+                    className={`rounded-lg px-4 py-3 text-sm ${
+                      message.type === "success"
+                        ? "bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                        : "bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+                    }`}
+                  >
+                    {message.text}
+                  </div>
+                )}
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={
+                    !file || !supplier.trim() || !amount || uploading
+                  }
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-slate-700 px-5 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-600 dark:hover:bg-slate-500"
+                >
+                  {uploading ? (
+                    <>
+                      <Spinner />
+                      Sending to DATEV...
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M5 13l4 4L19 7" />
+                      </svg>
+                      Send to DATEV
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Message shown on drop zone screen (e.g. after successful send) */}
+          {!extracted && !extracting && message && (
             <div
               className={`rounded-lg px-4 py-3 text-sm ${
                 message.type === "success"
@@ -458,53 +634,8 @@ export function AdminUploadForm() {
               {message.text}
             </div>
           )}
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={!file || !supplier.trim() || !amount || uploading}
-            className="inline-flex items-center gap-2 rounded-lg bg-slate-700 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-600 dark:hover:bg-slate-500"
-          >
-            {uploading ? (
-              <>
-                <svg
-                  className="h-4 w-4 animate-spin"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                  />
-                </svg>
-                Sending...
-              </>
-            ) : (
-              <>
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-                </svg>
-                Upload &amp; Send to DATEV
-              </>
-            )}
-          </button>
         </div>
-      </form>
+      </div>
 
       {/* Invoices Table */}
       <div className="rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
