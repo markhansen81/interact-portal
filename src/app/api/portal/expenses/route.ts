@@ -9,6 +9,7 @@ interface ExpenseItem {
   amount: number;
   category: string;
   receipt_url: string | null;
+  work_order_id: string | null;
 }
 
 export async function POST(request: Request) {
@@ -24,19 +25,12 @@ export async function POST(request: Request) {
 
   const body = await request.json();
 
-  if (!body.work_order_id) {
-    return NextResponse.json(
-      { error: "work_order_id is required" },
-      { status: 400 }
-    );
-  }
-
-  // Create expense claim
+  // Create expense claim (work_order_id is now optional at claim level)
   const { data: claim, error } = await supabase
     .from("expense_claims")
     .insert({
       ta_id: user.id,
-      work_order_id: body.work_order_id,
+      work_order_id: body.work_order_id || null,
       total: body.total,
       status: "submitted",
       submitted_at: new Date().toISOString(),
@@ -49,7 +43,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
-  // Create line items
+  // Create line items (include work_order_id per item if column exists)
   if (body.items && body.items.length > 0) {
     const itemRows = body.items.map((item: ExpenseItem) => ({
       claim_id: claim.id,
@@ -57,9 +51,22 @@ export async function POST(request: Request) {
       amount: item.amount,
       category: item.category,
       receipt_url: item.receipt_url,
+      work_order_id: item.work_order_id || null,
     }));
 
-    await supabase.from("expense_items").insert(itemRows);
+    const { error: itemsError } = await supabase.from("expense_items").insert(itemRows);
+
+    // If work_order_id column doesn't exist yet, retry without it
+    if (itemsError?.message?.includes("work_order_id")) {
+      const fallbackRows = body.items.map((item: ExpenseItem) => ({
+        claim_id: claim.id,
+        description: item.description,
+        amount: item.amount,
+        category: item.category,
+        receipt_url: item.receipt_url,
+      }));
+      await supabase.from("expense_items").insert(fallbackRows);
+    }
   }
 
   // --- Post-creation: PDF generation, DATEV routing ---
@@ -78,18 +85,27 @@ export async function POST(request: Request) {
     );
   }
 
-  // 2. Fetch work order
-  const { data: workOrder } = await adminClient
-    .from("work_orders")
-    .select("project_name")
-    .eq("id", body.work_order_id)
-    .single();
+  // 2. Fetch work orders for all items that reference a project
+  const woIds = [
+    ...new Set(
+      (body.items as ExpenseItem[])
+        .map((item) => item.work_order_id)
+        .filter(Boolean)
+    ),
+  ];
 
-  if (!workOrder) {
-    return NextResponse.json(
-      { error: "Work order not found" },
-      { status: 400 }
-    );
+  const woNameMap: Record<string, string> = {};
+  if (woIds.length > 0) {
+    const { data: workOrders } = await adminClient
+      .from("work_orders")
+      .select("id, project_name")
+      .in("id", woIds);
+
+    if (workOrders) {
+      for (const wo of workOrders) {
+        woNameMap[wo.id] = wo.project_name;
+      }
+    }
   }
 
   // 3. Generate beleg_number: AE<DDMMYY><initials>
@@ -115,12 +131,12 @@ export async function POST(request: Request) {
       iban: profile.iban,
       bic: profile.bic,
     },
-    projectName: workOrder.project_name,
-    items: body.items.map((item: { description: string; amount: number; category: string; receipt_url?: string }) => ({
+    items: body.items.map((item: { description: string; amount: number; category: string; receipt_url?: string; work_order_id?: string }) => ({
       description: item.description,
       amount: item.amount,
       category: item.category,
       receipt_url: item.receipt_url || null,
+      projectName: item.work_order_id ? (woNameMap[item.work_order_id] || "Allgemein") : "Allgemein",
     })),
   });
 
