@@ -26,8 +26,9 @@ export interface ExpensePDFData {
     category: string;
     receipt_date?: string;
     receipt_url: string | null;
+    projectName?: string;
   }>;
-  projectName: string;
+  projectName?: string;
   belegNumber: string;
   belegDate: string; // ISO date string
 }
@@ -257,9 +258,10 @@ export async function generateExpensePDF(
         const categoryLabel = CATEGORY_LABELS[item.category] || item.category;
         doc.text(categoryLabel, colCategory, ty);
 
-        // Project name
+        // Project name (per item, fallback to top-level, then "Allgemein")
+        const itemProjectName = item.projectName || data.projectName || "Allgemein";
         const projMaxWidth = colAmount - colProject - 25;
-        const projLines = doc.splitTextToSize(data.projectName, projMaxWidth);
+        const projLines = doc.splitTextToSize(itemProjectName, projMaxWidth);
         doc.text(projLines[0], colProject, ty);
 
         // Amount

@@ -28,6 +28,7 @@ interface ExpenseItem {
   description: string;
   amount: string;
   category: Category | "";
+  work_order_id: string;
   receiptFile: File | null;
   receiptPreview: string | null;
 }
@@ -37,6 +38,7 @@ function emptyItem(): ExpenseItem {
     description: "",
     amount: "",
     category: "",
+    work_order_id: "",
     receiptFile: null,
     receiptPreview: null,
   };
@@ -48,7 +50,6 @@ export function ExpenseClaimForm({
   workOrders: WorkOrder[];
 }) {
   const router = useRouter();
-  const [selectedWO, setSelectedWO] = useState("");
   const [items, setItems] = useState<ExpenseItem[]>([emptyItem()]);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
@@ -114,7 +115,6 @@ export function ExpenseClaimForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!selectedWO) return;
     setLoading(true);
 
     const supabase = createClient();
@@ -139,6 +139,7 @@ export function ExpenseClaimForm({
           description: item.description,
           amount: parseFloat(item.amount) || 0,
           category: item.category,
+          work_order_id: item.work_order_id || null,
           receipt_url,
         };
       })
@@ -148,7 +149,6 @@ export function ExpenseClaimForm({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        work_order_id: selectedWO,
         items: uploadedItems,
         total,
         notes,
@@ -174,26 +174,6 @@ export function ExpenseClaimForm({
         </svg>
         Back
       </Link>
-
-      {/* Project / Work Order — required */}
-      <div className="rounded-2xl border-2 border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
-        <label className="block text-sm font-semibold text-amber-900 dark:text-amber-200 mb-2">
-          Project *
-        </label>
-        <select
-          value={selectedWO}
-          onChange={(e) => setSelectedWO(e.target.value)}
-          required
-          className="w-full rounded-xl border border-amber-300 bg-white px-4 py-3 text-base font-medium text-zinc-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 dark:border-amber-700 dark:bg-zinc-900 dark:text-zinc-100"
-        >
-          <option value="">Select a project...</option>
-          {workOrders.map((wo) => (
-            <option key={wo.id} value={wo.id}>
-              {wo.project_name} — {wo.start_date}
-            </option>
-          ))}
-        </select>
-      </div>
 
       {/* Receipt Items */}
       <div className="space-y-3">
@@ -289,7 +269,26 @@ export function ExpenseClaimForm({
                 </select>
               </div>
 
-              {/* 3. Description */}
+              {/* 3. Project */}
+              <div>
+                <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
+                  Project
+                </label>
+                <select
+                  value={item.work_order_id}
+                  onChange={(e) => updateItem(i, "work_order_id", e.target.value)}
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-base text-zinc-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                >
+                  <option value="">General / No project</option>
+                  {workOrders.map((wo) => (
+                    <option key={wo.id} value={wo.id}>
+                      {wo.project_name} — {wo.start_date}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 4. Description */}
               <div>
                 <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
                   Description *
@@ -303,7 +302,7 @@ export function ExpenseClaimForm({
                 />
               </div>
 
-              {/* 4. Amount */}
+              {/* 5. Amount */}
               <div>
                 <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
                   Amount (EUR) *
@@ -367,7 +366,7 @@ export function ExpenseClaimForm({
           </div>
           <button
             type="submit"
-            disabled={loading || total === 0 || !selectedWO}
+            disabled={loading || total === 0}
             className="rounded-xl bg-amber-600 px-6 py-3 text-base font-semibold text-white shadow-md transition-colors hover:bg-amber-700 active:bg-amber-800 disabled:opacity-50 sm:px-8"
           >
             {loading ? "Submitting..." : "Submit Claim"}
