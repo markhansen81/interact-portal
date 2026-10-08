@@ -159,7 +159,7 @@ export async function POST(request: Request) {
           generatedPdfUrl = publicUrl;
 
           // Update invoice record with PDF URL
-          await supabase
+          await adminClient
             .from("invoices")
             .update({ pdf_url: publicUrl })
             .eq("id", invoice.id);
@@ -215,5 +215,12 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.json({ success: true, invoice });
+  // Re-fetch invoice to include pdf_url
+  const { data: updatedInvoice } = await supabase
+    .from("invoices")
+    .select("*")
+    .eq("id", invoice.id)
+    .single();
+
+  return NextResponse.json({ success: true, invoice: updatedInvoice || invoice });
 }
