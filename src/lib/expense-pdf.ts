@@ -25,6 +25,7 @@ export interface ExpensePDFData {
     amount: number;
     category: string;
     receipt_date?: string;
+    receipt_url: string | null;
   }>;
   projectName: string;
   belegNumber: string;
@@ -33,6 +34,15 @@ export interface ExpensePDFData {
 
 const MATERIAL_CATEGORIES = ["materialien", "lebensmittel", "druck", "sonstiges"];
 const TRAVEL_CATEGORIES = ["transport", "unterkunft"];
+
+const CATEGORY_LABELS: Record<string, string> = {
+  materialien: "Materialien",
+  lebensmittel: "Lebensmittel",
+  transport: "Transport",
+  unterkunft: "Unterkunft",
+  druck: "Druck/Kopien",
+  sonstiges: "Sonstiges",
+};
 
 export async function generateExpensePDF(
   data: ExpensePDFData
@@ -177,7 +187,8 @@ export async function generateExpensePDF(
   // Table column positions
   const colDate = marginLeft;
   const colDesc = marginLeft + 28;
-  const colProject = marginLeft + 95;
+  const colCategory = marginLeft + 80;
+  const colProject = marginLeft + 110;
   const colAmount = marginLeft + contentWidth;
   const tableRowHeight = 6;
 
@@ -204,6 +215,7 @@ export async function generateExpensePDF(
     setColor(grey);
     doc.text("Belegdatum", colDate, ty);
     doc.text("Beschreibung", colDesc, ty);
+    doc.text("Kategorie", colCategory, ty);
     doc.text("Projektname", colProject, ty);
     doc.text("Bruttobetrag in \u20AC", colAmount, ty, { align: "right" });
 
@@ -237,9 +249,13 @@ export async function generateExpensePDF(
         doc.text(dateStr, colDate, ty);
 
         // Description (truncate if too long)
-        const descMaxWidth = colProject - colDesc - 3;
+        const descMaxWidth = colCategory - colDesc - 3;
         const descLines = doc.splitTextToSize(item.description, descMaxWidth);
         doc.text(descLines[0], colDesc, ty);
+
+        // Category
+        const categoryLabel = CATEGORY_LABELS[item.category] || item.category;
+        doc.text(categoryLabel, colCategory, ty);
 
         // Project name
         const projMaxWidth = colAmount - colProject - 25;
@@ -304,45 +320,138 @@ export async function generateExpensePDF(
     align: "right",
   });
 
-  // === FOOTER ===
-  const footerY = pageHeight - 25;
-  doc.setDrawColor(lightGrey[0], lightGrey[1], lightGrey[2]);
-  doc.setLineWidth(0.3);
-  doc.line(marginLeft, footerY - 3, pageWidth - marginRight, footerY - 3);
+  // === FOOTER (first page) ===
+  const drawFooter = () => {
+    const footerY = pageHeight - 25;
+    doc.setDrawColor(lightGrey[0], lightGrey[1], lightGrey[2]);
+    doc.setLineWidth(0.3);
+    doc.line(marginLeft, footerY - 3, pageWidth - marginRight, footerY - 3);
 
-  doc.setFontSize(6);
-  doc.setFont("helvetica", "normal");
-  setColor(grey);
+    doc.setFontSize(6);
+    doc.setFont("helvetica", "normal");
+    setColor(grey);
 
-  const col1X = marginLeft;
-  const col2X = marginLeft + 40;
-  const col3X = marginLeft + 80;
-  const col4X = marginLeft + 130;
+    const col1X = marginLeft;
+    const col2X = marginLeft + 40;
+    const col3X = marginLeft + 80;
+    const col4X = marginLeft + 130;
 
-  // Column 1
-  doc.text("InterACT English gGmbH", col1X, footerY);
-  doc.text("Planufer 92B", col1X, footerY + 3);
-  doc.text("10967 Berlin", col1X, footerY + 6);
-  doc.text("Deutschland", col1X, footerY + 9);
+    doc.text("InterACT English gGmbH", col1X, footerY);
+    doc.text("Planufer 92B", col1X, footerY + 3);
+    doc.text("10967 Berlin", col1X, footerY + 6);
+    doc.text("Deutschland", col1X, footerY + 9);
 
-  // Column 2
-  doc.text("Tel. 030 20 33 9702", col2X, footerY);
-  doc.text("E-Mail justin@interactenglish.de", col2X, footerY + 3);
-  doc.text("Web www.interactenglish.de", col2X, footerY + 6);
+    doc.text("Tel. 030 20 33 9702", col2X, footerY);
+    doc.text("E-Mail justin@interactenglish.de", col2X, footerY + 3);
+    doc.text("Web www.interactenglish.de", col2X, footerY + 6);
 
-  // Column 3
-  doc.text("Amtsgericht Handelsregister -", col3X, footerY);
-  doc.text("Amtsgericht Charlottenburg", col3X, footerY + 3);
-  doc.text("HR-Nr. HRB 188932 B", col3X, footerY + 6);
-  doc.text("USt.-ID DE313026921", col3X, footerY + 9);
-  doc.text("Steuer-Nr. 27/614/02133", col3X, footerY + 12);
+    doc.text("Amtsgericht Handelsregister -", col3X, footerY);
+    doc.text("Amtsgericht Charlottenburg", col3X, footerY + 3);
+    doc.text("HR-Nr. HRB 188932 B", col3X, footerY + 6);
+    doc.text("USt.-ID DE313026921", col3X, footerY + 9);
+    doc.text("Steuer-Nr. 27/614/02133", col3X, footerY + 12);
 
-  // Column 4
-  doc.text("Bank Berliner Sparkasse", col4X, footerY);
-  doc.text("Konto 0190650656", col4X, footerY + 3);
-  doc.text("BLZ 10050000", col4X, footerY + 6);
-  doc.text("IBAN DE64100500000190650656", col4X, footerY + 9);
-  doc.text("BIC BELADEBEXXX", col4X, footerY + 12);
+    doc.text("Bank Berliner Sparkasse", col4X, footerY);
+    doc.text("Konto 0190650656", col4X, footerY + 3);
+    doc.text("BLZ 10050000", col4X, footerY + 6);
+    doc.text("IBAN DE64100500000190650656", col4X, footerY + 9);
+    doc.text("BIC BELADEBEXXX", col4X, footerY + 12);
+  };
+
+  drawFooter();
+
+  // === BELEGE / RECEIPTS SECTION ===
+  const receiptItems = data.items.filter((item) => item.receipt_url);
+
+  if (receiptItems.length > 0) {
+    const maxImageWidth = 160;
+    const maxImageHeight = 200;
+
+    for (const item of receiptItems) {
+      try {
+        const res = await fetch(item.receipt_url!);
+        const buf = await res.arrayBuffer();
+        const base64 = Buffer.from(buf).toString("base64");
+        const url = item.receipt_url!;
+        const mimeType = url.toLowerCase().endsWith(".png") ? "PNG" : "JPEG";
+        const dataUrl = `data:image/${mimeType.toLowerCase()};base64,${base64}`;
+
+        // Add a new page for each receipt
+        doc.addPage();
+        let ry = 20;
+
+        // Section header
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        setColor(black);
+        doc.text("BELEGE / RECEIPTS", marginLeft, ry);
+        ry += 10;
+
+        // Receipt label
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        setColor(grey);
+        doc.text(
+          `${item.description} — ${formatMoney(item.amount)} \u20AC`,
+          marginLeft,
+          ry
+        );
+        ry += 8;
+
+        // Calculate image dimensions to fit within bounds
+        // Use a temporary image to get natural dimensions
+        let imgWidth = maxImageWidth;
+        let imgHeight = maxImageHeight;
+
+        try {
+          const imgProps = doc.getImageProperties(dataUrl);
+          const naturalWidth = imgProps.width;
+          const naturalHeight = imgProps.height;
+
+          // Scale to fit within maxImageWidth x maxImageHeight
+          const scaleW = maxImageWidth / naturalWidth;
+          const scaleH = maxImageHeight / naturalHeight;
+          const scale = Math.min(scaleW, scaleH, 1); // don't upscale
+
+          imgWidth = naturalWidth * scale;
+          imgHeight = naturalHeight * scale;
+        } catch {
+          // If we can't get dimensions, use defaults
+          imgWidth = maxImageWidth;
+          imgHeight = maxImageHeight;
+        }
+
+        doc.addImage(dataUrl, mimeType, marginLeft, ry, imgWidth, imgHeight);
+      } catch {
+        // If fetching/embedding fails, add a note instead
+        doc.addPage();
+        let ry = 20;
+
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        setColor(black);
+        doc.text("BELEGE / RECEIPTS", marginLeft, ry);
+        ry += 10;
+
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        setColor(grey);
+        doc.text(
+          `${item.description} — ${formatMoney(item.amount)} \u20AC`,
+          marginLeft,
+          ry
+        );
+        ry += 8;
+
+        doc.setFont("helvetica", "italic");
+        doc.text(
+          "Beleg konnte nicht geladen werden / Receipt could not be loaded",
+          marginLeft,
+          ry
+        );
+      }
+    }
+  }
 
   // Convert to Buffer
   const arrayBuffer = doc.output("arraybuffer");
