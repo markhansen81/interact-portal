@@ -49,7 +49,12 @@ export async function POST(request: Request) {
     const fileBuffer = await file.arrayBuffer();
     const base64 = Buffer.from(fileBuffer).toString("base64");
 
-    const client = new Anthropic({ apiKey });
+    const client = new Anthropic({
+      apiKey,
+      defaultHeaders: process.env.ANTHROPIC_WORKSPACE_ID
+        ? { "anthropic-workspace-id": process.env.ANTHROPIC_WORKSPACE_ID }
+        : undefined,
+    });
 
     const response = await client.messages.create({
       model: "claude-sonnet-4-6-20250131",
