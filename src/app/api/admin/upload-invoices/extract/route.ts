@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     const client = new Anthropic({ apiKey });
 
     const response = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-6-20250131",
       max_tokens: 1024,
       messages: [
         {
@@ -104,9 +104,10 @@ Return as JSON only, no explanation. Use null for any field you cannot find.`,
 
     return NextResponse.json({ extracted });
   } catch (error) {
-    console.error("[EXTRACT] AI extraction failed:", error);
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.error("[EXTRACT] AI extraction failed:", errMsg);
     return NextResponse.json(
-      { error: "AI extraction failed. Please fill in fields manually." },
+      { error: `AI extraction failed: ${errMsg}` },
       { status: 500 }
     );
   }
