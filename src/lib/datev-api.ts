@@ -42,7 +42,7 @@ function clientSecret() {
 }
 
 const SCOPES =
-  "openid profile email datev:accounting:clients accounting:documents";
+  "openid profile email accounting:documents";
 
 // ---------------------------------------------------------------------------
 // PKCE helpers
