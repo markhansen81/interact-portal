@@ -20,6 +20,7 @@ const navItems = [
   { href: "/admin/messages", label: "Messages", icon: "message-circle" },
   { href: "/admin/templates", label: "Templates", icon: "pen-tool" },
   { href: "/admin/upload-invoices", label: "Upload to DATEV", icon: "upload" },
+  { href: "/admin/datev-settings", label: "DATEV Settings", icon: "settings" },
   { href: "/admin/users", label: "Admin Users", icon: "settings" },
 ];
 
