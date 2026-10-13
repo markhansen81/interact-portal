@@ -184,7 +184,7 @@ export default async function PortalDashboard() {
               </p>
             </div>
             <div className="text-right">
-              <span className={`text-3xl font-bold tabular-nums ${allDone ? "text-green-600" : "text-zinc-900 dark:text-zinc-50"}`}>
+              <span className={`text-2xl md:text-3xl font-bold tabular-nums ${allDone ? "text-green-600" : "text-zinc-900 dark:text-zinc-50"}`}>
                 {completedCount}/{totalCount}
               </span>
               <p className="text-xs text-zinc-400">tasks done</p>
@@ -323,7 +323,7 @@ function StatCard({ label, value, href, highlight }: {
       }`}
     >
       <p className="text-[13px] font-medium text-zinc-500">{label}</p>
-      <p className={`mt-2 text-3xl font-bold tabular-nums ${
+      <p className={`mt-2 text-2xl md:text-3xl font-bold tabular-nums ${
         highlight ? "text-amber-700 dark:text-amber-400" : "text-zinc-900 dark:text-zinc-50"
       }`}>
         {value}

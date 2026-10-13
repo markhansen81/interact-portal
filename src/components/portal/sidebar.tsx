@@ -95,7 +95,7 @@ function PortalBottomNav() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mx-auto my-2 h-1 w-10 rounded-full bg-zinc-300 dark:bg-zinc-600" />
-            <nav className="grid grid-cols-3 gap-1 px-4 pb-4 pt-2">
+            <nav className="grid grid-cols-2 sm:grid-cols-3 gap-1 px-4 pb-4 pt-2">
               {overflowNavItems.map((item) => {
                 const active = isActive(item.href);
                 return (

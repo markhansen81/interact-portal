@@ -125,7 +125,7 @@ export function TACalendar({ workOrders }: { workOrders: WorkOrder[] }) {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Calendar</h2>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col lg:flex-row gap-6">
         {/* Calendar grid */}
         <div className="flex-1 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
           {/* Header */}
@@ -159,97 +159,157 @@ export function TACalendar({ workOrders }: { workOrders: WorkOrder[] }) {
             </button>
           </div>
 
-          {/* Day headers */}
-          <div className="grid grid-cols-7 border-b border-zinc-200 dark:border-zinc-800">
-            {DAY_HEADERS.map((d) => (
-              <div key={d} className="px-2 py-2 text-center text-xs font-medium text-zinc-500">
-                {d}
-              </div>
-            ))}
-          </div>
+          {/* Day headers + Grid (desktop) */}
+          <div className="hidden md:block">
+            <div className="grid grid-cols-7 border-b border-zinc-200 dark:border-zinc-800">
+              {DAY_HEADERS.map((d) => (
+                <div key={d} className="px-2 py-2 text-center text-xs font-medium text-zinc-500">
+                  {d}
+                </div>
+              ))}
+            </div>
 
-          {/* Grid */}
-          <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            {grid.map((row, ri) => {
-              // Calculate spanning bars for this row
-              const bars: Array<{ wo: WorkOrder; startCol: number; endCol: number }> = [];
-              const seen = new Set<string>();
-              row.forEach((date, ci) => {
-                if (!date) return;
-                const dayOrders = getWorkOrdersForDay(date, workOrders);
-                dayOrders.forEach((wo) => {
-                  if (seen.has(wo.id)) return;
-                  seen.add(wo.id);
-                  const woStart = new Date(wo.start_date + "T00:00:00");
-                  const woEnd = new Date(wo.end_date + "T00:00:00");
-                  let endCol = ci;
-                  for (let c = ci + 1; c < 7; c++) {
-                    const nextDate = row[c];
-                    if (nextDate && nextDate.getTime() >= woStart.getTime() && nextDate.getTime() <= woEnd.getTime()) {
-                      endCol = c;
-                    } else break;
-                  }
-                  bars.push({ wo, startCol: ci, endCol });
+            <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+              {grid.map((row, ri) => {
+                // Calculate spanning bars for this row
+                const bars: Array<{ wo: WorkOrder; startCol: number; endCol: number }> = [];
+                const seen = new Set<string>();
+                row.forEach((date, ci) => {
+                  if (!date) return;
+                  const dayOrders = getWorkOrdersForDay(date, workOrders);
+                  dayOrders.forEach((wo) => {
+                    if (seen.has(wo.id)) return;
+                    seen.add(wo.id);
+                    const woStart = new Date(wo.start_date + "T00:00:00");
+                    const woEnd = new Date(wo.end_date + "T00:00:00");
+                    let endCol = ci;
+                    for (let c = ci + 1; c < 7; c++) {
+                      const nextDate = row[c];
+                      if (nextDate && nextDate.getTime() >= woStart.getTime() && nextDate.getTime() <= woEnd.getTime()) {
+                        endCol = c;
+                      } else break;
+                    }
+                    bars.push({ wo, startCol: ci, endCol });
+                  });
                 });
-              });
 
-              return (
-                <div key={ri} className="relative">
-                  <div className="grid grid-cols-7 divide-x divide-zinc-100 dark:divide-zinc-800">
-                    {row.map((date, ci) => {
-                      if (!date) {
-                        return <div key={ci} className="min-h-[90px] bg-zinc-50/50 dark:bg-zinc-900/50" />;
-                      }
-                      const isToday = isSameDay(date, today);
-                      return (
-                        <div
-                          key={ci}
-                          className={`min-h-[90px] p-1.5 ${isToday ? "bg-blue-50/60 dark:bg-blue-950/20" : ""}`}
-                        >
-                          <span
-                            className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
-                              isToday
-                                ? "bg-blue-600 text-white"
-                                : "text-zinc-700 dark:text-zinc-300"
-                            }`}
+                return (
+                  <div key={ri} className="relative">
+                    <div className="grid grid-cols-7 divide-x divide-zinc-100 dark:divide-zinc-800">
+                      {row.map((date, ci) => {
+                        if (!date) {
+                          return <div key={ci} className="min-h-[90px] bg-zinc-50/50 dark:bg-zinc-900/50" />;
+                        }
+                        const isToday = isSameDay(date, today);
+                        return (
+                          <div
+                            key={ci}
+                            className={`min-h-[90px] p-1.5 ${isToday ? "bg-blue-50/60 dark:bg-blue-950/20" : ""}`}
                           >
-                            {date.getDate()}
-                          </span>
-                        </div>
+                            <span
+                              className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+                                isToday
+                                  ? "bg-blue-600 text-white"
+                                  : "text-zinc-700 dark:text-zinc-300"
+                              }`}
+                            >
+                              {date.getDate()}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {/* Spanning project bars */}
+                    {bars.map((bar) => {
+                      const leftPct = (bar.startCol / 7) * 100;
+                      const widthPct = ((bar.endCol - bar.startCol + 1) / 7) * 100;
+                      return (
+                        <Link
+                          key={bar.wo.id}
+                          href={`/portal/work-orders/${bar.wo.id}`}
+                          className={`absolute left-0 truncate rounded-md px-2 py-1 text-[11px] font-medium leading-tight transition-opacity hover:opacity-80 ${
+                            bar.wo.status === "signed"
+                              ? "bg-green-200 text-green-900 dark:bg-green-800/60 dark:text-green-200"
+                              : "bg-yellow-200 text-yellow-900 dark:bg-yellow-800/60 dark:text-yellow-200"
+                          }`}
+                          style={{
+                            left: `calc(${leftPct}% + 6px)`,
+                            width: `calc(${widthPct}% - 12px)`,
+                            top: "36px",
+                          }}
+                        >
+                          {bar.wo.project_name}
+                        </Link>
                       );
                     })}
                   </div>
-                  {/* Spanning project bars */}
-                  {bars.map((bar) => {
-                    const leftPct = (bar.startCol / 7) * 100;
-                    const widthPct = ((bar.endCol - bar.startCol + 1) / 7) * 100;
-                    return (
-                      <Link
-                        key={bar.wo.id}
-                        href={`/portal/work-orders/${bar.wo.id}`}
-                        className={`absolute left-0 truncate rounded-md px-2 py-1 text-[11px] font-medium leading-tight transition-opacity hover:opacity-80 ${
-                          bar.wo.status === "signed"
-                            ? "bg-green-200 text-green-900 dark:bg-green-800/60 dark:text-green-200"
-                            : "bg-yellow-200 text-yellow-900 dark:bg-yellow-800/60 dark:text-yellow-200"
-                        }`}
-                        style={{
-                          left: `calc(${leftPct}% + 6px)`,
-                          width: `calc(${widthPct}% - 12px)`,
-                          top: "36px",
-                        }}
-                      >
-                        {bar.wo.project_name}
-                      </Link>
-                    );
-                  })}
-                </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Mobile list view */}
+          <div className="md:hidden divide-y divide-zinc-100 dark:divide-zinc-800">
+            {(() => {
+              const monthDates: Date[] = [];
+              for (const row of grid) {
+                for (const date of row) {
+                  if (date) monthDates.push(date);
+                }
+              }
+              const daysWithEvents = monthDates.filter(
+                (date) => getWorkOrdersForDay(date, workOrders).length > 0 || isSameDay(date, today)
               );
-            })}
+              if (daysWithEvents.length === 0) {
+                return (
+                  <div className="px-4 py-8 text-center text-sm text-zinc-500">
+                    No events this month.
+                  </div>
+                );
+              }
+              return daysWithEvents.map((date) => {
+                const dayOrders = getWorkOrdersForDay(date, workOrders);
+                const isToday = isSameDay(date, today);
+                return (
+                  <div key={date.toISOString()} className={`px-4 py-3 ${isToday ? "bg-blue-50/60 dark:bg-blue-950/20" : ""}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
+                        isToday ? "bg-blue-600 text-white" : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                      }`}>
+                        {date.getDate()}
+                      </span>
+                      <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                        {date.toLocaleDateString("en-GB", { weekday: "short", month: "short", day: "numeric" })}
+                      </span>
+                    </div>
+                    {dayOrders.length > 0 ? (
+                      <div className="ml-9 space-y-1">
+                        {dayOrders.map((wo) => (
+                          <Link
+                            key={wo.id}
+                            href={`/portal/work-orders/${wo.id}`}
+                            className={`block rounded-md px-2 py-1.5 text-xs font-medium ${
+                              wo.status === "signed"
+                                ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                                : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                            }`}
+                          >
+                            {wo.project_name} — {wo.school}
+                          </Link>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="ml-9 text-xs text-zinc-400">Today</p>
+                    )}
+                  </div>
+                );
+              });
+            })()}
           </div>
         </div>
 
         {/* Sidebar */}
-        <div className="w-[280px] shrink-0 space-y-6">
+        <div className="w-full lg:w-[280px] shrink-0 space-y-6">
           {/* Upcoming */}
           <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
             <h4 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-50">Upcoming</h4>

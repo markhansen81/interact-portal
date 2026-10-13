@@ -531,7 +531,7 @@ export function InvoiceCalculator({
         <p className="mt-1 text-sm text-zinc-500">
           BahnCard 50 owners only. Enter round-trip travel time.
         </p>
-        <div className="mt-4 flex items-center gap-4">
+        <div className="mt-4 flex flex-col md:flex-row md:items-center gap-4">
           <div>
             <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
               Round-trip travel time (hours)

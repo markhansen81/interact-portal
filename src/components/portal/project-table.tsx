@@ -77,65 +77,111 @@ export function ProjectTable({ projects }: { projects: Project[] }) {
           <p className="text-zinc-500">No projects found.</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
-                <th className="px-4 py-3 text-left font-medium text-zinc-500">Project Name</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-500">Program</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-500">School</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-500">Dates</th>
-                <th className="px-4 py-3 text-center font-medium text-zinc-500">Status</th>
-                <th className="px-4 py-3 text-center font-medium text-zinc-500">Tasks</th>
-                <th className="px-4 py-3 text-right font-medium text-zinc-500">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-              {filtered.map((p) => (
-                <tr key={p.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                  <td className="px-4 py-3">
-                    <Link href={`/portal/projects/${p.id}`} className="font-medium text-zinc-900 hover:underline dark:text-zinc-50">
-                      {p.name}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{p.program_type || "—"}</td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
-                    <div>{p.school || "—"}</div>
-                    {p.location && <div className="text-xs text-zinc-400">{p.location}</div>}
-                  </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
-                    {p.start_date && p.end_date ? (
-                      <>
-                        <div>{formatDate(p.start_date)} — {formatDate(p.end_date)}</div>
-                        {p.days && <div className="text-xs text-zinc-400">{p.days} day{p.days > 1 ? "s" : ""}</div>}
-                      </>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[p.status] || ""}`}>
-                      {p.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                      {p.completed_tasks}/{p.total_tasks} done
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/portal/projects/${p.id}`}
-                      className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                    >
-                      View
-                    </Link>
-                  </td>
+        <>
+          {/* Mobile card view */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {filtered.map((p) => (
+              <div
+                key={p.id}
+                className={`rounded-xl border bg-white p-4 dark:bg-zinc-900 ${
+                  p.status === "active"
+                    ? "border-amber-200 dark:border-amber-900/40"
+                    : "border-zinc-200 dark:border-zinc-800"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <Link href={`/portal/projects/${p.id}`} className="font-semibold text-zinc-900 hover:underline dark:text-zinc-50">
+                    {p.name}
+                  </Link>
+                  <span className={`shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[p.status] || ""}`}>
+                    {p.status}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                  {p.school || "—"} &middot; {p.program_type || "—"}
+                </p>
+                {p.start_date && p.end_date && (
+                  <p className="mt-1 text-xs text-zinc-400">
+                    {formatDate(p.start_date)} — {formatDate(p.end_date)}
+                    {p.days ? ` (${p.days} day${p.days > 1 ? "s" : ""})` : ""}
+                  </p>
+                )}
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                    {p.completed_tasks}/{p.total_tasks} tasks done
+                  </span>
+                  <Link
+                    href={`/portal/projects/${p.id}`}
+                    className="rounded-lg border border-zinc-300 px-4 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  >
+                    View
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop table view */}
+          <div className="hidden md:block overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
+                  <th className="px-4 py-3 text-left font-medium text-zinc-500">Project Name</th>
+                  <th className="px-4 py-3 text-left font-medium text-zinc-500">Program</th>
+                  <th className="px-4 py-3 text-left font-medium text-zinc-500">School</th>
+                  <th className="px-4 py-3 text-left font-medium text-zinc-500">Dates</th>
+                  <th className="px-4 py-3 text-center font-medium text-zinc-500">Status</th>
+                  <th className="px-4 py-3 text-center font-medium text-zinc-500">Tasks</th>
+                  <th className="px-4 py-3 text-right font-medium text-zinc-500">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                {filtered.map((p) => (
+                  <tr key={p.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                    <td className="px-4 py-3">
+                      <Link href={`/portal/projects/${p.id}`} className="font-medium text-zinc-900 hover:underline dark:text-zinc-50">
+                        {p.name}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{p.program_type || "—"}</td>
+                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
+                      <div>{p.school || "—"}</div>
+                      {p.location && <div className="text-xs text-zinc-400">{p.location}</div>}
+                    </td>
+                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+                      {p.start_date && p.end_date ? (
+                        <>
+                          <div>{formatDate(p.start_date)} — {formatDate(p.end_date)}</div>
+                          {p.days && <div className="text-xs text-zinc-400">{p.days} day{p.days > 1 ? "s" : ""}</div>}
+                        </>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[p.status] || ""}`}>
+                        {p.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                        {p.completed_tasks}/{p.total_tasks} done
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Link
+                        href={`/portal/projects/${p.id}`}
+                        className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        View
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );
