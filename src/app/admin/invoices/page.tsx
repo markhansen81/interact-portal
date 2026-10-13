@@ -19,6 +19,11 @@ export default async function InvoicesPage() {
     .select("*, profiles!expense_claims_ta_id_fkey(id, first_name, last_name, email, photo_url), expense_items(id, description, amount, category, receipt_url)")
     .order("created_at", { ascending: false });
 
+  const { data: adminUploads } = await supabase
+    .from("admin_uploads")
+    .select("*")
+    .order("created_at", { ascending: false });
+
   return (
     <div className="space-y-8">
       <div>
@@ -29,7 +34,7 @@ export default async function InvoicesPage() {
           Review invoices, approve payments, and manage expense claims.
         </p>
       </div>
-      <FinancialDashboard invoices={invoices || []} expenses={expenses || []} />
+      <FinancialDashboard invoices={invoices || []} expenses={expenses || []} adminUploads={adminUploads || []} />
     </div>
   );
 }

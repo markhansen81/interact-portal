@@ -19,7 +19,6 @@ const navItems = [
   { href: "/admin/training", label: "Training", icon: "briefcase" },
   { href: "/admin/messages", label: "Messages", icon: "message-circle" },
   { href: "/admin/templates", label: "Templates", icon: "pen-tool" },
-  { href: "/admin/upload-invoices", label: "Upload to DATEV", icon: "upload" },
   { href: "/admin/users", label: "Admin Users", icon: "settings" },
 ];
 
