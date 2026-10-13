@@ -181,9 +181,9 @@ export async function POST(request: Request) {
       })
       .eq("id", claim.id);
   } else {
-    // Auto-send to DATEV
+    // Auto-send to DATEV (API first, email fallback)
     const taName = `${profile.first_name || ""} ${profile.last_name || ""}`.trim();
-    await sendToDATEV({
+    const datevResult = await sendToDATEV({
       pdf: pdfBuffer,
       filename: `${belegNumber}.pdf`,
       belegNumber,
@@ -191,10 +191,21 @@ export async function POST(request: Request) {
       type: "expense",
     });
 
-    await supabase
-      .from("expense_claims")
-      .update({ datev_sent_at: new Date().toISOString() })
-      .eq("id", claim.id);
+    if (datevResult.ok) {
+      const datevUpdate: Record<string, unknown> = {
+        datev_sent_at: new Date().toISOString(),
+      };
+      if (datevResult.documentId) {
+        datevUpdate.datev_document_id = datevResult.documentId;
+      }
+      await supabase
+        .from("expense_claims")
+        .update(datevUpdate)
+        .eq("id", claim.id);
+      console.log(`[DATEV] Expense ${belegNumber} sent via ${datevResult.method}`);
+    } else {
+      console.error(`[DATEV] Failed to send expense ${belegNumber}:`, datevResult.error);
+    }
   }
 
   // Re-fetch the updated claim

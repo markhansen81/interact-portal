@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 // ---------------------------------------------------------------------------
 // DATEV OAuth2 + Accounting-Documents API client
@@ -18,7 +19,7 @@ const DATEV_API_BASE_PROD =
   "https://accounting-documents.api.datev.de/platform/v2";
 
 function isProd() {
-  return process.env.DATEV_ENV === "production";
+  return process.env.DATEV_ENV === "production"; // App is sandbox until DATEV approves production upgrade
 }
 
 function authUrl() {
@@ -258,6 +259,83 @@ export async function uploadDatevDocument(
     id: String(result.id ?? result.document_id ?? ""),
     status: String(result.status ?? "uploaded"),
   };
+}
+
+/**
+ * High-level helper: fetch tokens, auto-refresh if expired, upload document.
+ * Returns success/failure with optional document ID.
+ */
+export async function uploadDocumentToDATEV(
+  pdf: Buffer,
+  filename: string,
+  notes: string
+): Promise<{ success: boolean; documentId?: string; error?: string }> {
+  const adminClient = createAdminClient();
+
+  // Fetch the stored DATEV tokens
+  const { data: tokenRow, error: fetchErr } = await adminClient
+    .from("datev_tokens")
+    .select("*")
+    .limit(1)
+    .single();
+
+  if (fetchErr || !tokenRow) {
+    return {
+      success: false,
+      error: `No DATEV tokens found: ${fetchErr?.message ?? "no row"}`,
+    };
+  }
+
+  let accessToken: string = tokenRow.access_token;
+  const selectedClientId: string | null = tokenRow.selected_client_id;
+
+  if (!selectedClientId) {
+    return { success: false, error: "No DATEV client selected (selected_client_id is null)" };
+  }
+
+  // Check if token is expired (with 60s buffer)
+  const expiresAt = new Date(tokenRow.expires_at).getTime();
+  if (Date.now() > expiresAt - 60_000) {
+    try {
+      const refreshed = await refreshDatevToken(tokenRow.refresh_token);
+      accessToken = refreshed.access_token;
+
+      // Persist refreshed tokens
+      await adminClient
+        .from("datev_tokens")
+        .update({
+          access_token: refreshed.access_token,
+          refresh_token: refreshed.refresh_token,
+          expires_at: new Date(
+            Date.now() + refreshed.expires_in * 1000
+          ).toISOString(),
+        })
+        .eq("id", tokenRow.id);
+    } catch (refreshErr) {
+      return {
+        success: false,
+        error: `Token refresh failed: ${refreshErr instanceof Error ? refreshErr.message : String(refreshErr)}`,
+      };
+    }
+  }
+
+  // Upload the document
+  try {
+    const result = await uploadDatevDocument(
+      accessToken,
+      selectedClientId,
+      pdf,
+      filename,
+      notes // passed as documentType / metadata note
+    );
+
+    return { success: true, documentId: result.id };
+  } catch (uploadErr) {
+    return {
+      success: false,
+      error: `Upload failed: ${uploadErr instanceof Error ? uploadErr.message : String(uploadErr)}`,
+    };
+  }
 }
 
 /**

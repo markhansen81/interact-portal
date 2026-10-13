@@ -77,23 +77,35 @@ export async function PATCH(
     },
   });
 
-  // Send approved invoice PDF to DATEV
+  // Send approved invoice PDF to DATEV (API first, email fallback)
   if (body.status === "approved" && invoice.uploaded_pdf_url) {
     try {
       const { sendToDATEV } = await import("@/lib/datev");
       const pdfRes = await fetch(invoice.uploaded_pdf_url);
       const pdfBuffer = Buffer.from(await pdfRes.arrayBuffer());
-      await sendToDATEV({
+      const datevResult = await sendToDATEV({
         pdf: pdfBuffer,
         filename: `${invoice.invoice_number || id}.pdf`,
         belegNumber: invoice.invoice_number || id,
         taName,
         type: "invoice",
       });
-      await adminClient
-        .from("invoices")
-        .update({ datev_sent_at: new Date().toISOString() })
-        .eq("id", id);
+
+      if (datevResult.ok) {
+        const datevUpdate: Record<string, unknown> = {
+          datev_sent_at: new Date().toISOString(),
+        };
+        if (datevResult.documentId) {
+          datevUpdate.datev_document_id = datevResult.documentId;
+        }
+        await adminClient
+          .from("invoices")
+          .update(datevUpdate)
+          .eq("id", id);
+        console.log(`[DATEV] Invoice ${invoice.invoice_number} sent via ${datevResult.method}`);
+      } else {
+        console.error(`[DATEV] Failed to send invoice ${invoice.invoice_number}:`, datevResult.error);
+      }
     } catch (e) {
       console.error("[DATEV] Failed to send invoice:", e);
     }

@@ -1,15 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { Resend } from "resend";
-
-const DOCUMENT_TYPE_LABELS: Record<string, string> = {
-  eingangsrechnung: "Eingangsrechnung",
-  ausgangsrechnung: "Ausgangsrechnung",
-  beleg: "Sonstiger Beleg",
-  vertrag: "Vertrag",
-  sonstiges: "Sonstiges",
-};
+import { sendToDATEV } from "@/lib/datev";
 
 async function getAdminUser() {
   const supabase = await createClient();
@@ -101,39 +93,30 @@ export async function POST(request: Request) {
     data: { publicUrl },
   } = adminClient.storage.from("documents").getPublicUrl(storagePath);
 
-  // Send email to DATEV via invoices@
-  const typeLabel = DOCUMENT_TYPE_LABELS[documentType] || documentType;
-  const subject = `${typeLabel} - ${supplier} - ${description || file.name}`;
+  // Send to DATEV (API first, email fallback)
+  const belegNumber = invoiceNumber || `ADM-${Date.now()}`;
 
-  const resend = new Resend(process.env.RESEND_API_KEY);
+  const datevResult = await sendToDATEV({
+    pdf: fileBuffer,
+    filename: file.name,
+    belegNumber,
+    taName: supplier,
+    type: "invoice",
+  });
 
-  try {
-    const { data: emailData, error: emailError } = await resend.emails.send({
-      from: "noreply@interactenglish.de",
-      to: "invoices@interactenglish.de",
-      subject,
-      html: `<p>${typeLabel}: ${supplier} - ${description || file.name}</p>`,
-      attachments: [{ filename: file.name, content: fileBuffer }],
-    });
-
-    if (emailError) {
-      console.error("[UPLOAD] Email error:", emailError);
-      return NextResponse.json(
-        { error: `Email send failed: ${emailError.message}` },
-        { status: 500 }
-      );
-    }
-
-    console.log("[UPLOAD] Email sent:", emailData?.id);
-  } catch (err) {
-    console.error("[UPLOAD] Email failed:", err);
+  if (!datevResult.ok) {
+    console.error("[UPLOAD] DATEV send failed:", datevResult.error);
     return NextResponse.json(
-      { error: "Failed to send email to DATEV" },
+      { error: "Failed to send document to DATEV" },
       { status: 500 }
     );
   }
 
-  // Save record
+  console.log(`[UPLOAD] Sent to DATEV via ${datevResult.method}`, datevResult.documentId ?? "");
+
+  // Save record — mark as 'received' if API confirmed with a document ID
+  const uploadStatus = datevResult.method === "api" && datevResult.documentId ? "received" : "sent";
+
   const { data: record, error: insertError } = await adminClient
     .from("admin_uploads")
     .insert({
@@ -147,20 +130,22 @@ export async function POST(request: Request) {
       invoice_date: invoiceDate || null,
       due_date: dueDate || null,
       pdf_url: publicUrl,
-      sent_at: new Date().toISOString(),
-      status: "sent",
+      datev_sent_at: new Date().toISOString(),
+      datev_document_id: datevResult.documentId || null,
+      status: uploadStatus,
     })
     .select()
     .single();
 
   if (insertError) {
     console.error("[UPLOAD] DB insert error:", insertError);
-    // Email was already sent, so we still return success
+    // DATEV send already succeeded, so we still return success
   }
 
   return NextResponse.json({
     success: true,
     upload: record || { filename: file.name, document_type: documentType },
+    datev_method: datevResult.method,
   });
 }
 
