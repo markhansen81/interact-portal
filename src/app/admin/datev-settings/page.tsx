@@ -7,6 +7,9 @@ export default async function DatevSettingsPage() {
   const profile = await requireAuth(["admin"]);
   if (!profile) redirect("/auth/admin");
 
+  // Super admin only
+  if (!profile.is_super_admin) redirect("/admin");
+
   const adminClient = createAdminClient();
 
   // Fetch stored DATEV connection

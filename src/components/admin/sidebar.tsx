@@ -20,8 +20,11 @@ const navItems = [
   { href: "/admin/messages", label: "Messages", icon: "message-circle" },
   { href: "/admin/templates", label: "Templates", icon: "pen-tool" },
   { href: "/admin/upload-invoices", label: "Upload to DATEV", icon: "upload" },
-  { href: "/admin/datev-settings", label: "DATEV Settings", icon: "settings" },
   { href: "/admin/users", label: "Admin Users", icon: "settings" },
+];
+
+const superAdminItems = [
+  { href: "/admin/datev-settings", label: "DATEV Settings", icon: "settings" },
 ];
 
 const iconPaths: Record<string, React.ReactNode> = {
@@ -63,8 +66,9 @@ const iconPaths: Record<string, React.ReactNode> = {
   ),
 };
 
-export function AdminSidebar() {
+export function AdminSidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
   const pathname = usePathname();
+  const allItems = isSuperAdmin ? [...navItems, ...superAdminItems] : navItems;
 
   return (
     <aside className="flex w-64 flex-col border-r border-zinc-200 border-t-[3px] border-t-slate-600 bg-white dark:border-zinc-800 dark:border-t-indigo-600 dark:bg-zinc-900">
@@ -82,7 +86,7 @@ export function AdminSidebar() {
         </div>
       </div>
       <nav className="flex-1 space-y-1 p-3">
-        {navItems.map((item) => {
+        {allItems.map((item) => {
           const isActive =
             item.href === "/admin"
               ? pathname === "/admin"
