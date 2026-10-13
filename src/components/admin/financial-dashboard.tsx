@@ -110,7 +110,7 @@ export function FinancialDashboard({ invoices, expenses, adminUploads }: { invoi
     <div className="space-y-6">
       {/* Summary cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-6">
-        <SummaryCard label="Pending Review" value={totalPending} count={pending.length} color="amber" onClick={() => setTab("pending")} />
+        <SummaryCard label="TA Pending" value={totalPending} count={pending.length} color="amber" onClick={() => setTab("pending")} />
         <SummaryCard label="Approved" value={totalApproved} count={approved.length} color="blue" onClick={() => setTab("approved")} />
         <SummaryCard label="Paid" value={totalPaid} count={paid.length} color="green" onClick={() => setTab("paid")} />
         <SummaryCard
@@ -128,7 +128,7 @@ export function FinancialDashboard({ invoices, expenses, adminUploads }: { invoi
           onClick={() => { setTab("expenses"); setExpenseFilter("all"); }}
         />
         <SummaryCard
-          label="Admin Uploads"
+          label="Eingangsrechnungen"
           value={adminUploadsOutstanding}
           count={adminUploads.length}
           color="purple"
@@ -139,13 +139,13 @@ export function FinancialDashboard({ invoices, expenses, adminUploads }: { invoi
       {/* Tabs */}
       <div className="flex gap-1 overflow-x-auto rounded-xl border border-zinc-200/80 bg-zinc-100/50 p-1 dark:border-zinc-800 dark:bg-zinc-900">
         {([
-          { id: "all", label: `All Invoices (${invoices.length})` },
+          { id: "all", label: `TA Rechnungen (${invoices.length})` },
           { id: "pending", label: `Pending (${pending.length})` },
           { id: "approved", label: `Approved (${approved.length})` },
           { id: "paid", label: `Paid (${paid.length})` },
           { id: "rejected", label: `Rejected (${rejected.length})` },
-          { id: "expenses", label: `Expenses (${expenses.length})` },
-          { id: "admin-uploads", label: `Admin Uploads (${adminUploads.length})` },
+          { id: "expenses", label: `TA Auslagen (${expenses.length})` },
+          { id: "admin-uploads", label: `Eingangsrechnungen (${adminUploads.length})` },
         ] as { id: Tab; label: string }[]).map((t) => (
           <button
             key={t.id}
