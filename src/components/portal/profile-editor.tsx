@@ -461,19 +461,19 @@ export function ProfileEditor({
               if (!data.school_photo_url) set("school_photo_url", url);
             }}
           />
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             <Field label="First name" value={v("first_name")} onChange={(val) => set("first_name", val)} half />
             <Field label="Last name" value={v("last_name")} onChange={(val) => set("last_name", val)} half />
           </div>
           <Field label="Preferred name" value={v("preferred_name")} onChange={(val) => set("preferred_name", val)} />
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             <Field label="Phone" value={v("phone")} onChange={(val) => set("phone", val)} half />
             <div className="flex-1 flex items-end pb-1">
               <Checkbox label="WhatsApp / SMS consent" checked={b("phone_consent")} onChange={(val) => set("phone_consent", val)} />
             </div>
           </div>
           <Field label="Street & house number" value={v("street")} onChange={(val) => set("street", val)} />
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             <Field label="Postal code" value={v("postal_code")} onChange={(val) => set("postal_code", val)} half />
             <Field label="City" value={v("city")} onChange={(val) => set("city", val)} half />
           </div>
@@ -492,11 +492,11 @@ export function ProfileEditor({
           ]} onChange={(val) => set("country", val)} />
           <Field label="Date of birth" value={v("date_of_birth")} type="date" onChange={(val) => set("date_of_birth", val)} />
           <Field label="Nationality" value={v("nationality")} options={NATIONALITY_OPTIONS} onChange={(val) => set("nationality", val)} />
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             <Field label="Gender" value={v("gender")} options={GENDER_OPTIONS} onChange={(val) => set("gender", val)} half />
             <Field label="Pronouns" value={v("pronouns")} options={PRONOUN_OPTIONS} onChange={(val) => set("pronouns", val)} half />
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             <Field label="LGBTQIA+" value={v("lgbtqia")} options={YES_NO_PREFER} onChange={(val) => set("lgbtqia", val)} half />
             <Field label="Ethnicity" value={v("ethnicity")} options={ETHNICITY_OPTIONS} onChange={(val) => set("ethnicity", val)} half />
           </div>
@@ -511,11 +511,11 @@ export function ProfileEditor({
             "art_profession", "certifications",
             "exp_grades_1_4", "exp_grades_5_7", "exp_grades_8_plus",
                       ])}>
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             <Field label="Education" value={v("education_level")} options={EDUCATION_OPTIONS} onChange={(val) => set("education_level", val)} half />
             <Field label="TEFL / TESL / TESOL" value={v("tefl_status")} options={TEFL_OPTIONS} onChange={(val) => set("tefl_status", val)} half />
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             <Field label="German level" value={v("german_level")} options={GERMAN_OPTIONS} onChange={(val) => set("german_level", val)} half />
             <div className="flex-1 flex items-end pb-1">
               <Checkbox label="Comfortable with professional German" checked={b("german_professional")} onChange={(val) => set("german_professional", val)} />
@@ -541,7 +541,7 @@ export function ProfileEditor({
               "iban", "bank_name", "tax_number", "vat_registered", "vat_number",
               "bahncard", "bahncard_expiry", "deutschlandticket",
             ])}>
-            <div className="flex gap-4">
+            <div className="flex flex-col md:flex-row gap-4">
               <Field label="IBAN" value={v("iban")} onChange={(val) => set("iban", val)} half />
               <Field label="Bank name" value={v("bank_name")} onChange={(val) => set("bank_name", val)} half />
             </div>
@@ -550,7 +550,7 @@ export function ProfileEditor({
             {b("vat_registered") && (
               <Field label="VAT Number (USt-IdNr)" value={v("vat_number")} onChange={(val) => set("vat_number", val)} />
             )}
-            <div className="flex gap-4">
+            <div className="flex flex-col md:flex-row gap-4">
               <Field label="BahnCard" value={v("bahncard")} options={BAHNCARD_OPTIONS} onChange={(val) => set("bahncard", val)} half />
               <Field label="BahnCard expiry" value={v("bahncard_expiry")} type="date" onChange={(val) => set("bahncard_expiry", val)} half />
             </div>
@@ -563,7 +563,7 @@ export function ProfileEditor({
       {tab === "programs" && (
         <Section title="Working with InterACT" saving={saving === "programs"} onSave={savePrograms}>
           <Field label="Homestay" value={String(data.homestay_willing ?? "")} options={HOMESTAY_OPTIONS} onChange={(val) => set("homestay_willing", val)} />
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             <Field label="Lifeguard cert" value={v("lifeguard_cert")} options={CERT_OPTIONS} onChange={(val) => set("lifeguard_cert", val)} half />
             <Field label="Driver's licence" value={v("drivers_licence")} options={CERT_OPTIONS} onChange={(val) => set("drivers_licence", val)} half />
           </div>
@@ -626,19 +626,19 @@ export function ProfileEditor({
             folder="school-photos"
             onUploaded={(url) => set("school_photo_url", url)}
           />
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             <Field label="Hometown" value={v("hometown_city")} onChange={(val) => set("hometown_city", val)} half />
             <Field label="Home country" value={v("hometown_country")} onChange={(val) => set("hometown_country", val)} half />
           </div>
           <Field label="When did you move to Germany, and why?" value={v("moved_to_germany")} onChange={(val) => set("moved_to_germany", val)} textarea />
           <Field label="What do you like about Germany?" value={v("likes_germany")} onChange={(val) => set("likes_germany", val)} />
           <Field label="Favourite vacation spot" value={v("vacation_spot")} onChange={(val) => set("vacation_spot", val)} />
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             <Field label="Something you're great at" value={v("great_at")} onChange={(val) => set("great_at", val)} half />
             <Field label="Something you're not great at" value={v("not_great_at")} onChange={(val) => set("not_great_at", val)} half />
           </div>
           <Field label="What kind of art do you make or enjoy?" value={v("art_type")} onChange={(val) => set("art_type", val)} />
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             <Field label="Superpower" value={v("superpower")} onChange={(val) => set("superpower", val)} half />
             <Field label="Comic book title" value={v("comic_title")} onChange={(val) => set("comic_title", val)} half />
           </div>

@@ -108,80 +108,130 @@ export function WorkOrderTable({ workOrders, projectMap = {} }: { workOrders: Wo
           <p className="text-zinc-500">No work orders found.</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
-                <th className="px-4 py-3 text-left font-medium text-zinc-500">Project</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-500">Program</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-500">School</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-500">Dates</th>
-                <th className="px-4 py-3 text-right font-medium text-zinc-500">Total</th>
-                <th className="px-4 py-3 text-center font-medium text-zinc-500">Status</th>
-                <th className="px-4 py-3 text-center font-medium text-zinc-500">Deadline</th>
-                <th className="px-4 py-3 text-right font-medium text-zinc-500">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-              {filtered.map((wo) => (
-                <tr key={wo.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                  <td className="px-4 py-3">
-                    <Link href={`/portal/work-orders/${wo.id}`} className="font-medium text-zinc-900 hover:underline dark:text-zinc-50">
-                      {wo.project_name}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{wo.program_type}</td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
-                    <div>{wo.school}</div>
-                    <div className="text-xs text-zinc-400">{wo.location}</div>
-                  </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
-                    <div>{formatDate(wo.start_date)} — {formatDate(wo.end_date)}</div>
-                    <div className="text-xs text-zinc-400">{wo.days} day{wo.days > 1 ? "s" : ""}</div>
-                  </td>
-                  <td className="px-4 py-3 text-right font-semibold text-zinc-900 dark:text-zinc-50">
+        <>
+          {/* Mobile card view */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {filtered.map((wo) => (
+              <div
+                key={wo.id}
+                className={`rounded-xl border bg-white p-4 dark:bg-zinc-900 ${
+                  wo.status === "sent"
+                    ? "border-amber-200 dark:border-amber-900/40"
+                    : "border-zinc-200 dark:border-zinc-800"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <Link href={`/portal/work-orders/${wo.id}`} className="font-semibold text-zinc-900 hover:underline dark:text-zinc-50">
+                    {wo.project_name}
+                  </Link>
+                  <span className={`shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[wo.status] || ""}`}>
+                    {statusLabels[wo.status] || wo.status}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                  {wo.school} &middot; {wo.program_type}
+                </p>
+                <p className="mt-1 text-xs text-zinc-400">
+                  {formatDate(wo.start_date)} — {formatDate(wo.end_date)} ({wo.days} day{wo.days > 1 ? "s" : ""})
+                </p>
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
                     {wo.total ? `€${Number(wo.total).toFixed(2)}` : "—"}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[wo.status] || ""}`}>
-                      {statusLabels[wo.status] || wo.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
+                  </span>
+                  <div className="flex items-center gap-2">
                     <DeadlineBadge signBy={wo.sign_by} status={wo.status} />
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-2">
-                      <Link
-                        href={`/portal/work-orders/${wo.id}`}
-                        className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                      >
-                        View
-                      </Link>
-                      {wo.status === "signed" && wo.pdf_url && (
-                        <a
-                          href={wo.pdf_url}
-                          target="_blank"
-                          className="rounded-lg bg-green-600 px-3 py-1 text-xs font-medium text-white hover:bg-green-700"
-                        >
-                          PDF
-                        </a>
-                      )}
-                      {wo.status === "signed" && projectMap[wo.id] && (
-                        <Link
-                          href={`/portal/projects/${projectMap[wo.id]}`}
-                          className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700"
-                        >
-                          Project
-                        </Link>
-                      )}
-                    </div>
-                  </td>
+                    <Link
+                      href={`/portal/work-orders/${wo.id}`}
+                      className={`rounded-lg px-4 py-1.5 text-xs font-medium ${
+                        wo.status === "sent"
+                          ? "bg-amber-500 text-white hover:bg-amber-600"
+                          : "border border-zinc-300 text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      }`}
+                    >
+                      {wo.status === "sent" ? "Sign" : "View"}
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop table view */}
+          <div className="hidden md:block overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
+                  <th className="px-4 py-3 text-left font-medium text-zinc-500">Project</th>
+                  <th className="px-4 py-3 text-left font-medium text-zinc-500">Program</th>
+                  <th className="px-4 py-3 text-left font-medium text-zinc-500">School</th>
+                  <th className="px-4 py-3 text-left font-medium text-zinc-500">Dates</th>
+                  <th className="px-4 py-3 text-right font-medium text-zinc-500">Total</th>
+                  <th className="px-4 py-3 text-center font-medium text-zinc-500">Status</th>
+                  <th className="px-4 py-3 text-center font-medium text-zinc-500">Deadline</th>
+                  <th className="px-4 py-3 text-right font-medium text-zinc-500">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                {filtered.map((wo) => (
+                  <tr key={wo.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                    <td className="px-4 py-3">
+                      <Link href={`/portal/work-orders/${wo.id}`} className="font-medium text-zinc-900 hover:underline dark:text-zinc-50">
+                        {wo.project_name}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{wo.program_type}</td>
+                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
+                      <div>{wo.school}</div>
+                      <div className="text-xs text-zinc-400">{wo.location}</div>
+                    </td>
+                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+                      <div>{formatDate(wo.start_date)} — {formatDate(wo.end_date)}</div>
+                      <div className="text-xs text-zinc-400">{wo.days} day{wo.days > 1 ? "s" : ""}</div>
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold text-zinc-900 dark:text-zinc-50">
+                      {wo.total ? `€${Number(wo.total).toFixed(2)}` : "—"}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[wo.status] || ""}`}>
+                        {statusLabels[wo.status] || wo.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <DeadlineBadge signBy={wo.sign_by} status={wo.status} />
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Link
+                          href={`/portal/work-orders/${wo.id}`}
+                          className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                        >
+                          View
+                        </Link>
+                        {wo.status === "signed" && wo.pdf_url && (
+                          <a
+                            href={wo.pdf_url}
+                            target="_blank"
+                            className="rounded-lg bg-green-600 px-3 py-1 text-xs font-medium text-white hover:bg-green-700"
+                          >
+                            PDF
+                          </a>
+                        )}
+                        {wo.status === "signed" && projectMap[wo.id] && (
+                          <Link
+                            href={`/portal/projects/${projectMap[wo.id]}`}
+                            className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700"
+                          >
+                            Project
+                          </Link>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );
