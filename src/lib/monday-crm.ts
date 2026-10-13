@@ -342,6 +342,42 @@ export async function handleOppChanged(
     timestamp: now,
   });
 
+  // Check if opp dates changed → update linked portal project
+  if (columnId.includes("date") || columnId.includes("project_start") || columnId.includes("project_end") || columnId.includes("timeline")) {
+    // Find portal project linked to this opp
+    const oppItem = await fetchItem(oppItemId);
+    if (oppItem) {
+      const projectIds = getConnectedIds(oppItem, "opp_project");
+      for (const projId of projectIds) {
+        const { data: portalProject } = await adminClient
+          .from("projects")
+          .select("id")
+          .eq("monday_item_id", projId)
+          .single();
+
+        if (portalProject) {
+          const startDate = getCol(oppItem, "opp_project_start");
+          const endDate = getCol(oppItem, "opp_project_end");
+          if (startDate || endDate) {
+            await adminClient.from("projects").update({
+              start_date: startDate || null,
+              end_date: endDate || null,
+              updated_at: new Date().toISOString(),
+            }).eq("id", portalProject.id);
+
+            actions.push({
+              action: "portal_project_dates_synced",
+              source_board: "opportunities",
+              source_item: oppItemId,
+              details: `Portal project ${portalProject.id} dates updated from Opp change`,
+              timestamp: now,
+            });
+          }
+        }
+      }
+    }
+  }
+
   return actions;
 }
 
@@ -460,6 +496,45 @@ export async function handleProjectChanged(
     details: `Project column ${columnId} changed → Church updated in portal`,
     timestamp: now,
   });
+
+  // Also sync to portal projects table (if a matching project exists)
+  const { data: portalProject } = await adminClient
+    .from("projects")
+    .select("id")
+    .eq("monday_item_id", projectItemId)
+    .single();
+
+  if (portalProject) {
+    const timelineVal = getColValue(project, "project_timeline") as { from?: string; to?: string } | null;
+
+    await adminClient
+      .from("projects")
+      .update({
+        name: project.name,
+        school: getCol(project, "proj_school_name") || project.name,
+        program_type: getCol(project, "proj_program_type") || null,
+        days: parseInt(getCol(project, "proj_num_days")) || null,
+        start_date: timelineVal?.from || null,
+        end_date: timelineVal?.to || null,
+        location: getCol(project, "proj_state") || null,
+        school_address: [getCol(project, "proj_street"), getCol(project, "proj_postcode"), getCol(project, "proj_city")].filter(Boolean).join(", ") || null,
+        teacher_email: getCol(project, "proj_email") || null,
+        teacher_name: getCol(project, "proj_primary_contact") || null,
+        teacher_phone: getCol(project, "proj_phone") || null,
+        price_pp: parseFloat(getCol(project, "proj_price_pp")) || null,
+        tarif: getCol(project, "proj_tarif") || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", portalProject.id);
+
+    actions.push({
+      action: "portal_project_synced",
+      source_board: "projects",
+      source_item: projectItemId,
+      details: `Portal project ${portalProject.id} synced with Monday changes`,
+      timestamp: now,
+    });
+  }
 
   return actions;
 }
