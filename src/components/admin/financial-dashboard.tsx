@@ -18,6 +18,16 @@ interface Invoice {
   uploaded_pdf_url: string | null;
   pdf_url: string | null;
   created_at: string;
+  ai_check_passed: boolean | null;
+  ai_check_result: {
+    passed: boolean;
+    issues: string[];
+    warnings: string[];
+    extracted?: Record<string, unknown>;
+  } | null;
+  work_order_id: string | null;
+  datev_document_id: string | null;
+  datev_sent_at: string | null;
   profiles: { id: string; first_name: string | null; last_name: string | null; email: string; photo_url: string | null } | null;
 }
 
@@ -205,6 +215,7 @@ function SummaryCard({ label, value, count, color, onClick }: {
 function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
   const router = useRouter();
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   async function updateStatus(id: string, status: string) {
     setLoadingId(id);
@@ -236,6 +247,7 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
             <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Source</th>
             <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Date</th>
             <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Status</th>
+            <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">DATEV</th>
             <th className="px-5 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Actions</th>
           </tr>
         </thead>
@@ -245,6 +257,8 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
             const taName = ta?.first_name && ta?.last_name ? `${ta.first_name} ${ta.last_name}` : ta?.email || "\u2014";
             const initials = [ta?.first_name?.[0], ta?.last_name?.[0]].filter(Boolean).join("").toUpperCase() || "?";
             const pdfUrl = inv.uploaded_pdf_url || inv.pdf_url;
+            const isExpanded = expandedId === inv.id;
+            const hasAiDetails = inv.ai_check_result !== null && inv.ai_check_result !== undefined;
 
             return (
               <tr key={inv.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20">
@@ -253,11 +267,44 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
                     <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
                       {inv.invoice_number || inv.id.slice(0, 8)}
                     </span>
+                    {/* AI Check badge */}
+                    {inv.ai_check_passed === true && (
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-green-50 px-1.5 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/20 dark:text-green-400">
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                        AI Passed
+                      </span>
+                    )}
+                    {inv.ai_check_passed === false && (
+                      <button
+                        onClick={() => setExpandedId(isExpanded ? null : inv.id)}
+                        className="inline-flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400"
+                      >
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        AI Failed
+                      </button>
+                    )}
+                    {inv.ai_check_passed === null && (
+                      <span className="inline-flex items-center rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-400 dark:bg-zinc-800">
+                        No check
+                      </span>
+                    )}
                     {pdfUrl && (
                       <a href={pdfUrl} target="_blank" rel="noopener noreferrer"
                         className="rounded-md bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800">
                         PDF
                       </a>
+                    )}
+                    {hasAiDetails && (
+                      <button
+                        onClick={() => setExpandedId(isExpanded ? null : inv.id)}
+                        className="rounded-md bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800"
+                      >
+                        {isExpanded ? "Hide" : "Details"}
+                      </button>
                     )}
                   </div>
                 </td>
@@ -293,6 +340,30 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
                     {inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}
                   </span>
                 </td>
+                {/* DATEV status column */}
+                <td className="px-5 py-3">
+                  {inv.datev_sent_at ? (
+                    <div className="flex flex-col gap-0.5">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-600 dark:text-green-400">
+                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                        {new Date(inv.datev_sent_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                      </span>
+                      {inv.datev_document_id && (
+                        <span className="inline-flex items-center rounded bg-zinc-100 px-1.5 py-0.5 text-[9px] font-mono text-zinc-500 dark:bg-zinc-800">
+                          {inv.datev_document_id}
+                        </span>
+                      )}
+                    </div>
+                  ) : inv.status === "submitted" ? (
+                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:bg-amber-900/20 dark:text-amber-400">
+                      Pending approval
+                    </span>
+                  ) : (
+                    <span className="text-zinc-300 dark:text-zinc-600">&mdash;</span>
+                  )}
+                </td>
                 <td className="px-5 py-3 text-right">
                   {loadingId === inv.id ? (
                     <span className="text-xs text-zinc-400">...</span>
@@ -301,8 +372,12 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
                       {inv.status === "submitted" && (
                         <>
                           <button onClick={() => updateStatus(inv.id, "approved")}
-                            className="rounded-lg bg-green-600 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-green-700">
-                            Approve
+                            className={`rounded-lg px-2.5 py-1 text-[11px] font-medium text-white ${
+                              inv.ai_check_passed === false
+                                ? "bg-amber-500 hover:bg-amber-600"
+                                : "bg-green-600 hover:bg-green-700"
+                            }`}>
+                            {inv.ai_check_passed === false ? "Approve (AI flagged)" : "Approve"}
                           </button>
                           <button onClick={() => updateStatus(inv.id, "rejected")}
                             className="rounded-lg border border-red-200 px-2.5 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50 dark:border-red-800">
@@ -324,6 +399,53 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
           })}
         </tbody>
       </table>
+
+      {/* Expanded AI details rows */}
+      {invoices.map((inv) => {
+        if (expandedId !== inv.id || !inv.ai_check_result) return null;
+        const result = inv.ai_check_result;
+        return (
+          <div key={`ai-${inv.id}`} className="border-t border-zinc-100 bg-zinc-50/50 px-5 py-4 dark:border-zinc-800 dark:bg-zinc-900/50">
+            {inv.ai_check_passed === false && (
+              <div className="mb-3 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] font-medium text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+                <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+                AI flagged issues -- review before approving
+              </div>
+            )}
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">AI Validation Details</p>
+            {result.issues && result.issues.length > 0 && (
+              <div className="mb-2">
+                <p className="text-[11px] font-semibold text-red-600 dark:text-red-400 mb-1">Issues</p>
+                <ul className="list-disc list-inside space-y-0.5">
+                  {result.issues.map((issue, i) => (
+                    <li key={i} className="text-[12px] text-red-600 dark:text-red-400">{issue}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {result.warnings && result.warnings.length > 0 && (
+              <div className="mb-2">
+                <p className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 mb-1">Warnings</p>
+                <ul className="list-disc list-inside space-y-0.5">
+                  {result.warnings.map((warning, i) => (
+                    <li key={i} className="text-[12px] text-amber-600 dark:text-amber-400">{warning}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {result.passed && (!result.issues || result.issues.length === 0) && (
+              <p className="inline-flex items-center gap-1 text-[12px] font-medium text-green-600 dark:text-green-400">
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+                All checks passed
+              </p>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
