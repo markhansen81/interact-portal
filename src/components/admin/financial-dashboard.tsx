@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { AdminUploadForm } from "./admin-upload-form";
 
 interface Invoice {
   id: string;
@@ -47,7 +48,26 @@ interface Expense {
   expense_items: ExpenseItem[];
 }
 
-type Tab = "all" | "pending" | "approved" | "paid" | "rejected" | "expenses";
+interface AdminUpload {
+  id: string;
+  filename: string;
+  document_type: string;
+  description: string | null;
+  supplier: string | null;
+  amount: number | null;
+  invoice_number: string | null;
+  invoice_date: string | null;
+  due_date: string | null;
+  pdf_url: string | null;
+  status: string;
+  datev_document_id: string | null;
+  datev_sent_at: string | null;
+  booked_at: string | null;
+  paid_at: string | null;
+  created_at: string;
+}
+
+type Tab = "all" | "pending" | "approved" | "paid" | "rejected" | "expenses" | "admin-uploads";
 type ExpenseFilter = "all" | "flagged";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -58,7 +78,7 @@ const STATUS_STYLES: Record<string, string> = {
   rejected: "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400",
 };
 
-export function FinancialDashboard({ invoices, expenses }: { invoices: Invoice[]; expenses: Expense[] }) {
+export function FinancialDashboard({ invoices, expenses, adminUploads }: { invoices: Invoice[]; expenses: Expense[]; adminUploads: AdminUpload[] }) {
   const [tab, setTab] = useState<Tab>("all");
   const [expenseFilter, setExpenseFilter] = useState<ExpenseFilter>("all");
 
@@ -75,6 +95,10 @@ export function FinancialDashboard({ invoices, expenses }: { invoices: Invoice[]
   const totalPaid = paid.reduce((s, i) => s + Number(i.total), 0);
   const totalFlagged = flaggedExpenses.reduce((s, e) => s + Number(e.total), 0);
 
+  const adminUploadsOutstanding = adminUploads
+    .filter((u) => u.status !== "paid")
+    .reduce((s, u) => s + Number(u.amount || 0), 0);
+
   const filteredInvoices = tab === "all" ? invoices
     : tab === "pending" ? pending
     : tab === "approved" ? approved
@@ -85,7 +109,7 @@ export function FinancialDashboard({ invoices, expenses }: { invoices: Invoice[]
   return (
     <div className="space-y-6">
       {/* Summary cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-6">
         <SummaryCard label="Pending Review" value={totalPending} count={pending.length} color="amber" onClick={() => setTab("pending")} />
         <SummaryCard label="Approved" value={totalApproved} count={approved.length} color="blue" onClick={() => setTab("approved")} />
         <SummaryCard label="Paid" value={totalPaid} count={paid.length} color="green" onClick={() => setTab("paid")} />
@@ -103,6 +127,13 @@ export function FinancialDashboard({ invoices, expenses }: { invoices: Invoice[]
           color="green"
           onClick={() => { setTab("expenses"); setExpenseFilter("all"); }}
         />
+        <SummaryCard
+          label="Admin Uploads"
+          value={adminUploadsOutstanding}
+          count={adminUploads.length}
+          color="purple"
+          onClick={() => setTab("admin-uploads")}
+        />
       </div>
 
       {/* Tabs */}
@@ -114,6 +145,7 @@ export function FinancialDashboard({ invoices, expenses }: { invoices: Invoice[]
           { id: "paid", label: `Paid (${paid.length})` },
           { id: "rejected", label: `Rejected (${rejected.length})` },
           { id: "expenses", label: `Expenses (${expenses.length})` },
+          { id: "admin-uploads", label: `Admin Uploads (${adminUploads.length})` },
         ] as { id: Tab; label: string }[]).map((t) => (
           <button
             key={t.id}
@@ -130,7 +162,9 @@ export function FinancialDashboard({ invoices, expenses }: { invoices: Invoice[]
       </div>
 
       {/* Content */}
-      {tab === "expenses" ? (
+      {tab === "admin-uploads" ? (
+        <AdminUploadForm />
+      ) : tab === "expenses" ? (
         <ExpensesTable expenses={expenses} defaultFilter={expenseFilter} />
       ) : (
         <InvoicesTable invoices={filteredInvoices} />
