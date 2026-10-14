@@ -24,6 +24,7 @@ const navItems = [
 
 const superAdminItems = [
   { href: "/admin/datev-settings", label: "DATEV Settings", icon: "settings" },
+  { href: "/admin/system-health", label: "System Health", icon: "shield" },
 ];
 
 const iconPaths: Record<string, React.ReactNode> = {
