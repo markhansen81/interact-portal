@@ -45,9 +45,31 @@ export async function POST(request: Request) {
     );
   }
 
+  // File size validation (max 20MB)
+  if (file.size > 20 * 1024 * 1024) {
+    return NextResponse.json(
+      { error: "File too large (max 20MB)" },
+      { status: 400 }
+    );
+  }
+
   if (!supplier.trim()) {
     return NextResponse.json(
       { error: "Supplier is required" },
+      { status: 400 }
+    );
+  }
+
+  if (supplier.length > 200) {
+    return NextResponse.json(
+      { error: "Supplier name too long (max 200 characters)" },
+      { status: 400 }
+    );
+  }
+
+  if (description.length > 1000) {
+    return NextResponse.json(
+      { error: "Description too long (max 1000 characters)" },
       { status: 400 }
     );
   }

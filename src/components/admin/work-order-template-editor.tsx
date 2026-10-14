@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 import "react-quill-new/dist/quill.snow.css";
+import { sanitizeHTML } from "@/lib/sanitize";
 
 interface Template {
   id: string;
@@ -212,7 +213,7 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
           <div className="wo-page mx-auto ql-snow" style={{ width: 794, background: "white", borderRadius: 8, boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "1px solid #e5e7eb" }}>
             <PageHeader logoUrl={headerLogoUrl} onUpload={() => handleImageUpload("header")} projectId={SAMPLE_DATA.MondayID} />
             <div className="ql-editor" style={{ padding: "0 50px", fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.7, overflowWrap: "break-word" }}
-              dangerouslySetInnerHTML={{ __html: fillVariables(html) }} />
+              dangerouslySetInnerHTML={{ __html: sanitizeHTML(fillVariables(html)) }} />
             <SignatureAreaPreview taName={SAMPLE_DATA.TeachingArtist} date={SAMPLE_DATA.CreatedDate} stampUrl={stampUrl} footerLogoUrl={footerLogoUrl} onUpload={handleImageUpload} />
           </div>
         ) : (

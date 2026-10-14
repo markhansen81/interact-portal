@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 async function getAdminUser() {
   const supabase = await createClient();
@@ -26,6 +27,10 @@ export async function POST(request: Request) {
   if (!profile) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // Rate limit: 10 requests per minute per user (AI API costs)
+  const { ok } = rateLimit(`extract-invoice:${profile.id}`, 10, 60_000);
+  if (!ok) return rateLimitResponse();
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {

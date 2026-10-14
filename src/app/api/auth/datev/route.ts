@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import crypto from "crypto";
 import { createClient } from "@/lib/supabase/server";
 import { getDatevAuthUrl } from "@/lib/datev-api";
+import { rateLimit, getClientIP, rateLimitResponse } from "@/lib/rate-limit";
 
 /**
  * GET /api/auth/datev
@@ -11,7 +12,11 @@ import { getDatevAuthUrl } from "@/lib/datev-api";
  * Stores the PKCE code_verifier in an HTTP-only cookie so the callback
  * route can retrieve it.
  */
-export async function GET() {
+export async function GET(request: Request) {
+  // Rate limit: 3 requests per minute per IP
+  const ip = getClientIP(request);
+  const { ok } = rateLimit(`datev-auth:${ip}`, 3, 60_000);
+  if (!ok) return rateLimitResponse();
   // Verify admin auth
   const supabase = await createClient();
   const {

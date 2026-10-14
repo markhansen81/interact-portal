@@ -5,11 +5,35 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyNewLead } from "@/lib/slack";
 import { addToMailchimp } from "@/lib/mailchimp";
 import { sendEmail, newLeadEmail } from "@/lib/email";
+import { rateLimit, getClientIP, rateLimitResponse } from "@/lib/rate-limit";
 
 const LEADS_BOARD = "6976340556";
 
 export async function POST(request: Request) {
+  // Rate limit: 5 requests per minute per IP
+  const ip = getClientIP(request);
+  const { ok } = rateLimit(`lead-form:${ip}`, 5, 60_000);
+  if (!ok) return rateLimitResponse();
+
   const data = await request.json();
+
+  // Input validation
+  if (!data.first_name || typeof data.first_name !== "string" || data.first_name.length > 100) {
+    return NextResponse.json({ error: "Invalid first name" }, { status: 400 });
+  }
+  if (!data.last_name || typeof data.last_name !== "string" || data.last_name.length > 100) {
+    return NextResponse.json({ error: "Invalid last name" }, { status: 400 });
+  }
+  if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+    return NextResponse.json({ error: "Invalid email" }, { status: 400 });
+  }
+  if (data.phone && data.phone.length > 30) {
+    return NextResponse.json({ error: "Invalid phone" }, { status: 400 });
+  }
+  if (data.message && data.message.length > 2000) {
+    return NextResponse.json({ error: "Message too long" }, { status: 400 });
+  }
+
   const adminClient = createAdminClient();
 
   // 1. Save to Supabase FIRST — this is our safety net
