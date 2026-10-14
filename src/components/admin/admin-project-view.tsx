@@ -23,6 +23,9 @@ interface Project {
   teacher_email: string | null;
   teacher_name: string | null;
   teacher_invited_at: string | null;
+  teacher_token: string | null;
+  info_pack_email_sent_at: string | null;
+  info_pack_submitted_at: string | null;
   price_pp: number | null;
   deposit_enabled: boolean | null;
   deposit_type: "percentage" | "fixed" | null;
@@ -200,6 +203,12 @@ export function AdminProjectView({
   const [teacherInvitedAt, setTeacherInvitedAt] = useState(project.teacher_invited_at);
   const [inviteError, setInviteError] = useState("");
 
+  // Info pack email state
+  const [sendingInfoPack, setSendingInfoPack] = useState(false);
+  const [infoPackSentAt, setInfoPackSentAt] = useState(project.info_pack_email_sent_at);
+  const [infoPackError, setInfoPackError] = useState("");
+  const [showInfoPackPreview, setShowInfoPackPreview] = useState(false);
+
   const completedCount = tasks.filter((t) => t.completed).length;
   const totalCount = tasks.length;
   const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
@@ -240,6 +249,28 @@ export function AdminProjectView({
       setInviteError("Failed to send invite");
     } finally {
       setInviting(false);
+    }
+  }
+
+  async function sendInfoPackEmail() {
+    setSendingInfoPack(true);
+    setInfoPackError("");
+    try {
+      const res = await fetch(`/api/admin/projects/${project.id}/send-info-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (res.ok) {
+        setInfoPackSentAt(new Date().toISOString());
+        setShowInfoPackPreview(false);
+      } else {
+        const data = await res.json();
+        setInfoPackError(data.error || "Failed to send info pack email");
+      }
+    } catch {
+      setInfoPackError("Failed to send info pack email");
+    } finally {
+      setSendingInfoPack(false);
     }
   }
 
@@ -661,6 +692,100 @@ export function AdminProjectView({
           )}
           {inviteError && (
             <p className="text-xs text-red-600 dark:text-red-400">{inviteError}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Info Pack Email section */}
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Info Pack Email</h2>
+          <div className="flex items-center gap-2">
+            {infoPackSentAt && (
+              <span className="text-xs text-green-600 dark:text-green-400">
+                Sent on {new Date(infoPackSentAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+              </span>
+            )}
+            {project.info_pack_submitted_at && (
+              <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                Info form submitted {new Date(project.info_pack_submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+              </span>
+            )}
+            {!infoPackSentAt && !project.info_pack_submitted_at && (
+              <span className="text-xs text-zinc-400">Not sent</span>
+            )}
+          </div>
+        </div>
+
+        <p className="mb-4 text-sm text-zinc-500 dark:text-zinc-400">
+          Send Nicole&apos;s customised welcome email to the teacher with the info form link.
+          {!project.teacher_token && (
+            <span className="ml-1 text-amber-600 dark:text-amber-400">Teacher must be invited first (to generate token).</span>
+          )}
+        </p>
+
+        {/* Preview toggle */}
+        <div className="space-y-3">
+          <button
+            onClick={() => setShowInfoPackPreview(!showInfoPackPreview)}
+            className="text-sm font-medium text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 underline underline-offset-2"
+          >
+            {showInfoPackPreview ? "Hide email preview" : "Show email preview"}
+          </button>
+
+          {showInfoPackPreview && (
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50 text-sm text-zinc-700 dark:text-zinc-300 space-y-3">
+              <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Subject</p>
+              <p className="font-medium text-zinc-900 dark:text-zinc-50">
+                InterACT English {project.program_type || "Englischprojekt"}
+                {project.start_date && project.end_date && ` // ${formatDate(project.start_date)} - ${formatDate(project.end_date)}`}
+                {project.school && ` // ${project.school}`}
+              </p>
+              <hr className="border-zinc-200 dark:border-zinc-700" />
+              <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">To</p>
+              <p>{project.teacher_email || "—"}</p>
+              <hr className="border-zinc-200 dark:border-zinc-700" />
+              <div className="space-y-2 leading-relaxed">
+                <p>Guten Tag {project.teacher_name || "Lehrkraft"},</p>
+                <p>Wir freuen uns sehr auf euer anstehendes Projekt <strong>{project.program_type || "Englischprojekt"}</strong> mit euch!</p>
+                <p>Im ersten Schritt ben&ouml;tigen wir einige Informationen. Bitte f&uuml;llt dazu das unten verlinkte Info Form aus. Damit dieser Schritt ohne Herausforderungen klappt bitte ich euch vorab zu pr&uuml;fen ob ihr die folgenden Informationen zur Hand habt:</p>
+                <ul className="list-disc pl-6 space-y-1">
+                  <li>Datum eures Projektes</li>
+                  <li>die Klassenstufen und Gruppengr&ouml;&szlig;en der Teilnehmer*innen</li>
+                  <li>die Stundenzeiten der Schule oder die f&uuml;r dieses Projekt gew&auml;hlten Stundenzeiten</li>
+                  {project.program_type?.toLowerCase().includes("native speaker") && (
+                    <li>die Namen der drei Module, f&uuml;r die ihr euch entschieden habt</li>
+                  )}
+                  {project.program_type?.toLowerCase().includes("art in action") && (
+                    <li>ob ihr euch f&uuml;r die analoge oder digitale Variante entschieden habt</li>
+                  )}
+                </ul>
+                <p className="text-center">
+                  <span className="inline-block rounded-lg bg-teal-600 px-6 py-2 text-sm font-semibold text-white">
+                    Info Form ausf&uuml;llen
+                  </span>
+                </p>
+                <p>Ihr werdet in eurem Projekt von Nicole begleitet, unsere Projektkoordinatorin f&uuml;r innerschulische Projekte...</p>
+                <p className="text-zinc-400 text-xs italic">[Full email will be sent with signature and footer]</p>
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <button
+              onClick={sendInfoPackEmail}
+              disabled={sendingInfoPack || !project.teacher_email || !project.teacher_token}
+              className="inline-flex items-center gap-2 rounded-lg bg-slate-700 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 disabled:opacity-50 dark:bg-slate-600 dark:hover:bg-slate-500"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+              </svg>
+              {sendingInfoPack ? "Sending..." : infoPackSentAt ? "Resend Info Pack Email" : "Send Info Pack Email"}
+            </button>
+          </div>
+
+          {infoPackError && (
+            <p className="text-xs text-red-600 dark:text-red-400">{infoPackError}</p>
           )}
         </div>
       </div>
