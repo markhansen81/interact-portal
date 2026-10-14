@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateInvoicePDF } from "@/lib/invoice-pdf";
+import { getSecureUrl } from "@/lib/storage";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -152,16 +153,13 @@ export async function POST(request: Request) {
           });
 
         if (!uploadError) {
-          const {
-            data: { publicUrl },
-          } = adminClient.storage.from("documents").getPublicUrl(storagePath);
+          // Use signed URL instead of permanent public URL (contains IBAN/tax data)
+          generatedPdfUrl = await getSecureUrl("documents", storagePath);
 
-          generatedPdfUrl = publicUrl;
-
-          // Update invoice record with PDF URL
+          // Update invoice record with signed URL (storage path derivable: invoices/<id>.pdf)
           await adminClient
             .from("invoices")
-            .update({ pdf_url: publicUrl })
+            .update({ pdf_url: generatedPdfUrl })
             .eq("id", invoice.id);
         } else {
           console.error("[INVOICE PDF] Upload failed:", uploadError.message);

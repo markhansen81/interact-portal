@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { generateExpensePDF } from "@/lib/expense-pdf";
 import { sendToDATEV } from "@/lib/datev";
 import { sendSlackAlert } from "@/lib/slack";
+import { getSecureUrl } from "@/lib/storage";
 
 interface ExpenseItem {
   description: string;
@@ -25,6 +26,34 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
+
+  // Input validation
+  if (!Array.isArray(body.items) || body.items.length === 0) {
+    return NextResponse.json({ error: "At least one expense item is required" }, { status: 400 });
+  }
+  if (body.items.length > 50) {
+    return NextResponse.json({ error: "Too many items (max 50)" }, { status: 400 });
+  }
+  for (const item of body.items as ExpenseItem[]) {
+    if (typeof item.amount !== "number" || item.amount <= 0) {
+      return NextResponse.json({ error: "Each item must have a positive amount" }, { status: 400 });
+    }
+    if (item.amount > 10_000) {
+      return NextResponse.json({ error: "Item amount exceeds maximum (10,000)" }, { status: 400 });
+    }
+    if (!item.description || typeof item.description !== "string" || item.description.trim().length === 0) {
+      return NextResponse.json({ error: "Each item must have a description" }, { status: 400 });
+    }
+    if (item.description.length > 500) {
+      return NextResponse.json({ error: "Item description too long (max 500 characters)" }, { status: 400 });
+    }
+    if (!item.category || typeof item.category !== "string") {
+      return NextResponse.json({ error: "Each item must have a category" }, { status: 400 });
+    }
+  }
+  if (typeof body.total !== "number" || body.total <= 0) {
+    return NextResponse.json({ error: "Total must be a positive number" }, { status: 400 });
+  }
 
   // Create expense claim (work_order_id is now optional at claim level)
   const { data: claim, error } = await supabase
@@ -157,14 +186,12 @@ export async function POST(request: Request) {
     );
   }
 
-  // 6. Get public URL and update claim
-  const {
-    data: { publicUrl },
-  } = adminClient.storage.from("documents").getPublicUrl(storagePath);
+  // 6. Get secure signed URL instead of permanent public URL (PDFs contain IBAN/tax data)
+  const secureUrl = await getSecureUrl("documents", storagePath);
 
   await supabase
     .from("expense_claims")
-    .update({ pdf_url: publicUrl, beleg_number: belegNumber })
+    .update({ pdf_url: secureUrl, beleg_number: belegNumber })
     .eq("id", claim.id);
 
   // 7. Check if any single item exceeds €100

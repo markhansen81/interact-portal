@@ -11,6 +11,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ challenge: body.challenge });
   }
 
+  // Verify the request comes from Monday
+  const authToken = request.headers.get("authorization");
+  const expectedToken = process.env.MONDAY_WEBHOOK_SECRET;
+  if (expectedToken && authToken !== expectedToken) {
+    console.error("[WEBHOOK] Unauthorized request - invalid token");
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const event = body.event;
   if (!event) {
     return NextResponse.json({ error: "No event" }, { status: 400 });

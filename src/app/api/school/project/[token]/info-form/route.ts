@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { rateLimit, getClientIP, rateLimitResponse } from "@/lib/rate-limit";
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ token: string }> }
 ) {
+  // Rate limit: 3 requests per minute per IP
+  const ip = getClientIP(request);
+  const { ok } = rateLimit(`info-form:${ip}`, 3, 60_000);
+  if (!ok) return rateLimitResponse();
+
   const { token } = await params;
   const adminClient = createAdminClient();
 

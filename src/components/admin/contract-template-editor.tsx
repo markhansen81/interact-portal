@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 import "react-quill-new/dist/quill.snow.css";
+import { sanitizeHTML } from "@/lib/sanitize";
 
 interface Template {
   id: string;
@@ -172,7 +173,7 @@ export function ContractTemplateEditor({ templates }: { templates: Template[] })
             </div>
             {template && (
               <div className="border-t border-zinc-100 px-6 py-4 dark:border-zinc-800">
-                <div className="max-h-24 overflow-hidden text-xs text-zinc-500 leading-relaxed" dangerouslySetInnerHTML={{ __html: template.body.substring(0, 400) + "..." }} />
+                <div className="max-h-24 overflow-hidden text-xs text-zinc-500 leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHTML(template.body.substring(0, 400) + "...") }} />
               </div>
             )}
           </div>
@@ -318,7 +319,7 @@ function TemplateEditorFull({ type, typeLabel, template, onClose }: {
             {showPreview ? (
               <div className="ql-snow">
                 <div className="ql-editor" style={{ padding: "60px 60px", fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.8 }}
-                  dangerouslySetInnerHTML={{ __html: fillVariables(html) }} />
+                  dangerouslySetInnerHTML={{ __html: sanitizeHTML(fillVariables(html)) }} />
               </div>
             ) : (
               <div className="contract-editor">
