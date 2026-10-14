@@ -1,3 +1,81 @@
+/* ---------------------------------------------------------------------------
+ * Generic alert system (uses SLACK_ALERTS_WEBHOOK_URL)
+ * --------------------------------------------------------------------------- */
+
+const SLACK_ALERTS_WEBHOOK = process.env.SLACK_ALERTS_WEBHOOK_URL;
+
+interface SlackAlert {
+  type: "critical" | "warning" | "info" | "success";
+  title: string;
+  message: string;
+  fields?: Array<{ label: string; value: string }>;
+}
+
+const ALERT_COLORS: Record<SlackAlert["type"], string> = {
+  critical: "#dc2626",
+  warning: "#d97706",
+  info: "#2563eb",
+  success: "#16a34a",
+};
+
+const ALERT_EMOJI: Record<SlackAlert["type"], string> = {
+  critical: ":rotating_light:",
+  warning: ":warning:",
+  info: ":information_source:",
+  success: ":white_check_mark:",
+};
+
+export async function sendSlackAlert(alert: SlackAlert): Promise<void> {
+  if (!SLACK_ALERTS_WEBHOOK) {
+    console.log(`[Slack] No alerts webhook configured — skipping: ${alert.title}`);
+    return;
+  }
+
+  const fields = (alert.fields ?? []).map((f) => ({
+    title: f.label,
+    value: f.value,
+    short: true,
+  }));
+
+  const payload = {
+    attachments: [
+      {
+        color: ALERT_COLORS[alert.type],
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `${ALERT_EMOJI[alert.type]} *${alert.title}*\n${alert.message}`,
+            },
+          },
+        ],
+        fields: fields.length > 0 ? fields : undefined,
+        footer: "InterACT Portal Monitoring",
+        ts: Math.floor(Date.now() / 1000),
+      },
+    ],
+  };
+
+  try {
+    const res = await fetch(SLACK_ALERTS_WEBHOOK, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      console.error(`[Slack] Alerts webhook returned ${res.status}: ${await res.text()}`);
+    }
+  } catch (err) {
+    console.error("[Slack] Failed to send alert:", err);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Low-level webhook sender (for domain-specific webhooks)
+ * --------------------------------------------------------------------------- */
+
 export async function sendSlackMessage(webhookUrl: string, message: {
   text: string;
   blocks?: Array<Record<string, unknown>>;

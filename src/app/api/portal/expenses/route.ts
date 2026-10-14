@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateExpensePDF } from "@/lib/expense-pdf";
 import { sendToDATEV } from "@/lib/datev";
+import { sendSlackAlert } from "@/lib/slack";
 
 interface ExpenseItem {
   description: string;
@@ -180,6 +181,16 @@ export async function POST(request: Request) {
         review_reason: "Item over €100",
       })
       .eq("id", claim.id);
+
+    await sendSlackAlert({
+      type: "warning",
+      title: "Expense flagged for review",
+      message: `Expense ${belegNumber} from ${profile.first_name} ${profile.last_name} has item(s) over EUR100`,
+      fields: [
+        { label: "Total", value: `EUR${Number(body.total).toFixed(2)}` },
+        { label: "TA", value: `${profile.first_name} ${profile.last_name}` },
+      ],
+    }).catch(() => {});
   } else {
     // Auto-send to DATEV (API first, email fallback)
     const taName = `${profile.first_name || ""} ${profile.last_name || ""}`.trim();
@@ -205,6 +216,15 @@ export async function POST(request: Request) {
       console.log(`[DATEV] Expense ${belegNumber} sent via ${datevResult.method}`);
     } else {
       console.error(`[DATEV] Failed to send expense ${belegNumber}:`, datevResult.error);
+      await sendSlackAlert({
+        type: "critical",
+        title: `DATEV upload failed for expense ${belegNumber}`,
+        message: `Expense from ${profile.first_name} ${profile.last_name} could not be sent to DATEV`,
+        fields: [
+          { label: "Beleg", value: belegNumber },
+          { label: "Error", value: String(datevResult.error || "Unknown") },
+        ],
+      }).catch(() => {});
     }
   }
 

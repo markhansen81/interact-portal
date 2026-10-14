@@ -54,6 +54,13 @@ export default async function SystemHealthPage() {
     adminClient.from("projects").select("*", { count: "exact", head: true }),
   ]);
 
+  // Fetch recent health checks (last 24h)
+  const { data: healthChecks } = await adminClient
+    .from("health_checks")
+    .select("*")
+    .order("checked_at", { ascending: false })
+    .limit(100);
+
   // Recent CRM automation logs
   const { data: recentLogs } = await adminClient
     .from("crm_automation_log")
@@ -112,6 +119,7 @@ export default async function SystemHealthPage() {
         datevExpired={datevExpired}
         hasResendKey={hasResendKey}
         hasAnthropicKey={hasAnthropicKey}
+        healthChecks={healthChecks ?? []}
       />
     </div>
   );
