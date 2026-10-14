@@ -14,7 +14,7 @@ export default async function AdminProjectDetailPage({
 
   const { data: project } = await supabase
     .from("projects")
-    .select("*, teacher_token, info_pack_email_sent_at, info_pack_submitted_at, profiles!projects_ta_id_fkey(first_name, last_name, email)")
+    .select("*, teacher_token, info_pack_email_sent_at, info_pack_submitted_at, info_pack_data, profiles!projects_ta_id_fkey(first_name, last_name, email)")
     .eq("id", id)
     .single();
 
