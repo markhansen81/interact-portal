@@ -33,6 +33,13 @@ interface SystemHealthProps {
   datevExpired: boolean;
   hasResendKey: boolean;
   hasAnthropicKey: boolean;
+  healthChecks: Array<{
+    id: string;
+    check_name: string;
+    status: string;
+    message: string | null;
+    checked_at: string;
+  }>;
 }
 
 /* ---------------------------------------------------------------------------
@@ -235,6 +242,7 @@ export function SystemHealthPanel({
   datevExpired,
   hasResendKey,
   hasAnthropicKey,
+  healthChecks,
 }: SystemHealthProps) {
   const [reportExpanded, setReportExpanded] = useState(false);
 
@@ -502,7 +510,86 @@ export function SystemHealthPanel({
         </div>
       </section>
 
-      {/* Section 5: Issues & Alerts */}
+      {/* Section 5: Uptime History */}
+      <section>
+        <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-50">
+          Uptime Monitoring
+        </h2>
+        {healthChecks.length > 0 ? (
+          <div className="space-y-4">
+            {/* Latest status per check */}
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+              {(() => {
+                const latestByName: Record<string, { status: string; message: string | null; checked_at: string }> = {};
+                for (const hc of healthChecks) {
+                  if (!latestByName[hc.check_name]) {
+                    latestByName[hc.check_name] = { status: hc.status, message: hc.message, checked_at: hc.checked_at };
+                  }
+                }
+                return Object.entries(latestByName).map(([name, data]) => (
+                  <HealthCard
+                    key={name}
+                    label={name.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                    status={data.status === "ok" ? "Healthy" : "Failing"}
+                    color={data.status === "ok" ? "green" : "red"}
+                    detail={`Last checked: ${new Date(data.checked_at).toLocaleString("de-DE", {
+                      day: "2-digit", month: "2-digit", year: "numeric",
+                      hour: "2-digit", minute: "2-digit",
+                    })}${data.message ? ` — ${data.message}` : ""}`}
+                  />
+                ));
+              })()}
+            </div>
+
+            {/* Recent check history table */}
+            <div className="rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-800/50">
+                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Time</th>
+                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Check</th>
+                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Message</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {healthChecks.slice(0, 25).map((hc) => (
+                      <tr key={hc.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                        <td className="px-4 py-2.5 text-xs text-slate-500 whitespace-nowrap">
+                          {new Date(hc.checked_at).toLocaleString("de-DE", {
+                            day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit",
+                          })}
+                        </td>
+                        <td className="px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200">
+                          {hc.check_name.replace(/_/g, " ")}
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <StatusBadge
+                            status={hc.status === "ok" ? "OK" : "Error"}
+                            color={hc.status === "ok" ? "green" : "red"}
+                          />
+                        </td>
+                        <td className="px-4 py-2.5 text-xs text-slate-500 max-w-xs truncate">
+                          {hc.message || "-"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center dark:border-slate-700 dark:bg-slate-900">
+            <p className="text-sm text-slate-400">
+              No health check data yet. The cron job runs hourly.
+            </p>
+          </div>
+        )}
+      </section>
+
+      {/* Section 6: Issues & Alerts */}
       <section>
         <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-50">
           Issues & Alerts

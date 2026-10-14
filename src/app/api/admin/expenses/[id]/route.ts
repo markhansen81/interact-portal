@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notify } from "@/lib/notifications";
+import { sendSlackAlert } from "@/lib/slack";
 
 export async function PATCH(
   request: Request,
@@ -51,6 +52,21 @@ export async function PATCH(
   }
 
   const ta = claim.profiles as { id: string; first_name: string; last_name: string; email: string };
+  const taName = `${ta.first_name || ""} ${ta.last_name || ""}`.trim() || ta.email;
+
+  // Slack alert when high-value expense is flagged for review
+  if (body.status === "flagged" || (claim.needs_review && Number(claim.total) > 100)) {
+    await sendSlackAlert({
+      type: "warning",
+      title: "Expense flagged for review",
+      message: `Expense claim from ${taName} requires manual review`,
+      fields: [
+        { label: "Amount", value: `EUR${Number(claim.total).toFixed(2)}` },
+        { label: "TA", value: taName },
+      ],
+    }).catch(() => {});
+  }
+
   await notify({
     userId: ta.id,
     type: `expense_${body.status}`,

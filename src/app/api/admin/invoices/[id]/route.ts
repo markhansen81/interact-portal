@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notify } from "@/lib/notifications";
 import { sendEmail } from "@/lib/email";
+import { sendSlackAlert } from "@/lib/slack";
 
 export async function PATCH(
   request: Request,
@@ -76,6 +77,29 @@ export async function PATCH(
       `,
     },
   });
+
+  // Slack alerts for key invoice status changes
+  if (body.status === "approved") {
+    await sendSlackAlert({
+      type: "info",
+      title: `Invoice ${invoice.invoice_number} approved`,
+      message: `Approved for ${taName}`,
+      fields: [
+        { label: "Amount", value: `EUR${Number(invoice.total).toFixed(2)}` },
+        { label: "TA", value: taName },
+      ],
+    }).catch(() => {});
+  } else if (body.status === "rejected") {
+    await sendSlackAlert({
+      type: "warning",
+      title: `Invoice ${invoice.invoice_number} rejected`,
+      message: `Rejected for ${taName}`,
+      fields: [
+        { label: "Amount", value: `EUR${Number(invoice.total).toFixed(2)}` },
+        { label: "TA", value: taName },
+      ],
+    }).catch(() => {});
+  }
 
   // Send approved invoice PDF to DATEV (API first, email fallback)
   if (body.status === "approved" && invoice.uploaded_pdf_url) {

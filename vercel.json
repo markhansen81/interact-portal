@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/update-levels",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/health-check",
+      "schedule": "0 * * * *"
     }
   ]
 }

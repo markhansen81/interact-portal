@@ -23,7 +23,7 @@ export async function GET() {
   const allOk = Object.values(checks).every(Boolean);
 
   return NextResponse.json(
-    { status: allOk ? "ok" : "degraded", checks },
+    { status: allOk ? "ok" : "degraded", checks, timestamp: new Date().toISOString() },
     { status: allOk ? 200 : 503 }
   );
 }
