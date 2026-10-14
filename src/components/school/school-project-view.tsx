@@ -89,6 +89,7 @@ interface Project {
   teacher_name: string | null;
   teacher_email: string | null;
   accommodation: string | null;
+  info_pack_submitted_at: string | null;
 }
 
 const statusStyles: Record<string, string> = {
@@ -606,6 +607,71 @@ export function SchoolProjectView({
           >
             {project.status}
           </span>
+        </div>
+      </div>
+
+      {/* Info Pack Form Card */}
+      <div className="rounded-xl border border-zinc-200 bg-white p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div
+              className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                project.info_pack_submitted_at
+                  ? "bg-green-100"
+                  : "bg-teal-100"
+              }`}
+            >
+              {project.info_pack_submitted_at ? (
+                <svg
+                  className="h-5 w-5 text-green-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="h-5 w-5 text-teal-600"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              )}
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-zinc-900">
+                Info-Formular
+              </h2>
+              <p className="text-xs text-zinc-500">
+                {project.info_pack_submitted_at
+                  ? `Ausgefüllt am ${formatDate(project.info_pack_submitted_at.split("T")[0])}`
+                  : "Nicht ausgefüllt"}
+              </p>
+            </div>
+          </div>
+          <a
+            href={`/school/project/${token}/info-form`}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              project.info_pack_submitted_at
+                ? "border border-zinc-200 text-zinc-600 hover:bg-zinc-50"
+                : "bg-teal-600 text-white hover:bg-teal-700"
+            }`}
+          >
+            {project.info_pack_submitted_at
+              ? "Formular ansehen"
+              : "Info-Formular ausfüllen"}
+          </a>
         </div>
       </div>
 
