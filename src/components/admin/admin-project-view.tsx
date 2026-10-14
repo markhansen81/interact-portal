@@ -26,6 +26,7 @@ interface Project {
   teacher_token: string | null;
   info_pack_email_sent_at: string | null;
   info_pack_submitted_at: string | null;
+  info_pack_data: Record<string, unknown> | null;
   price_pp: number | null;
   deposit_enabled: boolean | null;
   deposit_type: "percentage" | "fixed" | null;
@@ -208,6 +209,7 @@ export function AdminProjectView({
   const [infoPackSentAt, setInfoPackSentAt] = useState(project.info_pack_email_sent_at);
   const [infoPackError, setInfoPackError] = useState("");
   const [showInfoPackPreview, setShowInfoPackPreview] = useState(false);
+  const [showInfoPackResponses, setShowInfoPackResponses] = useState(false);
 
   const completedCount = tasks.filter((t) => t.completed).length;
   const totalCount = tasks.length;
@@ -789,6 +791,160 @@ export function AdminProjectView({
           )}
         </div>
       </div>
+
+      {/* Info Pack Responses */}
+      {project.info_pack_data && (
+        <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+          <button
+            onClick={() => setShowInfoPackResponses(!showInfoPackResponses)}
+            className="flex w-full items-center justify-between p-6"
+          >
+            <div className="flex items-center gap-3">
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Info Pack Responses</h2>
+              {project.info_pack_submitted_at && (
+                <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                  Submitted {new Date(project.info_pack_submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                </span>
+              )}
+            </div>
+            <svg
+              className={`h-5 w-5 text-zinc-400 transition-transform ${showInfoPackResponses ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {showInfoPackResponses && (() => {
+            const d = project.info_pack_data as Record<string, unknown>;
+            const val = (key: string) => {
+              const v = d[key];
+              if (v === null || v === undefined || v === "") return null;
+              if (typeof v === "boolean") return v ? "Ja" : "Nein";
+              return String(v);
+            };
+            const Row = ({ label, value }: { label: string; value: string | null }) =>
+              value ? (
+                <div className="flex gap-3 py-1.5">
+                  <span className="w-48 shrink-0 text-sm text-zinc-500">{label}</span>
+                  <span className="text-sm text-zinc-900 dark:text-zinc-50">{value}</span>
+                </div>
+              ) : null;
+
+            return (
+              <div className="space-y-6 border-t border-zinc-200 px-6 pb-6 dark:border-zinc-800">
+                {/* Kontaktdaten */}
+                <div className="pt-4">
+                  <h3 className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Kontaktdaten (Contact)</h3>
+                  <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800/50">
+                    <Row label="Ansprechpartner" value={val("primary_contact")} />
+                    <Row label="E-Mail" value={val("email")} />
+                    <Row label="Telefon" value={val("phone")} />
+                    <Row label="Stellvertreter" value={val("secondary_contact")} />
+                    <Row label="Stellvertreter Kontakt" value={val("secondary_contact_details")} />
+                  </div>
+                </div>
+
+                {/* Schueler */}
+                <div>
+                  <h3 className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Sch&uuml;ler*innen (Students)</h3>
+                  <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800/50">
+                    <Row label="Jahrgangsstufe" value={val("grade_level")} />
+                    <Row label="Sprachniveau" value={val("language_level")} />
+                    <Row label="Anzahl Gruppen" value={val("num_groups")} />
+                    <Row label="Sch&uuml;ler pro Gruppe" value={val("students_per_group")} />
+                  </div>
+                </div>
+
+                {/* Stundenplan */}
+                <div>
+                  <h3 className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Stundenplan (Schedule)</h3>
+                  <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800/50">
+                    {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                      <Row key={n} label={`Stunde ${n}`} value={val(`lesson_${n}`)} />
+                    ))}
+                    <Row label="Erstes Treffen" value={val("first_meeting")} />
+                  </div>
+                </div>
+
+                {/* Module */}
+                {(val("modules") || val("module_choice") || val("analog_digital")) && (
+                  <div>
+                    <h3 className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Module</h3>
+                    <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800/50">
+                      <Row label="Module" value={val("modules") || val("module_choice")} />
+                      <Row label="Analog / Digital" value={val("analog_digital")} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Abschlusspräsentation */}
+                {(val("presentation") || val("presentation_details")) && (
+                  <div>
+                    <h3 className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Abschlusspr&auml;sentation (Presentation)</h3>
+                    <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800/50">
+                      <Row label="Abschlusspr&auml;sentation" value={val("presentation")} />
+                      <Row label="Details" value={val("presentation_details")} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Verpflegung & Logistik */}
+                {(val("lunch") || val("certificates") || val("lunch_details") || val("catering")) && (
+                  <div>
+                    <h3 className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Verpflegung &amp; Logistik (Meals &amp; Logistics)</h3>
+                    <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800/50">
+                      <Row label="Mittagessen" value={val("lunch") || val("catering")} />
+                      <Row label="Details" value={val("lunch_details")} />
+                      <Row label="Zertifikate" value={val("certificates")} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Sonstiges */}
+                {(val("difficulties") || val("comments") || val("additional_notes")) && (
+                  <div>
+                    <h3 className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Sonstiges (Additional)</h3>
+                    <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800/50">
+                      <Row label="Schwierigkeiten" value={val("difficulties")} />
+                      <Row label="Kommentare" value={val("comments") || val("additional_notes")} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Raw data fallback for any unmapped fields */}
+                {(() => {
+                  const knownKeys = new Set([
+                    "primary_contact", "email", "phone", "secondary_contact", "secondary_contact_details",
+                    "grade_level", "language_level", "num_groups", "students_per_group",
+                    "lesson_1", "lesson_2", "lesson_3", "lesson_4", "lesson_5", "lesson_6", "lesson_7",
+                    "first_meeting", "modules", "module_choice", "analog_digital",
+                    "presentation", "presentation_details", "lunch", "lunch_details", "catering",
+                    "certificates", "difficulties", "comments", "additional_notes",
+                  ]);
+                  const extras = Object.entries(d).filter(
+                    ([k, v]) => !knownKeys.has(k) && v !== null && v !== undefined && v !== ""
+                  );
+                  if (extras.length === 0) return null;
+                  return (
+                    <div>
+                      <h3 className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Weitere Angaben (Other)</h3>
+                      <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800/50">
+                        {extras.map(([k, v]) => (
+                          <Row key={k} label={k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} value={String(v)} />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            );
+          })()}
+        </div>
+      )}
 
       {/* Attendance summary */}
       {groupSummaries.length > 0 && (
