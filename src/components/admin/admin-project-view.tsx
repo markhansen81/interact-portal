@@ -31,6 +31,8 @@ interface Project {
   deposit_enabled: boolean | null;
   deposit_type: "percentage" | "fixed" | null;
   deposit_value: number | null;
+  feedback_data: Record<string, unknown> | null;
+  feedback_submitted_at: string | null;
 }
 
 interface SchoolInvoice {
@@ -210,6 +212,7 @@ export function AdminProjectView({
   const [infoPackError, setInfoPackError] = useState("");
   const [showInfoPackPreview, setShowInfoPackPreview] = useState(false);
   const [showInfoPackResponses, setShowInfoPackResponses] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   const completedCount = tasks.filter((t) => t.completed).length;
   const totalCount = tasks.length;
@@ -945,6 +948,189 @@ export function AdminProjectView({
           })()}
         </div>
       )}
+
+      {/* Feedback section */}
+      <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+        <button
+          onClick={() => setShowFeedback(!showFeedback)}
+          className="flex w-full items-center justify-between p-6"
+        >
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Feedback</h2>
+            {project.feedback_submitted_at ? (
+              <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                Submitted {new Date(project.feedback_submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+              </span>
+            ) : (
+              <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-500">
+                Kein Feedback
+              </span>
+            )}
+          </div>
+          <svg
+            className={`h-5 w-5 text-zinc-400 transition-transform ${showFeedback ? "rotate-180" : ""}`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {showFeedback && (() => {
+          if (!project.feedback_data) {
+            return (
+              <div className="border-t border-zinc-200 px-6 pb-6 pt-4 dark:border-zinc-800">
+                <p className="text-sm text-zinc-500">Kein Feedback vorhanden.</p>
+              </div>
+            );
+          }
+
+          const fb = project.feedback_data as Record<string, unknown>;
+          const overallRating = fb.overall_rating as number | undefined;
+          const whatWorked = fb.what_worked_well as string | undefined;
+          const whatToImprove = fb.what_to_improve as string | undefined;
+          const taRatings = fb.ta_ratings as Array<{ name?: string; rating?: number; comment?: string }> | undefined;
+          const studentReactions = fb.student_reactions as string | undefined;
+          const logisticsRating = fb.logistics_rating as number | undefined;
+          const logisticsComment = fb.logistics_comment as string | undefined;
+          const rebookingInterest = fb.rebooking_interest as string | boolean | undefined;
+
+          const StarDisplay = ({ rating, max = 5 }: { rating: number; max?: number }) => (
+            <div className="flex items-center gap-0.5">
+              {Array.from({ length: max }, (_, i) => (
+                <svg
+                  key={i}
+                  className={`h-5 w-5 ${i < rating ? "text-yellow-400" : "text-zinc-200 dark:text-zinc-700"}`}
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              ))}
+              <span className="ml-2 text-sm font-medium text-zinc-600 dark:text-zinc-400">{rating}/{max}</span>
+            </div>
+          );
+
+          return (
+            <div className="space-y-6 border-t border-zinc-200 px-6 pb-6 dark:border-zinc-800">
+              {/* Overall rating */}
+              {overallRating !== undefined && (
+                <div className="pt-4">
+                  <h3 className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Overall Rating</h3>
+                  <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800/50">
+                    <StarDisplay rating={overallRating} />
+                  </div>
+                </div>
+              )}
+
+              {/* What worked well */}
+              {whatWorked && (
+                <div>
+                  <h3 className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">What Worked Well</h3>
+                  <div className="rounded-lg bg-green-50 p-4 dark:bg-green-900/20">
+                    <p className="text-sm text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap">{whatWorked}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* What to improve */}
+              {whatToImprove && (
+                <div>
+                  <h3 className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">What to Improve</h3>
+                  <div className="rounded-lg bg-amber-50 p-4 dark:bg-amber-900/20">
+                    <p className="text-sm text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap">{whatToImprove}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Per-TA ratings */}
+              {taRatings && taRatings.length > 0 && (
+                <div>
+                  <h3 className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">TA Ratings</h3>
+                  <div className="space-y-3">
+                    {taRatings.map((ta, i) => (
+                      <div key={i} className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800/50">
+                        {ta.name && (
+                          <p className="mb-1 text-sm font-medium text-zinc-900 dark:text-zinc-50">{ta.name}</p>
+                        )}
+                        {ta.rating !== undefined && <StarDisplay rating={ta.rating} />}
+                        {ta.comment && (
+                          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap">{ta.comment}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Student reactions */}
+              {studentReactions && (
+                <div>
+                  <h3 className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Student Reactions</h3>
+                  <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+                    <p className="text-sm text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap">{studentReactions}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Logistics rating */}
+              {(logisticsRating !== undefined || logisticsComment) && (
+                <div>
+                  <h3 className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Logistics</h3>
+                  <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800/50">
+                    {logisticsRating !== undefined && <StarDisplay rating={logisticsRating} />}
+                    {logisticsComment && (
+                      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap">{logisticsComment}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Rebooking interest */}
+              {rebookingInterest !== undefined && (
+                <div>
+                  <h3 className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Rebooking Interest</h3>
+                  <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800/50">
+                    <p className="text-sm text-zinc-800 dark:text-zinc-200">
+                      {typeof rebookingInterest === "boolean"
+                        ? rebookingInterest ? "Yes, interested in rebooking" : "Not interested in rebooking"
+                        : String(rebookingInterest)}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Any extra feedback fields not covered above */}
+              {(() => {
+                const knownKeys = new Set([
+                  "overall_rating", "what_worked_well", "what_to_improve",
+                  "ta_ratings", "student_reactions", "logistics_rating",
+                  "logistics_comment", "rebooking_interest",
+                ]);
+                const extras = Object.entries(fb).filter(
+                  ([k, v]) => !knownKeys.has(k) && v !== null && v !== undefined && v !== ""
+                );
+                if (extras.length === 0) return null;
+                return (
+                  <div>
+                    <h3 className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Additional Feedback</h3>
+                    <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800/50 space-y-2">
+                      {extras.map(([k, v]) => (
+                        <div key={k} className="flex gap-3 py-1.5">
+                          <span className="w-48 shrink-0 text-sm text-zinc-500">{k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}</span>
+                          <span className="text-sm text-zinc-900 dark:text-zinc-50 whitespace-pre-wrap">{typeof v === "object" ? JSON.stringify(v, null, 2) : String(v)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          );
+        })()}
+      </div>
 
       {/* Attendance summary */}
       {groupSummaries.length > 0 && (
