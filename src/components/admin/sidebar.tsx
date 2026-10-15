@@ -28,6 +28,7 @@ const navSections: NavSection[] = [
       { href: "/admin/onboarding", label: "Onboarding", icon: "users" },
       { href: "/admin/training", label: "Training", icon: "briefcase" },
       { href: "/admin/availability", label: "Availability", icon: "calendar" },
+      { href: "/admin/lanes-planes", label: "Lanes & Planes", icon: "briefcase" },
     ],
   },
   {

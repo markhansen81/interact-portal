@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { syncTAsToLanesPlanes } from "@/lib/lanes-planes";
+import { sendSlackAlert } from "@/lib/slack";
 
 export async function POST(request: Request) {
   // Support both admin auth and cron secret
@@ -34,9 +35,10 @@ export async function POST(request: Request) {
   // Fetch ALL active TAs — L&P requires complete user list every time
   const { data: tas, error } = await adminClient
     .from("profiles")
-    .select("first_name, last_name, email")
+    .select("id, first_name, last_name, email")
     .eq("role", "ta")
-    .eq("is_active", true);
+    .eq("is_active", true)
+    .eq("onboarding_status", "ready");
 
   if (error || !tas) {
     return NextResponse.json(
@@ -45,34 +47,58 @@ export async function POST(request: Request) {
     );
   }
 
-  // Filter out TAs without email
+  // Filter out TAs without required fields
   const validTAs = tas.filter(
     (ta) => ta.email && ta.first_name && ta.last_name
   );
+  const skippedCount = tas.length - validTAs.length;
 
-  // Also include admin users who need L&P access
-  const { data: admins } = await adminClient
-    .from("profiles")
-    .select("first_name, last_name, email")
-    .eq("role", "admin")
-    .eq("is_active", true);
-
-  const adminUsers = (admins || [])
-    .filter((a) => a.email && a.first_name && a.last_name)
-    .map((a) => ({
-      first_name: a.first_name,
-      last_name: a.last_name,
-      email: a.email,
-    }));
-
-  // Combine — admins get admin role, handled separately in the sync function
-  // For now, only sync TAs as travellers
+  // Call L&P ExtAPI
   const result = await syncTAsToLanesPlanes(validTAs);
+
+  if (!result.ok) {
+    await sendSlackAlert({
+      type: "critical",
+      title: "L&P Sync Failed",
+      message: `Sync failed with status ${result.status}: ${result.error || "Unknown error"}`,
+    });
+
+    return NextResponse.json(
+      { ...result, synced: 0, skipped: skippedCount },
+      { status: 500 }
+    );
+  }
+
+  // On success, mark all synced TAs
+  const now = new Date().toISOString();
+  const syncedIds = validTAs.map((ta) => ta.id);
+
+  if (syncedIds.length > 0) {
+    await adminClient
+      .from("profiles")
+      .update({
+        lanes_planes_synced: true,
+        lanes_planes_synced_at: now,
+      })
+      .in("id", syncedIds);
+  }
+
+  // Send Slack success alert
+  await sendSlackAlert({
+    type: "success",
+    title: "L&P Sync Complete",
+    message: `L&P sync: ${validTAs.length} TAs synced`,
+    fields: [
+      { label: "Synced", value: String(validTAs.length) },
+      { label: "Skipped (incomplete)", value: String(skippedCount) },
+    ],
+  });
 
   return NextResponse.json({
     ...result,
     synced: validTAs.length,
-    skipped: tas.length - validTAs.length,
+    skipped: skippedCount,
+    syncedAt: now,
   });
 }
 

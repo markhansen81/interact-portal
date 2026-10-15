@@ -11,7 +11,7 @@ interface LPUser {
 
 export async function syncTAsToLanesPlanes(
   users: Array<{ first_name: string; last_name: string; email: string }>
-): Promise<{ ok: boolean; status: number; error?: string }> {
+): Promise<{ ok: boolean; status: number; lpId?: string; error?: string }> {
   const apiKey = process.env.LANES_PLANES_API_KEY;
   if (!apiKey) {
     console.warn("[L&P] No API key configured, skipping sync");
@@ -45,8 +45,16 @@ export async function syncTAsToLanesPlanes(
       return { ok: false, status: res.status, error };
     }
 
+    let lpId: string | undefined;
+    try {
+      const data = await res.json();
+      lpId = data.id;
+    } catch {
+      // Response may not be JSON — that's fine
+    }
+
     console.log(`[L&P] Synced ${lpUsers.length} users`);
-    return { ok: true, status: res.status };
+    return { ok: true, status: res.status, lpId };
   } catch (error) {
     console.error("[L&P] Sync error:", error);
     return { ok: false, status: 0, error: String(error) };
