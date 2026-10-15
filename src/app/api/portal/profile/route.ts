@@ -71,6 +71,12 @@ export async function PATCH(request: Request) {
         title: "Onboarding completed",
         description: `${taName} has completed their onboarding profile. Review their details.`,
       });
+
+      // Flag TA for next Lanes & Planes sync
+      await supabase
+        .from("profiles")
+        .update({ lanes_planes_synced: false })
+        .eq("id", user.id);
     }
   }
 
