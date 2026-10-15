@@ -90,6 +90,88 @@ interface Project {
   teacher_email: string | null;
   accommodation: string | null;
   info_pack_submitted_at: string | null;
+  info_pack_data: Record<string, unknown> | null;
+  schedule_confirmed_at: string | null;
+  feedback_submitted_at: string | null;
+}
+
+type StageStatus = "completed" | "current" | "future";
+
+interface Stage {
+  id: string;
+  label: string;
+  description: string;
+  status: StageStatus;
+  completedAt?: string;
+}
+
+function getStageStatuses(project: Project, schoolInvoices: SchoolInvoice[]): Stage[] {
+  const now = new Date();
+  const stages: { id: string; label: string; description: string; completed: boolean; completedAt?: string }[] = [
+    {
+      id: "info_form",
+      label: "Info-Formular",
+      description: "Projektinformationen ausfuellen",
+      completed: !!project.info_pack_submitted_at,
+      completedAt: project.info_pack_submitted_at || undefined,
+    },
+    {
+      id: "schedule",
+      label: "Stundenplan",
+      description: "Stundenplan pruefen und bestaetigen",
+      completed: !!project.schedule_confirmed_at,
+      completedAt: project.schedule_confirmed_at || undefined,
+    },
+    {
+      id: "rooms",
+      label: "Raeume",
+      description: "Raeume buchen und eintragen",
+      completed: false,
+    },
+    {
+      id: "payment",
+      label: "Zahlung",
+      description: "Rechnung bezahlen",
+      completed: schoolInvoices.some((inv) => inv.status === "paid"),
+      completedAt: undefined,
+    },
+    {
+      id: "preparation",
+      label: "Vorbereitung",
+      description: "Finale Abstimmungen",
+      completed: project.start_date
+        ? (new Date(project.start_date + "T00:00:00").getTime() - now.getTime()) < 7 * 24 * 60 * 60 * 1000
+        : false,
+    },
+    {
+      id: "project",
+      label: "Projekt",
+      description: "Projekt findet statt",
+      completed: project.end_date
+        ? now > new Date(project.end_date + "T23:59:59")
+        : false,
+    },
+    {
+      id: "feedback",
+      label: "Feedback",
+      description: "Projektevaluation ausfuellen",
+      completed: !!project.feedback_submitted_at,
+      completedAt: project.feedback_submitted_at || undefined,
+    },
+  ];
+
+  // Determine current stage: first incomplete stage
+  let currentFound = false;
+  return stages.map((s) => {
+    if (s.completed) {
+      return { ...s, status: "completed" as StageStatus };
+    }
+    if (!currentFound) {
+      currentFound = true;
+      return { ...s, status: "current" as StageStatus };
+    }
+    return { ...s, status: "future" as StageStatus };
+  });
 }
 
 const statusStyles: Record<string, string> = {
@@ -171,6 +253,12 @@ export function SchoolProjectView({
 
   // Notes saved toast
   const [notesSavedToast, setNotesSavedToast] = useState<string | null>(null);
+
+  // Schedule confirmation state
+  const [confirmingSchedule, setConfirmingSchedule] = useState(false);
+  const [scheduleConfirmedAt, setScheduleConfirmedAt] = useState<string | null>(
+    project.schedule_confirmed_at
+  );
 
   // Invoice forward state
   const [invoiceForwardEmail, setInvoiceForwardEmail] = useState("");
@@ -532,6 +620,32 @@ export function SchoolProjectView({
     }
   }
 
+  // --- Schedule confirmation ---
+  async function confirmSchedule() {
+    setConfirmingSchedule(true);
+    try {
+      const res = await fetch(`${apiBase}/confirm-schedule`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setScheduleConfirmedAt(data.schedule_confirmed_at);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setConfirmingSchedule(false);
+    }
+  }
+
+  // Compute timeline stages using live state
+  const projectForTimeline = {
+    ...project,
+    schedule_confirmed_at: scheduleConfirmedAt,
+  };
+  const timelineStages = getStageStatuses(projectForTimeline, schoolInvoices);
+
   // --- Helpers for special needs / allergies tables ---
 
   function addSpecialNeedsRow(groupId: string) {
@@ -660,6 +774,135 @@ export function SchoolProjectView({
         </div>
       </div>
 
+      {/* Project Status Timeline */}
+      <div className="rounded-xl border border-zinc-200 bg-white p-6">
+        <h2 className="mb-4 text-lg font-semibold text-zinc-900">Projektstatus</h2>
+        <div className="relative ml-4">
+          {timelineStages.map((stage, idx) => {
+            const isLast = idx === timelineStages.length - 1;
+            return (
+              <div key={stage.id} className="relative flex gap-4 pb-6">
+                {/* Vertical line */}
+                {!isLast && (
+                  <div
+                    className={`absolute left-[11px] top-6 h-full w-0.5 ${
+                      stage.status === "completed" ? "bg-teal-400" : "bg-zinc-200"
+                    }`}
+                  />
+                )}
+                {/* Circle */}
+                <div className="relative z-10 flex-shrink-0">
+                  {stage.status === "completed" ? (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-teal-500">
+                      <svg className="h-3.5 w-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                  ) : stage.status === "current" ? (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-teal-500 bg-white">
+                      <div className="h-2 w-2 rounded-full bg-teal-500" />
+                    </div>
+                  ) : (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-zinc-300 bg-white" />
+                  )}
+                </div>
+                {/* Content */}
+                <div
+                  className={`min-w-0 flex-1 rounded-lg px-3 py-1.5 ${
+                    stage.status === "current" ? "bg-teal-50" : ""
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <p
+                      className={`text-sm font-medium ${
+                        stage.status === "completed"
+                          ? "text-teal-700"
+                          : stage.status === "current"
+                            ? "text-teal-900"
+                            : "text-zinc-400"
+                      }`}
+                    >
+                      {stage.label}
+                    </p>
+                    {stage.status === "completed" && stage.completedAt && (
+                      <span className="text-xs text-teal-500">
+                        {formatDate(stage.completedAt.split("T")[0])}
+                      </span>
+                    )}
+                  </div>
+                  <p
+                    className={`text-xs ${
+                      stage.status === "future" ? "text-zinc-300" : "text-zinc-500"
+                    }`}
+                  >
+                    {stage.description}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Schedule Confirmation */}
+      <div className="rounded-xl border border-zinc-200 bg-white p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div
+              className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                scheduleConfirmedAt ? "bg-green-100" : "bg-teal-100"
+              }`}
+            >
+              {scheduleConfirmedAt ? (
+                <svg className="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              ) : (
+                <svg className="h-5 w-5 text-teal-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              )}
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-zinc-900">Stundenplan</h2>
+              <p className="text-xs text-zinc-500">
+                {scheduleConfirmedAt
+                  ? `Bestaetigt am ${formatDate(scheduleConfirmedAt.split("T")[0])}`
+                  : "Bitte pruefen und bestaetigen Sie den Stundenplan"}
+              </p>
+            </div>
+          </div>
+          {!scheduleConfirmedAt ? (
+            <button
+              onClick={confirmSchedule}
+              disabled={confirmingSchedule}
+              className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50"
+            >
+              {confirmingSchedule ? "Wird bestaetigt..." : "Stundenplan bestaetigen"}
+            </button>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+              <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Bestaetigt
+            </span>
+          )}
+        </div>
+      </div>
+
       {/* Info Pack Form Card */}
       <div className="rounded-xl border border-zinc-200 bg-white p-6">
         <div className="flex items-center justify-between">
@@ -724,6 +967,73 @@ export function SchoolProjectView({
           </a>
         </div>
       </div>
+
+      {/* Feedback Form Card — show for active/completed projects */}
+      {(project.status === "active" || project.status === "completed") && (
+        <div className="rounded-xl border border-zinc-200 bg-white p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div
+                className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                  project.feedback_submitted_at
+                    ? "bg-green-100"
+                    : "bg-teal-100"
+                }`}
+              >
+                {project.feedback_submitted_at ? (
+                  <svg
+                    className="h-5 w-5 text-green-600"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="h-5 w-5 text-teal-600"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                    />
+                  </svg>
+                )}
+              </div>
+              <div>
+                <h2 className="text-sm font-semibold text-zinc-900">
+                  Projektevaluation
+                </h2>
+                <p className="text-xs text-zinc-500">
+                  {project.feedback_submitted_at
+                    ? `Feedback abgegeben am ${formatDate(project.feedback_submitted_at.split("T")[0])}`
+                    : "Wir freuen uns auf Ihr Feedback!"}
+                </p>
+              </div>
+            </div>
+            <a
+              href={`/school/project/${token}/feedback`}
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                project.feedback_submitted_at
+                  ? "border border-zinc-200 text-zinc-600 hover:bg-zinc-50"
+                  : "bg-teal-600 text-white hover:bg-teal-700"
+              }`}
+            >
+              {project.feedback_submitted_at
+                ? "Feedback ansehen"
+                : "Feedback geben"}
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Teaching Artists section */}
       {teamMembers.length > 0 && (
