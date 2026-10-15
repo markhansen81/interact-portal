@@ -123,7 +123,19 @@ export function TACalendar({ workOrders }: { workOrders: WorkOrder[] }) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Calendar</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Calendar</h2>
+        <a
+          href="/api/portal/calendar/export"
+          download="interact-calendar.ics"
+          className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+          </svg>
+          Export to Calendar
+        </a>
+      </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Calendar grid */}
