@@ -3,23 +3,64 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const navItems = [
-  { href: "/admin", label: "Dashboard", icon: "grid" },
-  { href: "/admin/church", label: "Church", icon: "calendar" },
-  { href: "/admin/jobs", label: "Projects", icon: "briefcase" },
-  { href: "/admin/teaching-artists", label: "Teaching Artists", icon: "users" },
-  { href: "/admin/onboarding", label: "Onboarding", icon: "users" },
-  { href: "/admin/work-orders", label: "Work Orders", icon: "file-text" },
-  { href: "/admin/projects", label: "TA Projects", icon: "clipboard" },
-  { href: "/admin/contracts", label: "Contracts", icon: "pen-tool" },
-  { href: "/admin/invoices", label: "Invoices", icon: "receipt" },
-  { href: "/admin/insurance-orders", label: "Insurance", icon: "shield" },
-  { href: "/admin/availability", label: "Availability", icon: "calendar" },
-  { href: "/admin/services", label: "Services & Rates", icon: "settings" },
-  { href: "/admin/training", label: "Training", icon: "briefcase" },
-  { href: "/admin/messages", label: "Messages", icon: "message-circle" },
-  { href: "/admin/templates", label: "Templates", icon: "pen-tool" },
-  { href: "/admin/users", label: "Admin Users", icon: "settings" },
+interface NavItem {
+  href: string;
+  label: string;
+  icon: string;
+}
+
+interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
+const navSections: NavSection[] = [
+  {
+    label: "",
+    items: [
+      { href: "/admin", label: "Dashboard", icon: "grid" },
+    ],
+  },
+  {
+    label: "STAFFING",
+    items: [
+      { href: "/admin/teaching-artists", label: "Teaching Artists", icon: "users" },
+      { href: "/admin/onboarding", label: "Onboarding", icon: "users" },
+      { href: "/admin/training", label: "Training", icon: "briefcase" },
+      { href: "/admin/availability", label: "Availability", icon: "calendar" },
+    ],
+  },
+  {
+    label: "PROJECTS",
+    items: [
+      { href: "/admin/jobs", label: "School Projects", icon: "briefcase" },
+      { href: "/admin/projects", label: "TA Assignments", icon: "clipboard" },
+      { href: "/admin/work-orders", label: "Work Orders", icon: "file-text" },
+      { href: "/admin/church", label: "CRM Pipeline", icon: "calendar" },
+    ],
+  },
+  {
+    label: "FINANCE",
+    items: [
+      { href: "/admin/invoices", label: "Invoices", icon: "receipt" },
+      { href: "/admin/services", label: "Services & Rates", icon: "settings" },
+      { href: "/admin/insurance-orders", label: "Insurance", icon: "shield" },
+    ],
+  },
+  {
+    label: "COMMUNICATION",
+    items: [
+      { href: "/admin/messages", label: "Messages", icon: "message-circle" },
+      { href: "/admin/templates", label: "Templates", icon: "pen-tool" },
+      { href: "/admin/contracts", label: "Contracts", icon: "pen-tool" },
+    ],
+  },
+  {
+    label: "SETTINGS",
+    items: [
+      { href: "/admin/users", label: "Admin Users", icon: "settings" },
+    ],
+  },
 ];
 
 const superAdminItems = [
@@ -68,7 +109,16 @@ const iconPaths: Record<string, React.ReactNode> = {
 
 export function AdminSidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
   const pathname = usePathname();
-  const allItems = isSuperAdmin ? [...navItems, ...superAdminItems] : navItems;
+
+  const allSections: NavSection[] = isSuperAdmin
+    ? [
+        ...navSections,
+        {
+          label: "SYSTEM",
+          items: superAdminItems,
+        },
+      ]
+    : navSections;
 
   return (
     <aside className="flex w-64 flex-col border-r border-zinc-200 border-t-[3px] border-t-slate-600 bg-white dark:border-zinc-800 dark:border-t-indigo-600 dark:bg-zinc-900">
@@ -85,36 +135,47 @@ export function AdminSidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean 
           </span>
         </div>
       </div>
-      <nav className="flex-1 space-y-1 p-3">
-        {allItems.map((item) => {
-          const isActive =
-            item.href === "/admin"
-              ? pathname === "/admin"
-              : pathname.startsWith(item.href);
+      <nav className="flex-1 overflow-y-auto p-3">
+        {allSections.map((section) => (
+          <div key={section.label || "_top"}>
+            {section.label && (
+              <p className="mt-4 mb-1 px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                {section.label}
+              </p>
+            )}
+            <div className="space-y-1">
+              {section.items.map((item) => {
+                const isActive =
+                  item.href === "/admin"
+                    ? pathname === "/admin"
+                    : pathname.startsWith(item.href);
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-slate-100 text-slate-900 dark:bg-slate-800/50 dark:text-slate-50"
-                  : "text-zinc-600 hover:bg-slate-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-50"
-              }`}
-            >
-              <svg
-                className="h-5 w-5 shrink-0"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.5}
-                viewBox="0 0 24 24"
-              >
-                {iconPaths[item.icon]}
-              </svg>
-              {item.label}
-            </Link>
-          );
-        })}
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-slate-100 text-slate-900 dark:bg-slate-800/50 dark:text-slate-50"
+                        : "text-zinc-600 hover:bg-slate-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-50"
+                    }`}
+                  >
+                    <svg
+                      className="h-5 w-5 shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                      viewBox="0 0 24 24"
+                    >
+                      {iconPaths[item.icon]}
+                    </svg>
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
     </aside>
   );

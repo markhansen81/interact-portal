@@ -26,9 +26,9 @@ const navItems = [
 
 /** Bottom nav shows these 4 + a "More" toggle for the rest */
 const bottomNavItems = [
-  { href: "/portal", label: "Dashboard", icon: "home" },
-  { href: "/portal/projects", label: "Projects", icon: "clipboard" },
-  { href: "/portal/expenses", label: "Expenses", icon: "credit-card" },
+  { href: "/portal", label: "Home", icon: "home" },
+  { href: "/portal/work-orders", label: "Work Orders", icon: "file-text" },
+  { href: "/portal/invoices", label: "Invoices", icon: "receipt" },
   { href: "/portal/calendar", label: "Calendar", icon: "calendar-grid" },
 ];
 
@@ -75,7 +75,7 @@ function NavIcon({ icon, className }: { icon: string; className?: string }) {
 
 /* ─────────────── Bottom Navigation (Mobile) ─────────────── */
 
-function PortalBottomNav() {
+function PortalBottomNav({ unreadCount = 0 }: { unreadCount?: number }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
 
@@ -126,11 +126,12 @@ function PortalBottomNav() {
       <nav className="fixed bottom-0 left-0 right-0 z-50 flex border-t border-zinc-200 bg-white pb-[env(safe-area-inset-bottom)] dark:border-zinc-800 dark:bg-zinc-900 md:hidden">
         {bottomNavItems.map((item) => {
           const active = isActive(item.href);
+          const showBadge = item.href === "/portal" && unreadCount > 0;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-1 flex-col items-center gap-0.5 pb-1 pt-2 text-[10px] font-medium transition-colors ${
+              className={`relative flex flex-1 flex-col items-center gap-0.5 pb-1 pt-2 text-[10px] font-medium transition-colors ${
                 active
                   ? "border-t-2 border-amber-500 text-amber-600 dark:text-amber-400"
                   : "border-t-2 border-transparent text-zinc-400 dark:text-zinc-500"
@@ -140,6 +141,11 @@ function PortalBottomNav() {
                 icon={item.icon}
                 className={`h-5 w-5 ${active ? "text-amber-600 dark:text-amber-400" : ""}`}
               />
+              {showBadge && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
               {item.label}
             </Link>
           );

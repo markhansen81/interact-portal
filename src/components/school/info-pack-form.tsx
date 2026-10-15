@@ -84,7 +84,36 @@ function formatDate(dateStr: string): string {
   });
 }
 
+const DEFAULT_FORM_DATA = (p: Project): FormData => ({
+  contact_name: p.teacher_name || "",
+  email: p.teacher_email || "",
+  phone: "",
+  deputy_name: "",
+  deputy_contact: "",
+  grade_level: "",
+  language_level: "",
+  num_groups: "",
+  students_per_group: "",
+  periods: Array.from({ length: 7 }, () => ({ start: "", end: "" })),
+  first_meeting_time: "",
+  first_meeting_location: "",
+  first_meeting_teacher: "",
+  modules: [],
+  art_choice: "",
+  play_name: "",
+  presentation: "",
+  presentation_details: "",
+  lunch: "",
+  lunch_cost: "",
+  phone_allowed: false,
+  certificates: "",
+  difficulties: "",
+  comments: "",
+  privacy_consent: false,
+});
+
 export function InfoPackForm({ project, token }: InfoPackFormProps) {
+  const DRAFT_KEY = `info-pack-draft-${project.id}`;
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [animKey, setAnimKey] = useState(0);
@@ -92,39 +121,53 @@ export function InfoPackForm({ project, token }: InfoPackFormProps) {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [draftSaved, setDraftSaved] = useState(false);
+  const [draftLoaded, setDraftLoaded] = useState(false);
 
   const needsModuleStep =
     project.program_type === "Native Speaker Week" ||
     project.program_type === "Art in Action" ||
     project.program_type === "Shakespeare Workshop";
 
-  const [formData, setFormData] = useState<FormData>({
-    contact_name: project.teacher_name || "",
-    email: project.teacher_email || "",
-    phone: "",
-    deputy_name: "",
-    deputy_contact: "",
-    grade_level: "",
-    language_level: "",
-    num_groups: "",
-    students_per_group: "",
-    periods: Array.from({ length: 7 }, () => ({ start: "", end: "" })),
-    first_meeting_time: "",
-    first_meeting_location: "",
-    first_meeting_teacher: "",
-    modules: [],
-    art_choice: "",
-    play_name: "",
-    presentation: "",
-    presentation_details: "",
-    lunch: "",
-    lunch_cost: "",
-    phone_allowed: false,
-    certificates: "",
-    difficulties: "",
-    comments: "",
-    privacy_consent: false,
-  });
+  const [formData, setFormData] = useState<FormData>(DEFAULT_FORM_DATA(project));
+
+  // Restore draft on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(DRAFT_KEY);
+    if (saved) {
+      try {
+        const draft = JSON.parse(saved);
+        if (draft.formData) {
+          setFormData((prev) => ({ ...prev, ...draft.formData }));
+        }
+        if (typeof draft.currentStep === "number" && draft.currentStep > 0) {
+          setCurrentStep(draft.currentStep);
+        }
+        setDraftLoaded(true);
+      } catch {
+        // ignore corrupt draft
+      }
+    }
+  }, [DRAFT_KEY]);
+
+  // Save draft debounced on every change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const draft = { formData, currentStep };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      setDraftSaved(true);
+      const fade = setTimeout(() => setDraftSaved(false), 2000);
+      return () => clearTimeout(fade);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [formData, currentStep, DRAFT_KEY]);
+
+  function discardDraft() {
+    localStorage.removeItem(DRAFT_KEY);
+    setFormData(DEFAULT_FORM_DATA(project));
+    setCurrentStep(0);
+    setDraftLoaded(false);
+  }
 
   // Build steps array dynamically
   const steps = [
@@ -191,17 +234,17 @@ export function InfoPackForm({ project, token }: InfoPackFormProps) {
         if (!formData.grade_level.trim())
           errors.push("Bitte geben Sie die Jahrgangsstufe ein.");
         if (!formData.language_level)
-          errors.push("Bitte wahlen Sie das Sprachniveau aus.");
+          errors.push("Bitte wählen Sie das Sprachniveau aus.");
         if (!formData.num_groups)
           errors.push("Bitte geben Sie die Anzahl der Gruppen ein.");
         if (!formData.students_per_group)
-          errors.push("Bitte geben Sie die Anzahl der Schuler pro Gruppe ein.");
+          errors.push("Bitte geben Sie die Anzahl der Schüler pro Gruppe ein.");
         break;
       case "schedule": {
         // First 5 periods required
         for (let i = 0; i < 5; i++) {
           if (!formData.periods[i].start || !formData.periods[i].end) {
-            errors.push(`Bitte geben Sie die Zeiten fur Stunde ${i + 1} ein.`);
+            errors.push(`Bitte geben Sie die Zeiten für Stunde ${i + 1} ein.`);
             break;
           }
         }
@@ -211,27 +254,27 @@ export function InfoPackForm({ project, token }: InfoPackFormProps) {
           errors.push("Bitte geben Sie den Ort des ersten Treffens ein.");
         if (!formData.first_meeting_teacher.trim())
           errors.push(
-            "Bitte geben Sie den Namen der Lehrkraft fur das erste Treffen ein."
+            "Bitte geben Sie den Namen der Lehrkraft für das erste Treffen ein."
           );
         break;
       }
       case "modules":
         if (project.program_type === "Native Speaker Week") {
           if (formData.modules.length < 3)
-            errors.push("Bitte wahlen Sie 3 Module aus.");
+            errors.push("Bitte wählen Sie 3 Module aus.");
         }
         if (project.program_type === "Art in Action") {
           if (!formData.art_choice)
-            errors.push("Bitte wahlen Sie analog oder digital.");
+            errors.push("Bitte wählen Sie analog oder digital.");
         }
         if (project.program_type === "Shakespeare Workshop") {
           if (!formData.play_name.trim())
-            errors.push("Bitte geben Sie den Namen des Stucks ein.");
+            errors.push("Bitte geben Sie den Namen des Stücks ein.");
         }
         break;
       case "presentation":
         if (!formData.presentation)
-          errors.push("Bitte beantworten Sie die Frage zur Abschlussprasentation.");
+          errors.push("Bitte beantworten Sie die Frage zur Abschlusspräsentation.");
         if (formData.presentation && formData.presentation !== "nein" && !formData.presentation_details.trim())
           errors.push("Bitte geben Sie weitere Details ein.");
         break;
@@ -244,7 +287,7 @@ export function InfoPackForm({ project, token }: InfoPackFormProps) {
       case "additional":
         if (!formData.privacy_consent)
           errors.push(
-            "Bitte stimmen Sie der Datenschutzerklarung zu, um fortzufahren."
+            "Bitte stimmen Sie der Datenschutzerklärung zu, um fortzufahren."
           );
         break;
     }
@@ -292,6 +335,7 @@ export function InfoPackForm({ project, token }: InfoPackFormProps) {
         throw new Error(data.error || "Fehler beim Senden des Formulars.");
       }
 
+      localStorage.removeItem(DRAFT_KEY);
       setSubmitted(true);
       setDirection("forward");
       setAnimKey((k) => k + 1);
@@ -349,14 +393,14 @@ export function InfoPackForm({ project, token }: InfoPackFormProps) {
           <p className="mt-3 text-zinc-500">
             Sie haben das Info-Formular bereits am{" "}
             {formatDate(project.info_pack_submitted_at.split("T")[0])}{" "}
-            ausgefullt. Falls Sie Anderungen vornehmen mochten, kontaktieren Sie
+            ausgefüllt. Falls Sie Änderungen vornehmen möchten, kontaktieren Sie
             uns bitte direkt.
           </p>
           <a
             href={`/school/project/${token}`}
             className="mt-6 inline-flex items-center rounded-lg bg-teal-600 px-6 py-3 text-sm font-medium text-white hover:bg-teal-700 transition-colors"
           >
-            Zuruck zum Projekt
+            Zurück zum Projekt
           </a>
         </div>
       </div>
@@ -368,6 +412,24 @@ export function InfoPackForm({ project, token }: InfoPackFormProps) {
 
   return (
     <div className="flex min-h-[70vh] flex-col">
+      {/* Draft indicator */}
+      {stepName !== "welcome" && stepName !== "thankyou" && (
+        <div className="flex items-center gap-3 mb-2 min-h-[20px]">
+          {draftSaved && (
+            <p className="text-xs text-teal-500 animate-pulse">Entwurf automatisch gespeichert</p>
+          )}
+          {draftLoaded && (
+            <button
+              type="button"
+              onClick={discardDraft}
+              className="text-xs text-zinc-400 hover:text-red-500 transition-colors"
+            >
+              Entwurf verwerfen
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Progress bar */}
       {stepName !== "welcome" && stepName !== "thankyou" && (
         <div className="mb-8">
@@ -405,7 +467,7 @@ export function InfoPackForm({ project, token }: InfoPackFormProps) {
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          Zuruck
+          Zurück
         </button>
       )}
 
@@ -564,7 +626,7 @@ function StepWelcome({
         </div>
         <h1 className="text-3xl font-bold text-zinc-900">Willkommen!</h1>
         <p className="mt-4 text-lg text-zinc-600">
-          Bitte fullen Sie das Info-Formular fur Ihr Projekt aus.
+          Bitte füllen Sie das Info-Formular für Ihr Projekt aus.
         </p>
 
         <div className="mt-6 rounded-xl border border-zinc-200 bg-white p-5 text-left">
@@ -610,7 +672,7 @@ function StepContact({
     <div className="mx-auto max-w-xl">
       <h2 className="text-2xl font-bold text-zinc-900">Kontaktinformationen</h2>
       <p className="mt-2 text-zinc-500">
-        Wer ist die Ansprechperson fur dieses Projekt?
+        Wer ist die Ansprechperson für dieses Projekt?
       </p>
 
       <div className="mt-8 space-y-5">
@@ -686,10 +748,10 @@ function StepStudents({
   return (
     <div className="mx-auto max-w-xl">
       <h2 className="text-2xl font-bold text-zinc-900">
-        Schuler*innen-Informationen
+        Schüler*innen-Informationen
       </h2>
       <p className="mt-2 text-zinc-500">
-        Erzahlen Sie uns von den teilnehmenden Schuler*innen.
+        Erzählen Sie uns von den teilnehmenden Schüler*innen.
       </p>
 
       <div className="mt-8 space-y-5">
@@ -734,7 +796,7 @@ function StepStudents({
             />
           </FormField>
 
-          <FormField label="Schuler*innen pro Gruppe" required>
+          <FormField label="Schüler*innen pro Gruppe" required>
             <input
               type="number"
               min="1"
@@ -833,7 +895,7 @@ function StepSchedule({
               onChange={(e) =>
                 updateField("first_meeting_teacher", e.target.value)
               }
-              placeholder="Wer empfangt die TAs?"
+              placeholder="Wer empfängt die TAs?"
               className="form-input"
             />
           </FormField>
@@ -857,12 +919,12 @@ function StepModules({
   if (programType === "Native Speaker Week") {
     return (
       <div className="mx-auto max-w-xl">
-        <h2 className="text-2xl font-bold text-zinc-900">Module wahlen</h2>
+        <h2 className="text-2xl font-bold text-zinc-900">Module wählen</h2>
         <p className="mt-2 text-zinc-500">
-          Bitte wahlen Sie genau 3 Module fur Ihre Native Speaker Week.
+          Bitte wählen Sie genau 3 Module für Ihre Native Speaker Week.
         </p>
         <p className="mt-1 text-sm text-teal-600 font-medium">
-          {formData.modules.length}/3 ausgewahlt
+          {formData.modules.length}/3 ausgewählt
         </p>
 
         <div className="mt-6 grid grid-cols-2 gap-3">
@@ -912,7 +974,7 @@ function StepModules({
       <div className="mx-auto max-w-xl">
         <h2 className="text-2xl font-bold text-zinc-900">Art in Action</h2>
         <p className="mt-2 text-zinc-500">
-          Mochten Sie die analoge oder digitale Variante?
+          Möchten Sie die analoge oder digitale Variante?
         </p>
 
         <div className="mt-8 flex gap-4">
@@ -942,11 +1004,11 @@ function StepModules({
           Shakespeare Workshop
         </h2>
         <p className="mt-2 text-zinc-500">
-          Welches Stuck soll behandelt werden?
+          Welches Stück soll behandelt werden?
         </p>
 
         <div className="mt-8">
-          <FormField label="Name des Stucks" required>
+          <FormField label="Name des Stücks" required>
             <input
               type="text"
               value={formData.play_name}
@@ -973,10 +1035,10 @@ function StepPresentation({
   return (
     <div className="mx-auto max-w-xl">
       <h2 className="text-2xl font-bold text-zinc-900">
-        Abschlussprasentation
+        Abschlusspräsentation
       </h2>
       <p className="mt-2 text-zinc-500">
-        Soll es am Ende der Woche eine Prasentation geben?
+        Soll es am Ende der Woche eine Präsentation geben?
       </p>
 
       <div className="mt-8 space-y-3">
@@ -1005,7 +1067,7 @@ function StepPresentation({
 
       {formData.presentation === "ja" && (
         <div className="mt-6">
-          <FormField label="Zeit und Ort der Prasentation" required>
+          <FormField label="Zeit und Ort der Präsentation" required>
             <input
               type="text"
               value={formData.presentation_details}
@@ -1028,7 +1090,7 @@ function StepPresentation({
               onChange={(e) =>
                 updateField("presentation_details", e.target.value)
               }
-              placeholder="Begrundung"
+              placeholder="Begründung"
               className="form-input"
             />
           </FormField>
@@ -1037,7 +1099,7 @@ function StepPresentation({
 
       {formData.presentation === "sonstiges" && (
         <div className="mt-6">
-          <FormField label="Bitte erklaren Sie" required>
+          <FormField label="Bitte erklären Sie" required>
             <input
               type="text"
               value={formData.presentation_details}
@@ -1074,7 +1136,7 @@ function StepMeals({
         {/* Lunch */}
         <div>
           <p className="text-base font-semibold text-zinc-800">
-            Gibt es ein Mittagessen fur die Teaching Artists?
+            Gibt es ein Mittagessen für die Teaching Artists?
           </p>
           <div className="mt-3 space-y-2">
             {[
@@ -1128,8 +1190,8 @@ function StepMeals({
                 Handynutzung erlaubt
               </span>
               <p className="text-sm text-zinc-500 mt-0.5">
-                Durfen die Schuler*innen wahrend der Workshops ihre Handys
-                benutzen? (z.B. fur Recherche, Filmaufnahmen)
+                Dürfen die Schüler*innen während der Workshops ihre Handys
+                benutzen? (z.B. für Recherche, Filmaufnahmen)
               </p>
             </div>
           </label>
@@ -1138,13 +1200,13 @@ function StepMeals({
         {/* Certificates */}
         <div>
           <p className="text-base font-semibold text-zinc-800">
-            Sollen die Schuler*innen Zertifikate erhalten?
+            Sollen die Schüler*innen Zertifikate erhalten?
           </p>
           <div className="mt-3 space-y-2">
             {[
               { value: "ja", label: "Ja" },
               { value: "nein", label: "Nein" },
-              { value: "later", label: "Entscheiden wir spater" },
+              { value: "later", label: "Entscheiden wir später" },
             ].map(({ value, label }) => (
               <button
                 key={value}
@@ -1176,12 +1238,12 @@ function StepAdditional({
   return (
     <div className="mx-auto max-w-xl">
       <h2 className="text-2xl font-bold text-zinc-900">
-        Zusatzliche Informationen
+        Zusätzliche Informationen
       </h2>
       <p className="mt-2 text-zinc-500">Fast geschafft! Noch ein paar letzte Fragen.</p>
 
       <div className="mt-8 space-y-6">
-        <FormField label="Mogliche Schwierigkeiten">
+        <FormField label="Mögliche Schwierigkeiten">
           <textarea
             value={formData.difficulties}
             onChange={(e) => updateField("difficulties", e.target.value)}
@@ -1217,7 +1279,7 @@ function StepAdditional({
               </span>
               <p className="text-sm text-zinc-500 mt-0.5">
                 Ich stimme der Verarbeitung meiner Daten gema&szlig; der
-                Datenschutzerklarung von InterACT English zu.
+                Datenschutzerklärung von InterACT English zu.
               </p>
             </div>
           </label>
@@ -1248,10 +1310,10 @@ function StepThankYou({ token }: { token: string }) {
         </div>
         <h1 className="text-3xl font-bold text-zinc-900">Vielen Dank!</h1>
         <p className="mt-4 text-lg text-zinc-600">
-          Ihr Formular wurde erfolgreich ubermittelt.
+          Ihr Formular wurde erfolgreich übermittelt.
         </p>
         <p className="mt-3 text-zinc-500">
-          Nicole wird sich in den nachsten 2-3 Wochen mit allen weiteren
+          Nicole wird sich in den nächsten 2-3 Wochen mit allen weiteren
           Informationen bei Ihnen melden.
         </p>
         <a
@@ -1271,7 +1333,7 @@ function StepThankYou({ token }: { token: string }) {
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          Zuruck zum Projekt
+          Zurück zum Projekt
         </a>
       </div>
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -49,11 +49,68 @@ export function ExpenseClaimForm({
 }: {
   workOrders: WorkOrder[];
 }) {
+  const DRAFT_KEY = "expense-draft";
   const router = useRouter();
   const [items, setItems] = useState<ExpenseItem[]>([emptyItem()]);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
+  const [draftLoaded, setDraftLoaded] = useState(false);
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Restore draft on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(DRAFT_KEY);
+    if (saved) {
+      try {
+        const draft = JSON.parse(saved);
+        if (draft.items?.length) {
+          setItems(
+            draft.items.map((item: Partial<ExpenseItem>) => ({
+              ...emptyItem(),
+              description: item.description || "",
+              amount: item.amount || "",
+              category: item.category || "",
+              work_order_id: item.work_order_id || "",
+              receiptFile: null,
+              receiptPreview: null,
+            }))
+          );
+        }
+        if (draft.notes) setNotes(draft.notes);
+        setDraftLoaded(true);
+      } catch {
+        // ignore corrupt draft
+      }
+    }
+  }, []);
+
+  // Save draft debounced on every change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const draft = {
+        items: items.map(({ description, amount, category, work_order_id }) => ({
+          description,
+          amount,
+          category,
+          work_order_id,
+        })),
+        notes,
+      };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      setDraftSaved(true);
+      const fade = setTimeout(() => setDraftSaved(false), 2000);
+      return () => clearTimeout(fade);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [items, notes]);
+
+  function discardDraft() {
+    localStorage.removeItem(DRAFT_KEY);
+    setItems([emptyItem()]);
+    setNotes("");
+    setDraftLoaded(false);
+  }
 
   const total = items.reduce(
     (sum, item) => sum + (parseFloat(item.amount) || 0),
@@ -156,6 +213,7 @@ export function ExpenseClaimForm({
     });
 
     if (res.ok) {
+      localStorage.removeItem(DRAFT_KEY);
       router.push("/portal/expenses");
       router.refresh();
     }
@@ -174,6 +232,22 @@ export function ExpenseClaimForm({
         </svg>
         Back
       </Link>
+
+      {/* Draft indicator */}
+      <div className="flex items-center gap-3 px-1 min-h-[20px]">
+        {draftSaved && (
+          <p className="text-xs text-amber-500 animate-pulse">Entwurf gespeichert</p>
+        )}
+        {draftLoaded && (
+          <button
+            type="button"
+            onClick={discardDraft}
+            className="text-xs text-zinc-400 hover:text-red-500 transition-colors"
+          >
+            Entwurf verwerfen
+          </button>
+        )}
+      </div>
 
       {/* Receipt Items */}
       <div className="space-y-3">
