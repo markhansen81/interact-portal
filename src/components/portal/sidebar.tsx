@@ -241,11 +241,11 @@ function DesktopSidebar({ profile }: { profile: Profile }) {
 
 /* ─────────────── Exported Component ─────────────── */
 
-export function PortalSidebar({ profile }: { profile: Profile }) {
+export function PortalSidebar({ profile, unreadCount = 0 }: { profile: Profile; unreadCount?: number }) {
   return (
     <>
       <DesktopSidebar profile={profile} />
-      <PortalBottomNav />
+      <PortalBottomNav unreadCount={unreadCount} />
     </>
   );
 }

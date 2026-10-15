@@ -87,9 +87,28 @@ export default async function SchoolProjectPage({
     };
   });
 
+  // Build project data with explicit fields for the component
+  const projectData = {
+    id: project.id,
+    name: project.name,
+    school: project.school,
+    program_type: project.program_type,
+    start_date: project.start_date,
+    end_date: project.end_date,
+    days: project.days,
+    status: project.status,
+    teacher_name: project.teacher_name,
+    teacher_email: project.teacher_email,
+    accommodation: project.accommodation,
+    info_pack_submitted_at: project.info_pack_submitted_at,
+    info_pack_data: project.info_pack_data,
+    schedule_confirmed_at: project.schedule_confirmed_at,
+    feedback_submitted_at: project.feedback_submitted_at,
+  };
+
   return (
     <SchoolProjectView
-      project={project}
+      project={projectData}
       groups={groups || []}
       documents={documents || []}
       token={token}
