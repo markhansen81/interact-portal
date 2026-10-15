@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -69,12 +69,51 @@ export function InvoiceCalculator({
   payScales: PayScale[];
   travelStipends: TravelStipend[];
 }) {
+  const DRAFT_KEY = `invoice-draft-${wo.id}`;
   const router = useRouter();
   const [addons, setAddons] = useState<AddonLine[]>([]);
   const [travelHours, setTravelHours] = useState("");
   const [loading, setLoading] = useState(false);
   const [notes, setNotes] = useState("");
   const [downloading, setDownloading] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
+  const [draftLoaded, setDraftLoaded] = useState(false);
+
+  // Restore draft on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(DRAFT_KEY);
+    if (saved) {
+      try {
+        const draft = JSON.parse(saved);
+        if (draft.addons?.length) setAddons(draft.addons);
+        if (draft.travelHours) setTravelHours(draft.travelHours);
+        if (draft.notes) setNotes(draft.notes);
+        setDraftLoaded(true);
+      } catch {
+        // ignore corrupt draft
+      }
+    }
+  }, [DRAFT_KEY]);
+
+  // Save draft debounced
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const draft = { addons, travelHours, notes };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      setDraftSaved(true);
+      const fade = setTimeout(() => setDraftSaved(false), 2000);
+      return () => clearTimeout(fade);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [addons, travelHours, notes, DRAFT_KEY]);
+
+  function discardDraft() {
+    localStorage.removeItem(DRAFT_KEY);
+    setAddons([]);
+    setTravelHours("");
+    setNotes("");
+    setDraftLoaded(false);
+  }
 
   const isCamp = wo.program_type.toLowerCase().includes("camp");
   const isTheatreOrFilm =
@@ -375,6 +414,7 @@ export function InvoiceCalculator({
     });
 
     if (res.ok) {
+      localStorage.removeItem(DRAFT_KEY);
       router.push("/portal/invoices");
       router.refresh();
     }
@@ -389,6 +429,22 @@ export function InvoiceCalculator({
       >
         &larr; Back
       </Link>
+
+      {/* Draft indicator */}
+      <div className="flex items-center gap-3 min-h-[20px]">
+        {draftSaved && (
+          <p className="text-xs text-amber-500 animate-pulse">Entwurf gespeichert</p>
+        )}
+        {draftLoaded && (
+          <button
+            type="button"
+            onClick={discardDraft}
+            className="text-xs text-zinc-400 hover:text-red-500 transition-colors"
+          >
+            Entwurf verwerfen
+          </button>
+        )}
+      </div>
 
       {/* Work Order Reference */}
       <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">

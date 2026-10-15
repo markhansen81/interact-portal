@@ -100,9 +100,9 @@ const statusStyles: Record<string, string> = {
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-GB", {
+  return d.toLocaleDateString("de-DE", {
     day: "numeric",
-    month: "short",
+    month: "long",
     year: "numeric",
   });
 }
@@ -165,6 +165,12 @@ export function SchoolProjectView({
   const [viewingDoc, setViewingDoc] = useState<Document | null>(null);
 
   const [savingNotes, setSavingNotes] = useState<Record<string, boolean>>({});
+
+  // Delete confirmation state
+  const [deleteConfirm, setDeleteConfirm] = useState<{ groupId: string; studentId: string; studentName: string } | null>(null);
+
+  // Notes saved toast
+  const [notesSavedToast, setNotesSavedToast] = useState<string | null>(null);
 
   // Invoice forward state
   const [invoiceForwardEmail, setInvoiceForwardEmail] = useState("");
@@ -276,6 +282,16 @@ export function SchoolProjectView({
     }
   }
 
+  function confirmDeleteStudent(groupId: string, studentId: string, studentName: string) {
+    setDeleteConfirm({ groupId, studentId, studentName });
+  }
+
+  async function executeDeleteStudent() {
+    if (!deleteConfirm) return;
+    await deleteStudent(deleteConfirm.groupId, deleteConfirm.studentId);
+    setDeleteConfirm(null);
+  }
+
   // Build consolidated notes for a group
   function buildNotesForGroup(groupId: string): string {
     const parts: string[] = [];
@@ -335,6 +351,10 @@ export function SchoolProjectView({
     if (notes && group.project_students.length > 0) {
       // We don't have a group_notes column, so let's just alert success
     }
+
+    // Show success toast
+    setNotesSavedToast(groupId);
+    setTimeout(() => setNotesSavedToast(null), 3000);
   }
 
   // --- Teacher task toggle ---
@@ -577,15 +597,15 @@ export function SchoolProjectView({
         <div className="flex items-start justify-between">
           <div>
             <p className="text-sm text-zinc-500">
-              Welcome, {project.teacher_name || "Teacher"}
+              Willkommen, {project.teacher_name || "Lehrkraft"}
             </p>
             <h1 className="mt-1 text-2xl font-bold text-zinc-900">
               {project.name}
             </h1>
             <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-zinc-500">
-              {project.school && <span>School: {project.school}</span>}
+              {project.school && <span>Schule: {project.school}</span>}
               {project.program_type && (
-                <span>Program: {project.program_type}</span>
+                <span>Programm: {project.program_type}</span>
               )}
               {project.start_date && project.end_date && (
                 <span>
@@ -595,7 +615,7 @@ export function SchoolProjectView({
               )}
               {project.days && (
                 <span>
-                  {project.days} day{project.days > 1 ? "s" : ""}
+                  {project.days} Tag{project.days > 1 ? "e" : ""}
                 </span>
               )}
             </div>
@@ -607,6 +627,36 @@ export function SchoolProjectView({
           >
             {project.status}
           </span>
+        </div>
+      </div>
+
+      {/* Contact card */}
+      <div className="rounded-xl border border-teal-200 bg-teal-50 p-5">
+        <div className="flex items-start gap-4">
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-teal-100">
+            <svg className="h-5 w-5 text-teal-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-teal-900">Fragen?</h2>
+            <p className="mt-1 text-sm text-teal-700">
+              Bei Fragen zum Projekt können Sie sich jederzeit an uns wenden.
+            </p>
+            <div className="mt-3 space-y-1 text-sm text-teal-800">
+              <p className="font-medium">Nicole Bolz</p>
+              <p>
+                <a href="mailto:nicole@interactenglish.de" className="underline hover:text-teal-900">
+                  nicole@interactenglish.de
+                </a>
+              </p>
+              <p>
+                <a href="tel:+493020339702" className="underline hover:text-teal-900">
+                  Tel. 030 20339702
+                </a>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -679,7 +729,8 @@ export function SchoolProjectView({
       {teamMembers.length > 0 && (
         <div className="space-y-6">
           <div className="rounded-xl border border-zinc-200 bg-white p-6">
-            <h2 className="mb-4 text-lg font-semibold text-zinc-900">Teaching Artists</h2>
+            <h2 className="mb-1 text-lg font-semibold text-zinc-900">Ihre Teaching Artists</h2>
+            <p className="mb-4 text-sm text-zinc-500">Die Künstler*innen für Ihr Projekt</p>
             <div className="space-y-4">
               {teamMembers.map((m) => {
                 const taProfile: TAProfile = {
@@ -714,7 +765,7 @@ export function SchoolProjectView({
           {/* Homestay profiles if accommodation is homestay */}
           {project.accommodation?.toLowerCase().includes("homestay") && (
             <div className="rounded-xl border border-zinc-200 bg-white p-6">
-              <h2 className="mb-4 text-lg font-semibold text-zinc-900">Homestay Profiles</h2>
+              <h2 className="mb-4 text-lg font-semibold text-zinc-900">Gastfamilien-Profile</h2>
               <div className="space-y-4">
                 {teamMembers.map((m) => {
                   const taProfile: TAProfile = {
@@ -753,9 +804,9 @@ export function SchoolProjectView({
       {tasks.length > 0 && (
         <div className="rounded-xl border border-zinc-200 bg-white p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-zinc-900">Your Tasks</h2>
+            <h2 className="text-lg font-semibold text-zinc-900">Ihre Aufgaben</h2>
             <span className="text-sm text-zinc-500">
-              {tasks.filter((t) => t.completed).length} of {tasks.length} completed
+              {tasks.filter((t) => t.completed).length} von {tasks.length} erledigt
             </span>
           </div>
           {/* Progress bar */}
@@ -818,13 +869,13 @@ export function SchoolProjectView({
       <div className="rounded-xl border border-zinc-200 bg-white p-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-zinc-900">
-            Student Lists
+            Schülerlisten
           </h2>
           <button
             onClick={() => setShowAddGroup(true)}
             className="rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800"
           >
-            Add Group
+            Gruppe hinzufügen
           </button>
         </div>
 
@@ -835,12 +886,12 @@ export function SchoolProjectView({
             className="mb-6 rounded-lg border border-zinc-200 p-4"
           >
             <h3 className="mb-3 text-sm font-semibold text-zinc-900">
-              New Group
+              Neue Gruppe
             </h3>
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="mb-1 block text-xs font-medium text-zinc-500">
-                  Group Name *
+                  Gruppenname *
                 </label>
                 <input
                   type="text"
@@ -849,13 +900,13 @@ export function SchoolProjectView({
                   onChange={(e) =>
                     setNewGroup({ ...newGroup, name: e.target.value })
                   }
-                  placeholder="e.g. Klasse 7a"
+                  placeholder="z.B. Klasse 7a"
                   className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm"
                 />
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-zinc-500">
-                  Grade
+                  Klassenstufe
                 </label>
                 <input
                   type="text"
@@ -863,13 +914,13 @@ export function SchoolProjectView({
                   onChange={(e) =>
                     setNewGroup({ ...newGroup, grade: e.target.value })
                   }
-                  placeholder="e.g. 7"
+                  placeholder="z.B. 7"
                   className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm"
                 />
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-zinc-500">
-                  English Level
+                  Sprachniveau
                 </label>
                 <input
                   type="text"
@@ -877,7 +928,7 @@ export function SchoolProjectView({
                   onChange={(e) =>
                     setNewGroup({ ...newGroup, english_level: e.target.value })
                   }
-                  placeholder="e.g. B1"
+                  placeholder="z.B. B1"
                   className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm"
                 />
               </div>
@@ -888,14 +939,14 @@ export function SchoolProjectView({
                 disabled={addingGroup}
                 className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50"
               >
-                {addingGroup ? "Adding..." : "Add Group"}
+                {addingGroup ? "Wird hinzugefügt..." : "Gruppe hinzufügen"}
               </button>
               <button
                 type="button"
                 onClick={() => setShowAddGroup(false)}
                 className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
               >
-                Cancel
+                Abbrechen
               </button>
             </div>
           </form>
@@ -904,8 +955,7 @@ export function SchoolProjectView({
         {groups.length === 0 ? (
           <div className="rounded-lg border border-dashed border-zinc-300 p-8 text-center">
             <p className="text-sm text-zinc-500">
-              No groups yet. Click &quot;Add Group&quot; to create your first
-              class group.
+              Noch keine Gruppen vorhanden. Klicken Sie auf &quot;Gruppe hinzufügen&quot;, um Ihre erste Klasse anzulegen.
             </p>
           </div>
         ) : (
@@ -921,13 +971,12 @@ export function SchoolProjectView({
                       {group.name}
                     </h3>
                     <div className="flex gap-3 text-xs text-zinc-500">
-                      {group.grade && <span>Grade: {group.grade}</span>}
+                      {group.grade && <span>Klasse: {group.grade}</span>}
                       {group.english_level && (
-                        <span>Level: {group.english_level}</span>
+                        <span>Niveau: {group.english_level}</span>
                       )}
                       <span>
-                        {group.project_students.length} student
-                        {group.project_students.length !== 1 ? "s" : ""}
+                        {group.project_students.length} Schüler*in{group.project_students.length !== 1 ? "nen" : ""}
                       </span>
                     </div>
                   </div>
@@ -941,10 +990,10 @@ export function SchoolProjectView({
                         #
                       </th>
                       <th className="py-2 text-left text-xs font-medium text-zinc-500">
-                        First Name
+                        Vorname
                       </th>
                       <th className="py-2 text-left text-xs font-medium text-zinc-500">
-                        Last Name
+                        Nachname
                       </th>
                       <th className="w-10 py-2"></th>
                     </tr>
@@ -965,10 +1014,10 @@ export function SchoolProjectView({
                         <td className="py-2 text-right">
                           <button
                             onClick={() =>
-                              deleteStudent(group.id, student.id)
+                              confirmDeleteStudent(group.id, student.id, `${student.first_name} ${student.last_name || ""}`.trim())
                             }
                             className="text-zinc-400 hover:text-red-500"
-                            title="Remove student"
+                            title="Schüler*in entfernen"
                           >
                             <svg
                               className="h-4 w-4"
@@ -1011,7 +1060,7 @@ export function SchoolProjectView({
                               addStudent(group.id);
                             }
                           }}
-                          placeholder="First name"
+                          placeholder="Vorname"
                           className="w-full rounded border border-zinc-200 px-2 py-1 text-sm focus:border-zinc-400 focus:outline-none"
                         />
                       </td>
@@ -1038,7 +1087,7 @@ export function SchoolProjectView({
                               addStudent(group.id);
                             }
                           }}
-                          placeholder="Last name"
+                          placeholder="Nachname"
                           className="w-full rounded border border-zinc-200 px-2 py-1 text-sm focus:border-zinc-400 focus:outline-none"
                         />
                       </td>
@@ -1067,7 +1116,7 @@ export function SchoolProjectView({
                         }
                         className="rounded border border-zinc-200 px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-50"
                       >
-                        Paste student list
+                        Schülerliste einfügen
                       </button>
                       <button
                         onClick={() =>
@@ -1075,7 +1124,7 @@ export function SchoolProjectView({
                         }
                         className="rounded border border-zinc-200 px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-50"
                       >
-                        Upload CSV
+                        CSV hochladen
                       </button>
                     </div>
                   ) : (
@@ -1083,8 +1132,8 @@ export function SchoolProjectView({
                       <div className="mb-3 flex items-center justify-between">
                         <h4 className="text-sm font-medium text-zinc-900">
                           {bulkImportMode[group.id] === "paste"
-                            ? "Paste Student Names"
-                            : "Upload CSV File"}
+                            ? "Schülernamen einfügen"
+                            : "CSV-Datei hochladen"}
                         </h4>
                         <button
                           onClick={() => {
@@ -1094,7 +1143,7 @@ export function SchoolProjectView({
                           }}
                           className="text-xs text-zinc-500 hover:text-zinc-700"
                         >
-                          Cancel
+                          Abbrechen
                         </button>
                       </div>
 
@@ -1109,7 +1158,7 @@ export function SchoolProjectView({
                               }))
                             }
                             rows={6}
-                            placeholder={"Paste student names, one per line:\nMax Mustermann\nAnna Schmidt\nLukas Weber"}
+                            placeholder={"Schülernamen einfügen, ein Name pro Zeile:\nMax Mustermann\nAnna Schmidt\nLukas Weber"}
                             className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm focus:border-zinc-400 focus:outline-none"
                           />
                           <button
@@ -1117,7 +1166,7 @@ export function SchoolProjectView({
                             disabled={!(pasteText[group.id] || "").trim()}
                             className="mt-2 rounded bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 disabled:opacity-30"
                           >
-                            Parse Names
+                            Namen erkennen
                           </button>
                         </>
                       )}
@@ -1128,7 +1177,7 @@ export function SchoolProjectView({
                             <svg className="h-5 w-5 text-zinc-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                               <path d="M12 4v16m8-8H4" />
                             </svg>
-                            <span className="text-sm text-zinc-600">Choose a CSV file</span>
+                            <span className="text-sm text-zinc-600">CSV-Datei auswählen</span>
                             <input
                               type="file"
                               accept=".csv"
@@ -1140,7 +1189,7 @@ export function SchoolProjectView({
                             />
                           </label>
                           <p className="mt-1 text-xs text-zinc-400">
-                            CSV with first_name, last_name columns or a single Name column
+                            CSV mit Vorname/Nachname-Spalten oder einer einzelnen Name-Spalte
                           </p>
                         </div>
                       )}
@@ -1149,15 +1198,15 @@ export function SchoolProjectView({
                       {(parsedStudents[group.id] || []).length > 0 && (
                         <div className="mt-3">
                           <h5 className="mb-2 text-xs font-medium text-zinc-600">
-                            Preview ({parsedStudents[group.id].length} students)
+                            Vorschau ({parsedStudents[group.id].length} Schüler*innen)
                           </h5>
                           <div className="max-h-48 overflow-y-auto rounded border border-zinc-200 bg-white">
                             <table className="w-full text-sm">
                               <thead>
                                 <tr className="border-b border-zinc-200">
                                   <th className="w-10 py-1.5 pl-3 text-left text-xs font-medium text-zinc-500">#</th>
-                                  <th className="py-1.5 text-left text-xs font-medium text-zinc-500">First Name</th>
-                                  <th className="py-1.5 text-left text-xs font-medium text-zinc-500">Last Name</th>
+                                  <th className="py-1.5 text-left text-xs font-medium text-zinc-500">Vorname</th>
+                                  <th className="py-1.5 text-left text-xs font-medium text-zinc-500">Nachname</th>
                                   <th className="w-8 py-1.5"></th>
                                 </tr>
                               </thead>
@@ -1188,8 +1237,8 @@ export function SchoolProjectView({
                             className="mt-3 rounded bg-green-600 px-4 py-2 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
                           >
                             {importing[group.id]
-                              ? "Importing..."
-                              : `Import ${parsedStudents[group.id].length} Students`}
+                              ? "Wird importiert..."
+                              : `${parsedStudents[group.id].length} Schüler*innen importieren`}
                           </button>
                         </div>
                       )}
@@ -1201,13 +1250,13 @@ export function SchoolProjectView({
                 <div className="mt-4">
                   <div className="flex items-center justify-between">
                     <h4 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                      Students with special needs
+                      Schüler*innen mit besonderem Förderbedarf
                     </h4>
                     <button
                       onClick={() => addSpecialNeedsRow(group.id)}
                       className="text-xs text-zinc-500 hover:text-zinc-700"
                     >
-                      + Add row
+                      + Zeile hinzufügen
                     </button>
                   </div>
                   {(specialNeeds[group.id] || []).length > 0 && (
@@ -1215,13 +1264,13 @@ export function SchoolProjectView({
                       <thead>
                         <tr className="border-b border-zinc-200">
                           <th className="py-1.5 text-left text-xs font-medium text-zinc-500">
-                            Student Name
+                            Schüler*in
                           </th>
                           <th className="py-1.5 text-left text-xs font-medium text-zinc-500">
-                            Issue
+                            Thema
                           </th>
                           <th className="py-1.5 text-left text-xs font-medium text-zinc-500">
-                            How to handle
+                            Umgang
                           </th>
                           <th className="w-8 py-1.5"></th>
                         </tr>
@@ -1303,13 +1352,13 @@ export function SchoolProjectView({
                 <div className="mt-4">
                   <div className="flex items-center justify-between">
                     <h4 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                      Allergies &amp; Medications
+                      Allergien &amp; Medikamente
                     </h4>
                     <button
                       onClick={() => addAllergyRow(group.id)}
                       className="text-xs text-zinc-500 hover:text-zinc-700"
                     >
-                      + Add row
+                      + Zeile hinzufügen
                     </button>
                   </div>
                   {(allergies[group.id] || []).length > 0 && (
@@ -1317,13 +1366,13 @@ export function SchoolProjectView({
                       <thead>
                         <tr className="border-b border-zinc-200">
                           <th className="py-1.5 text-left text-xs font-medium text-zinc-500">
-                            Student Name
+                            Schüler*in
                           </th>
                           <th className="py-1.5 text-left text-xs font-medium text-zinc-500">
-                            Allergy / Medication
+                            Allergie / Medikament
                           </th>
                           <th className="py-1.5 text-left text-xs font-medium text-zinc-500">
-                            How to handle
+                            Umgang
                           </th>
                           <th className="w-8 py-1.5"></th>
                         </tr>
@@ -1404,7 +1453,7 @@ export function SchoolProjectView({
                 {/* Group dynamics */}
                 <div className="mt-4">
                   <h4 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                    Group Dynamics
+                    Gruppendynamik
                   </h4>
                   <textarea
                     value={groupDynamics[group.id] || ""}
@@ -1415,7 +1464,7 @@ export function SchoolProjectView({
                       }))
                     }
                     rows={3}
-                    placeholder="Any notes on group dynamics, friendships, conflicts, etc."
+                    placeholder="Anmerkungen zur Gruppendynamik, Freundschaften, Konflikte usw."
                     className="mt-2 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-400 focus:outline-none"
                   />
                 </div>
@@ -1424,13 +1473,16 @@ export function SchoolProjectView({
                 {((specialNeeds[group.id] || []).length > 0 ||
                   (allergies[group.id] || []).length > 0 ||
                   (groupDynamics[group.id] || "").trim()) && (
-                  <div className="mt-3">
+                  <div className="mt-3 flex items-center gap-3">
                     <button
                       onClick={() => saveGroupNotes(group.id)}
                       className="rounded-lg bg-zinc-900 px-4 py-2 text-xs font-medium text-white hover:bg-zinc-800"
                     >
-                      Save Group Notes
+                      Gruppennotizen speichern
                     </button>
+                    {notesSavedToast === group.id && (
+                      <span className="text-xs font-medium text-green-600">Gespeichert!</span>
+                    )}
                   </div>
                 )}
               </div>
@@ -1443,7 +1495,7 @@ export function SchoolProjectView({
       {documents.length > 0 && (
         <div className="rounded-xl border border-zinc-200 bg-white p-6">
           <h2 className="mb-4 text-lg font-semibold text-zinc-900">
-            Documents
+            Dokumente
           </h2>
           <ul className="space-y-2">
             {documents.map((doc) => (
@@ -1467,7 +1519,7 @@ export function SchoolProjectView({
                       rel="noopener noreferrer"
                       className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50"
                     >
-                      Download
+                      Herunterladen
                     </a>
                   ) : doc.doc_type === "native" && doc.content ? (
                     <button
@@ -1476,7 +1528,7 @@ export function SchoolProjectView({
                       }
                       className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50"
                     >
-                      {viewingDoc?.id === doc.id ? "Close" : "Read"}
+                      {viewingDoc?.id === doc.id ? "Schließen" : "Lesen"}
                     </button>
                   ) : null}
                 </div>
@@ -1495,7 +1547,7 @@ export function SchoolProjectView({
                   onClick={() => setViewingDoc(null)}
                   className="text-xs text-zinc-500 hover:text-zinc-700"
                 >
-                  Close
+                  Schließen
                 </button>
               </div>
               <RichTextViewer content={viewingDoc.content} />
@@ -1504,22 +1556,48 @@ export function SchoolProjectView({
         </div>
       )}
 
+      {/* Delete confirmation dialog */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="mx-4 w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-zinc-900">Schüler*in entfernen?</h3>
+            <p className="mt-2 text-sm text-zinc-600">
+              Möchten Sie <strong>{deleteConfirm.studentName}</strong> wirklich aus der Liste entfernen?
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={executeDeleteStudent}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              >
+                Entfernen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Invoice section */}
       {schoolInvoices.length > 0 && (
         <div className="rounded-xl border border-zinc-200 bg-white p-6">
-          <h2 className="mb-4 text-lg font-semibold text-zinc-900">Invoice</h2>
+          <h2 className="mb-4 text-lg font-semibold text-zinc-900">Rechnung</h2>
           <div className="space-y-4">
             {schoolInvoices.map((inv) => (
               <div key={inv.id} className="rounded-lg border border-zinc-100 p-4">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm font-semibold text-zinc-900">
-                      Your invoice is ready
+                      Ihre Rechnung ist bereit
                     </p>
                     <div className="mt-2 space-y-1 text-sm text-zinc-600">
-                      <p>Invoice: <strong>{inv.invoice_number}</strong></p>
-                      <p>Amount: <strong>{"\u20AC"}{inv.total.toLocaleString("de-DE", { minimumFractionDigits: 2 })}</strong></p>
-                      <p>Due: <strong>{new Date(inv.due_date + "T00:00:00").toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })}</strong></p>
+                      <p>Rechnung: <strong>{inv.invoice_number}</strong></p>
+                      <p>Betrag: <strong>{"\u20AC"}{inv.total.toLocaleString("de-DE", { minimumFractionDigits: 2 })}</strong></p>
+                      <p>Fällig: <strong>{new Date(inv.due_date + "T00:00:00").toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })}</strong></p>
                     </div>
                   </div>
                   {inv.pdf_url && (
@@ -1529,14 +1607,14 @@ export function SchoolProjectView({
                       rel="noopener noreferrer"
                       className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
                     >
-                      Download Invoice PDF
+                      Rechnung als PDF
                     </a>
                   )}
                 </div>
 
                 <div className="mt-4 border-t border-zinc-100 pt-4">
                   <p className="mb-2 text-xs font-medium text-zinc-500">
-                    Send to your finance team
+                    An Ihre Buchhaltung weiterleiten
                   </p>
                   <div className="flex items-end gap-2">
                     <div className="flex-1">
@@ -1553,14 +1631,14 @@ export function SchoolProjectView({
                       disabled={forwardingInvoice === inv.id || !invoiceForwardEmail.trim()}
                       className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
                     >
-                      {forwardingInvoice === inv.id ? "Sending..." : "Send"}
+                      {forwardingInvoice === inv.id ? "Wird gesendet..." : "Senden"}
                     </button>
                   </div>
                   {forwardSuccess === inv.id && (
-                    <p className="mt-2 text-xs text-green-600">Invoice sent successfully!</p>
+                    <p className="mt-2 text-xs text-green-600">Rechnung erfolgreich gesendet!</p>
                   )}
                   <p className="mt-2 text-xs text-zinc-400">
-                    Payment: Please transfer to Berliner Sparkasse, IBAN DE64100500000190650656, BIC BELADEBEXXX. Use the invoice number and school name as reference.
+                    Zahlung: Bitte überweisen Sie an Berliner Sparkasse, IBAN DE64100500000190650656, BIC BELADEBEXXX. Verwenden Sie die Rechnungsnummer und den Schulnamen als Referenz.
                   </p>
                 </div>
               </div>
