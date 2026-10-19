@@ -83,6 +83,12 @@ export default async function SystemHealthPage() {
   // Check env vars (server-side only)
   const hasResendKey = !!process.env.RESEND_API_KEY;
   const hasAnthropicKey = !!process.env.ANTHROPIC_API_KEY;
+  const hasSquarespaceKey = !!process.env.SQUARESPACE_API_KEY;
+
+  // Insurance pipeline stats
+  const { count: insuranceOrdersCount } = await adminClient
+    .from("insurance_orders")
+    .select("*", { count: "exact", head: true });
 
   return (
     <div className="space-y-8">
@@ -120,6 +126,8 @@ export default async function SystemHealthPage() {
         hasResendKey={hasResendKey}
         hasAnthropicKey={hasAnthropicKey}
         healthChecks={healthChecks ?? []}
+        hasSquarespaceKey={hasSquarespaceKey}
+        insuranceOrdersCount={insuranceOrdersCount ?? 0}
       />
     </div>
   );
