@@ -67,7 +67,30 @@ function extractFormFields(
     return fields;
   }
 
-  // Raw Squarespace format: lineItems[].customizations[]
+  // Raw Squarespace API format: formSubmission[] (current API response)
+  const formSubmission = order.formSubmission as Array<{ label?: string; value?: string }> | undefined;
+
+  if (formSubmission) {
+    for (const field of formSubmission) {
+      const label = field.label?.replace(/:+$/, "").trim();
+      if (!label || !field.value) continue;
+
+      const dbColumn = FIELD_MAP[label];
+      if (!dbColumn) continue;
+
+      if (dbColumn === "agb_accepted" || dbColumn === "data_privacy_accepted") {
+        fields[dbColumn] = true;
+      } else if (dbColumn === "participation_fee" || dbColumn === "num_project_days") {
+        const num = Number(field.value);
+        fields[dbColumn] = isNaN(num) ? field.value : num;
+      } else {
+        fields[dbColumn] = field.value;
+      }
+    }
+    if (Object.keys(fields).length > 0) return fields;
+  }
+
+  // Legacy Squarespace format: lineItems[].customizations[]
   const lineItems = order.lineItems as Array<{
     customizations?: Array<{ label?: string; value?: string }>;
   }> | undefined;
@@ -142,17 +165,18 @@ export async function POST(request: Request) {
     || order.lineItems?.[0]?.productName || order.lineItems?.[0]?.name || "Insurance";
   const quantity = order.lineItems?.[0]?.quantity || 1;
 
-  // grandTotal: Zapier sends as string "0.00", raw API sends as object { value, currency }
+  // grandTotal: Zapier sends as string "4.00", raw API sends as object { value: "4.00", currency: "EUR" }
+  // Note: Squarespace API returns values as strings in full currency units (NOT cents)
   let grandTotal = 0;
   let currency = "EUR";
   if (typeof order.grandTotal === "string") {
     grandTotal = Number(order.grandTotal) || 0;
   } else if (order.grandTotal?.value) {
-    grandTotal = Number(order.grandTotal.value) / 100;
+    grandTotal = Number(order.grandTotal.value);
     currency = order.grandTotal.currency || "EUR";
   }
   const unitPrice = order.lineItems?.[0]?.unitPricePaid?.value
-    ? Number(order.lineItems[0].unitPricePaid.value) / 100
+    ? Number(order.lineItems[0].unitPricePaid.value)
     : grandTotal;
 
   const formFields = extractFormFields(order);
