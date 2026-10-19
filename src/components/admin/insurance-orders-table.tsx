@@ -335,12 +335,10 @@ export function InsuranceOrdersTable({ orders: initialOrders }: { orders: Insura
                       <DeliveryBadge status={status} />
                     </td>
                     <td className="px-4 py-3">
-                      {status === "failed" && (
-                        <ResendButton
-                          orderId={order.id}
-                          onSuccess={() => markDelivered(order.id)}
-                        />
-                      )}
+                      <ResendButton
+                        orderId={order.id}
+                        onSuccess={() => markDelivered(order.id)}
+                      />
                     </td>
                   </tr>
                 );
