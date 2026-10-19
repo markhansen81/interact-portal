@@ -6,6 +6,7 @@ import {
   type InsuranceOrderData,
 } from "@/lib/insurance-invoice-pdf";
 import { mondayQuery } from "@/lib/monday";
+import { sendSlackAlert } from "@/lib/slack";
 
 const INSURANCE_BOARD_ID = "18426362720";
 const INSURANCE_ORDERS_GROUP = "group_mm66afmz";
@@ -342,23 +343,55 @@ export async function POST(request: Request) {
       school
     );
 
-    await sendEmail({
-      to: customerEmail,
-      subject: emailData.subject,
-      html: emailData.html,
-      attachments: [
-        {
-          filename: `${dateStr}_${orderNumber}_${surname}.pdf`,
-          content: pdfBuffer,
-        },
+    try {
+      const emailResult = await sendEmail({
+        to: customerEmail,
+        subject: emailData.subject,
+        html: emailData.html,
+        attachments: [
+          {
+            filename: `${dateStr}_${orderNumber}_${surname}.pdf`,
+            content: pdfBuffer,
+          },
+        ],
+      });
+
+      if (emailResult.ok) {
+        // Update email_sent_at
+        await adminClient
+          .from("insurance_orders")
+          .update({ email_sent_at: new Date().toISOString() })
+          .eq("squarespace_order_id", orderId);
+      } else {
+        console.error("[SQUARESPACE] Email send returned error:", emailResult.error);
+        await sendSlackAlert({
+          type: "critical",
+          title: "Insurance Email FAILED",
+          message: `Order #${orderNumber} processed but email to ${customerEmail} failed!`,
+        });
+      }
+    } catch (emailErr) {
+      console.error("[SQUARESPACE] Email send threw:", emailErr);
+      await sendSlackAlert({
+        type: "critical",
+        title: "Insurance Email FAILED",
+        message: `Order #${orderNumber} processed but email to ${customerEmail} failed!`,
+      });
+    }
+
+    // Slack notification for every order
+    await sendSlackAlert({
+      type: "success",
+      title: "Insurance Order Received",
+      message: `Order #${orderNumber} — ${productName}`,
+      fields: [
+        { label: "Customer", value: `${firstName} ${lastName}` },
+        { label: "Student", value: studentName },
+        { label: "School", value: formFields.school_name as string || "-" },
+        { label: "Total", value: `\u20AC${grandTotal.toFixed(2)}` },
+        { label: "Email", value: customerEmail },
       ],
     });
-
-    // Update email_sent_at
-    await adminClient
-      .from("insurance_orders")
-      .update({ email_sent_at: new Date().toISOString() })
-      .eq("squarespace_order_id", orderId);
   }
 
   return NextResponse.json({
