@@ -81,7 +81,9 @@ function extractFormFields(
       if (dbColumn === "agb_accepted" || dbColumn === "data_privacy_accepted") {
         fields[dbColumn] = true;
       } else if (dbColumn === "participation_fee" || dbColumn === "num_project_days") {
-        const num = Number(field.value);
+        // Handle German number format: "109,00" → 109
+        const cleaned = field.value.replace(/\./g, "").replace(",", ".");
+        const num = Number(cleaned);
         fields[dbColumn] = isNaN(num) ? field.value : num;
       } else {
         fields[dbColumn] = field.value;
