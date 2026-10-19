@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { mondayQuery } from "@/lib/monday";
+import { sendSlackAlert } from "@/lib/slack";
 
 const INSURANCE_BOARD_ID = "18426362720";
 const CLAIMS_GROUP = "group_mm668g88";
@@ -74,6 +75,7 @@ export async function POST(request: Request) {
 
     if (updateErr || !updated?.length) {
       console.error("[CLAIM] Order not found or update failed:", orderNumber, updateErr);
+      sendSlackAlert({ type: "critical", title: "Insurance Claim Order Not Found", message: `Order #${orderNumber} not found or update failed: ${String(updateErr)}` }).catch(() => {});
       return NextResponse.json({ error: `Order #${orderNumber} not found` }, { status: 404 });
     }
   } else {
@@ -168,6 +170,7 @@ export async function POST(request: Request) {
     }
   } catch (err) {
     console.error("[CLAIM] Monday update failed:", err);
+    sendSlackAlert({ type: "warning", title: "Insurance Claim Monday Update Failed", message: String(err) }).catch(() => {});
   }
 
   return NextResponse.json({

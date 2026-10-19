@@ -129,9 +129,11 @@ export async function PATCH(
         console.log(`[DATEV] Invoice ${invoice.invoice_number} sent via ${datevResult.method}`);
       } else {
         console.error(`[DATEV] Failed to send invoice ${invoice.invoice_number}:`, datevResult.error);
+        sendSlackAlert({ type: "critical", title: `DATEV Invoice ${invoice.invoice_number} Send Failed`, message: String(datevResult.error) }).catch(() => {});
       }
     } catch (e) {
       console.error("[DATEV] Failed to send invoice:", e);
+      sendSlackAlert({ type: "critical", title: "DATEV Invoice Send Failed", message: String(e) }).catch(() => {});
     }
   }
 
@@ -167,6 +169,7 @@ export async function PATCH(
       });
     } catch (e) {
       console.error("[MONDAY] Failed to push invoice:", e);
+      sendSlackAlert({ type: "warning", title: "Monday Invoice Push Failed", message: String(e) }).catch(() => {});
     }
   }
 

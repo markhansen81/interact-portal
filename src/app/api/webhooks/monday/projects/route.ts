@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { mondayQuery, extractColumnValue, extractTimelineValue } from "@/lib/monday";
+import { sendSlackAlert } from "@/lib/slack";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -157,6 +158,7 @@ export async function POST(request: Request) {
 
     if (error || !newProject) {
       console.error("[WEBHOOK/PROJECTS] Failed to create project:", error);
+      sendSlackAlert({ type: "critical", title: "Project Creation Failed (Monday Webhook)", message: `Monday item ${itemId}: ${String(error)}` }).catch(() => {});
       return NextResponse.json({ error: "Failed to create project" }, { status: 500 });
     }
 

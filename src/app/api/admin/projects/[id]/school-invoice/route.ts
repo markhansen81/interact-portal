@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateSchoolInvoicePDF } from "@/lib/school-invoice-pdf";
+import { sendSlackAlert } from "@/lib/slack";
 
 export async function GET(
   _request: Request,
@@ -176,6 +177,7 @@ export async function POST(
 
   if (uploadError) {
     console.error("[SCHOOL-INVOICE] Upload error:", uploadError);
+    sendSlackAlert({ type: "critical", title: "School Invoice PDF Upload Failed", message: String(uploadError) }).catch(() => {});
     return NextResponse.json(
       { error: "Failed to upload PDF" },
       { status: 500 }
@@ -211,6 +213,7 @@ export async function POST(
 
   if (insertError) {
     console.error("[SCHOOL-INVOICE] Insert error:", insertError);
+    sendSlackAlert({ type: "critical", title: "School Invoice DB Insert Failed", message: String(insertError) }).catch(() => {});
     return NextResponse.json(
       { error: "Failed to create invoice record" },
       { status: 500 }

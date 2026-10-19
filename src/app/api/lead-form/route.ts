@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { mondayQuery } from "@/lib/monday";
 import { createInsightlyLead } from "@/lib/insightly";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { notifyNewLead } from "@/lib/slack";
+import { notifyNewLead, sendSlackAlert } from "@/lib/slack";
 import { addToMailchimp } from "@/lib/mailchimp";
 import { sendEmail, newLeadEmail } from "@/lib/email";
 import { rateLimit, getClientIP, rateLimitResponse } from "@/lib/rate-limit";
@@ -69,6 +69,7 @@ export async function POST(request: Request) {
 
   if (saveError) {
     console.error("[LEAD] Supabase save failed:", saveError);
+    sendSlackAlert({ type: "critical", title: "Lead Supabase Save Failed", message: String(saveError) }).catch(() => {});
   }
 
   const leadId = savedLead?.id;
@@ -179,6 +180,7 @@ export async function POST(request: Request) {
       { b: LEADS_BOARD, n: itemName, c: JSON.stringify(columnValues), g: "topics" }
     ).catch((err) => {
       console.error("[LEAD] Monday error:", err);
+      sendSlackAlert({ type: "warning", title: "Lead Monday Push Failed", message: String(err) }).catch(() => {});
       return null;
     }),
     createInsightlyLead({
@@ -214,6 +216,7 @@ export async function POST(request: Request) {
       })() : undefined,
     }).catch((err) => {
       console.error("[LEAD] Insightly error:", err);
+      sendSlackAlert({ type: "warning", title: "Lead Insightly Push Failed", message: String(err) }).catch(() => {});
       return null;
     }),
     // Mailchimp — only if newsletter checked
@@ -226,6 +229,7 @@ export async function POST(request: Request) {
           state: data.state,
         }).catch((err) => {
           console.error("[LEAD] Mailchimp error:", err);
+          sendSlackAlert({ type: "warning", title: "Lead Mailchimp Sync Failed", message: String(err) }).catch(() => {});
           return null;
         })
       : Promise.resolve(null),
@@ -249,6 +253,7 @@ export async function POST(request: Request) {
       return sendEmail({ to: "connect@interactenglish.de", subject, html });
     })().catch((err) => {
       console.error("[LEAD] Email error:", err);
+      sendSlackAlert({ type: "critical", title: "Lead Email Send Failed", message: String(err) }).catch(() => {});
       return null;
     }),
   ]);
