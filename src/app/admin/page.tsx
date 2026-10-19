@@ -78,6 +78,12 @@ export default async function AdminDashboard() {
     .select("*", { count: "exact", head: true })
     .eq("status", "submitted");
 
+  // Failed insurance orders (email not delivered)
+  const { count: failedInsurance } = await supabase
+    .from("insurance_orders")
+    .select("*", { count: "exact", head: true })
+    .is("email_sent_at", null);
+
   // Pending reviews
   const { data: pendingReviews } = await supabase
     .from("admin_review_tasks")
@@ -134,6 +140,7 @@ export default async function AdminDashboard() {
         pendingInvoices={pendingInvoices ?? 0}
         stalledOnboarding={stalledOnboarding ?? 0}
         pendingExpenses={pendingExpenses ?? 0}
+        failedInsurance={failedInsurance ?? 0}
       />
 
       {/* Review Queue */}
@@ -211,14 +218,26 @@ function AlertsPanel({
   pendingInvoices,
   stalledOnboarding,
   pendingExpenses,
+  failedInsurance,
 }: {
   expiringDocs: number;
   unsignedWOs: number;
   pendingInvoices: number;
   stalledOnboarding: number;
   pendingExpenses: number;
+  failedInsurance: number;
 }) {
   const urgent = [
+    {
+      label: "Insurance orders not delivered",
+      count: failedInsurance,
+      href: "/admin/insurance-orders",
+      icon: (
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+        </svg>
+      ),
+    },
     {
       label: "Documents expiring within 30 days",
       count: expiringDocs,
