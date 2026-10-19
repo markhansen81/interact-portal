@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, workOrderSignedEmailToTA, workOrderSignedEmailToAdmin } from "@/lib/email";
-import { notifyWorkOrderEvent } from "@/lib/slack";
+import { notifyWorkOrderEvent, sendSlackAlert } from "@/lib/slack";
 import { generateSchoolProfile, generateHomestayProfile, PROFILE_FIELDS } from "@/lib/ta-profile-docs";
 
 export async function POST(
@@ -84,6 +84,7 @@ export async function POST(
       }
     } catch (err) {
       console.error("[SIGN] Failed to fetch PDF for attachment:", err);
+      sendSlackAlert({ type: "critical", title: "WO Sign PDF Fetch Failed", message: String(err) }).catch(() => {});
     }
   }
 
@@ -259,6 +260,7 @@ export async function POST(
     }
   } catch (err) {
     console.error("[SIGN] Failed to link/create project:", err);
+    sendSlackAlert({ type: "critical", title: "WO Sign Project Link Failed", message: String(err) }).catch(() => {});
   }
 
   // Auto-generate TA profile documents for the project
@@ -316,6 +318,7 @@ export async function POST(
       }
     } catch (err) {
       console.error("[SIGN] Failed to generate TA profile documents:", err);
+      sendSlackAlert({ type: "warning", title: "WO Sign TA Profile Docs Failed", message: String(err) }).catch(() => {});
     }
   }
 

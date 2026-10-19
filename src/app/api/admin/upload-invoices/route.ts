@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendToDATEV } from "@/lib/datev";
+import { sendSlackAlert } from "@/lib/slack";
 
 async function getAdminUser() {
   const supabase = await createClient();
@@ -105,6 +106,7 @@ export async function POST(request: Request) {
 
   if (uploadError) {
     console.error("[UPLOAD] Storage error:", uploadError);
+    sendSlackAlert({ type: "critical", title: "Admin Upload Storage Failed", message: String(uploadError) }).catch(() => {});
     return NextResponse.json(
       { error: `Storage upload failed: ${uploadError.message}` },
       { status: 500 }
@@ -128,6 +130,7 @@ export async function POST(request: Request) {
 
   if (!datevResult.ok) {
     console.error("[UPLOAD] DATEV send failed:", datevResult.error);
+    sendSlackAlert({ type: "critical", title: "Admin Upload DATEV Send Failed", message: String(datevResult.error) }).catch(() => {});
     return NextResponse.json(
       { error: "Failed to send document to DATEV" },
       { status: 500 }
@@ -161,6 +164,7 @@ export async function POST(request: Request) {
 
   if (insertError) {
     console.error("[UPLOAD] DB insert error:", insertError);
+    sendSlackAlert({ type: "critical", title: "Admin Upload DB Insert Failed", message: String(insertError) }).catch(() => {});
     // DATEV send already succeeded, so we still return success
   }
 

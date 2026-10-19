@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateInvoicePDF } from "@/lib/invoice-pdf";
 import { getSecureUrl } from "@/lib/storage";
+import { sendSlackAlert } from "@/lib/slack";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -163,10 +164,12 @@ export async function POST(request: Request) {
             .eq("id", invoice.id);
         } else {
           console.error("[INVOICE PDF] Upload failed:", uploadError.message);
+          sendSlackAlert({ type: "critical", title: "Invoice PDF Upload Failed", message: uploadError.message }).catch(() => {});
         }
       }
     } catch (e) {
       console.error("[INVOICE PDF] Generation failed:", e);
+      sendSlackAlert({ type: "critical", title: "Invoice PDF Generation Failed", message: String(e) }).catch(() => {});
     }
   }
 
@@ -210,6 +213,7 @@ export async function POST(request: Request) {
       });
     } catch (e) {
       console.error("[MONDAY] Failed to push invoice:", e);
+      sendSlackAlert({ type: "warning", title: "Monday Invoice Push Failed", message: String(e) }).catch(() => {});
     }
   }
 

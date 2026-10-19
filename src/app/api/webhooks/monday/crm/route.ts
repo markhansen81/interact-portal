@@ -16,6 +16,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { handleCRMEvent } from "@/lib/monday-crm";
+import { sendSlackAlert } from "@/lib/slack";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -87,6 +88,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("[CRM Webhook Error]", error);
+    sendSlackAlert({ type: "critical", title: "CRM Webhook Processing Failed", message: String(error) }).catch(() => {});
     return NextResponse.json(
       { error: "Internal error", message: String(error) },
       { status: 500 }
