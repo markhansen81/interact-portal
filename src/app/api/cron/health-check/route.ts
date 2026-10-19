@@ -76,6 +76,98 @@ async function checkDatevToken(adminClient: ReturnType<typeof createAdminClient>
   }
 }
 
+async function checkInsurancePipeline(adminClient: ReturnType<typeof createAdminClient>): Promise<CheckResult> {
+  const sqApiKey = process.env.SQUARESPACE_API_KEY;
+  if (!sqApiKey) {
+    return { name: "insurance_pipeline", status: "ok", message: "Squarespace API key not configured — skipping" };
+  }
+
+  try {
+    // Fetch recent orders from Squarespace
+    const sqRes = await fetch("https://api.squarespace.com/1.0/commerce/orders", {
+      headers: { Authorization: "Bearer " + sqApiKey, "User-Agent": "InterACT Portal" },
+      signal: AbortSignal.timeout(15000),
+    });
+
+    if (!sqRes.ok) {
+      await sendSlackAlert({
+        type: "warning",
+        title: "Squarespace API Error",
+        message: `Cannot reach Squarespace Orders API (status ${sqRes.status}). Insurance pipeline may be down.`,
+      });
+      return { name: "insurance_pipeline", status: "error", message: `Squarespace API returned ${sqRes.status}` };
+    }
+
+    const { result: sqOrders } = await sqRes.json();
+
+    // Fetch processed orders from our DB
+    const { data: processedOrders } = await adminClient
+      .from("insurance_orders")
+      .select("squarespace_order_id");
+    const processedIds = new Set((processedOrders || []).map((o: { squarespace_order_id: string }) => o.squarespace_order_id));
+
+    // Find unprocessed orders
+    const unprocessed = (sqOrders || []).filter((o: { id: string }) => !processedIds.has(o.id));
+
+    if (unprocessed.length > 0) {
+      // Auto-reprocess missing orders
+      let fixed = 0;
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://interact-portal.vercel.app";
+      for (const order of unprocessed) {
+        try {
+          const processRes = await fetch(`${appUrl}/api/webhooks/squarespace`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(order),
+          });
+          if (processRes.ok) fixed++;
+        } catch {
+          // continue with next order
+        }
+      }
+
+      if (fixed > 0) {
+        await sendSlackAlert({
+          type: "success",
+          title: "Insurance Pipeline Auto-Fixed",
+          message: `Auto-processed ${fixed}/${unprocessed.length} missing orders.`,
+        });
+      }
+
+      const stillMissing = unprocessed.length - fixed;
+      if (stillMissing > 0) {
+        // CRITICAL: orders exist in Squarespace but not in portal
+        await sendSlackAlert({
+          type: "critical",
+          title: "Insurance Pipeline Broken",
+          message: `${stillMissing} Squarespace order(s) not processed! Customers have NOT received their insurance PDFs.`,
+          fields: unprocessed.slice(0, 10).map((o: { orderNumber?: string; customerEmail?: string; grandTotal?: { value?: string } | string }) => ({
+            label: `#${o.orderNumber || "?"}`,
+            value: `${o.customerEmail || "?"} — EUR${typeof o.grandTotal === "object" ? o.grandTotal?.value || "?" : o.grandTotal || "?"}`,
+          })),
+        });
+      }
+
+      return {
+        name: "insurance_pipeline",
+        status: stillMissing > 0 ? "error" : "ok",
+        message: stillMissing > 0
+          ? `${stillMissing} unprocessed orders (auto-fixed ${fixed})`
+          : `Auto-fixed ${fixed} missing orders. All ${(sqOrders || []).length} orders now processed`,
+      };
+    }
+
+    return {
+      name: "insurance_pipeline",
+      status: "ok",
+      message: `All ${(sqOrders || []).length} Squarespace orders processed`,
+    };
+  } catch (err) {
+    console.error("[HEALTH] Insurance check failed:", err);
+    return { name: "insurance_pipeline", status: "error", message: `Insurance check failed: ${err}` };
+  }
+}
+
 async function checkRecentErrors(adminClient: ReturnType<typeof createAdminClient>): Promise<CheckResult> {
   try {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
@@ -114,6 +206,7 @@ export async function GET(request: Request) {
     checkSupabaseStorage(adminClient),
     checkDatevToken(adminClient),
     checkRecentErrors(adminClient),
+    checkInsurancePipeline(adminClient),
   ]);
 
   // Fetch previous check statuses for change detection

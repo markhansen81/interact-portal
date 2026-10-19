@@ -33,6 +33,8 @@ interface SystemHealthProps {
   datevExpired: boolean;
   hasResendKey: boolean;
   hasAnthropicKey: boolean;
+  hasSquarespaceKey: boolean;
+  insuranceOrdersCount: number;
   healthChecks: Array<{
     id: string;
     check_name: string;
@@ -242,6 +244,8 @@ export function SystemHealthPanel({
   datevExpired,
   hasResendKey,
   hasAnthropicKey,
+  hasSquarespaceKey,
+  insuranceOrdersCount,
   healthChecks,
 }: SystemHealthProps) {
   const [reportExpanded, setReportExpanded] = useState(false);
@@ -390,6 +394,42 @@ export function SystemHealthPanel({
             status={hasAnthropicKey ? "Configured" : "Not configured"}
             color={hasAnthropicKey ? "green" : "red"}
           />
+          {(() => {
+            const pipelineCheck = healthChecks.find((hc) => hc.check_name === "insurance_pipeline");
+            const pipelineOk = pipelineCheck ? pipelineCheck.status === "ok" : true;
+            const lastChecked = pipelineCheck
+              ? new Date(pipelineCheck.checked_at).toLocaleString("de-DE", {
+                  day: "2-digit", month: "2-digit", year: "numeric",
+                  hour: "2-digit", minute: "2-digit",
+                })
+              : null;
+            return (
+              <HealthCard
+                label="Insurance Pipeline"
+                status={
+                  !hasSquarespaceKey
+                    ? "Not configured"
+                    : pipelineOk
+                    ? "OK"
+                    : "Issues"
+                }
+                color={
+                  !hasSquarespaceKey
+                    ? "yellow"
+                    : pipelineOk
+                    ? "green"
+                    : "red"
+                }
+                detail={
+                  !hasSquarespaceKey
+                    ? "SQUARESPACE_API_KEY missing"
+                    : pipelineCheck
+                    ? `${insuranceOrdersCount} orders processed${lastChecked ? ` — Last check: ${lastChecked}` : ""}${pipelineCheck.message ? ` — ${pipelineCheck.message}` : ""}`
+                    : `${insuranceOrdersCount} orders processed — No health check data yet`
+                }
+              />
+            );
+          })()}
           <HealthCard
             label="Vercel"
             status="Deployed"
