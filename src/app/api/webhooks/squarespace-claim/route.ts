@@ -58,7 +58,7 @@ export async function POST(request: Request) {
 
   // Save claim to Supabase (add claim fields to insurance_orders)
   if (orderNumber) {
-    await adminClient
+    const { data: updated, error: updateErr } = await adminClient
       .from("insurance_orders")
       .update({
         claim_submitted_at: new Date().toISOString(),
@@ -69,7 +69,15 @@ export async function POST(request: Request) {
         claim_notes: notes,
         raw_payload: body,
       })
-      .eq("order_number", orderNumber);
+      .eq("order_number", orderNumber)
+      .select("id");
+
+    if (updateErr || !updated?.length) {
+      console.error("[CLAIM] Order not found or update failed:", orderNumber, updateErr);
+      return NextResponse.json({ error: `Order #${orderNumber} not found` }, { status: 404 });
+    }
+  } else {
+    return NextResponse.json({ error: "No order number provided" }, { status: 400 });
   }
 
   // Find and update Monday item

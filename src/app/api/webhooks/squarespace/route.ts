@@ -252,6 +252,12 @@ export async function POST(request: Request) {
 
   if (uploadError) {
     console.error("[SQUARESPACE] PDF upload failed:", uploadError);
+    await sendSlackAlert({
+      type: "critical",
+      title: "Insurance PDF Upload FAILED",
+      message: `Order #${orderNumber} — PDF upload failed. Customer will NOT receive invoice.`,
+    });
+    return NextResponse.json({ error: "PDF upload failed" }, { status: 500 });
   }
 
   const {
