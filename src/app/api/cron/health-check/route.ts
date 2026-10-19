@@ -168,6 +168,35 @@ async function checkInsurancePipeline(adminClient: ReturnType<typeof createAdmin
   }
 }
 
+async function checkUndeliveredInsurance(adminClient: ReturnType<typeof createAdminClient>): Promise<CheckResult> {
+  try {
+    // Check for orders older than 10 minutes without email_sent_at
+    const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const { data: undelivered } = await adminClient
+      .from("insurance_orders")
+      .select("id, order_number, customer_email, created_at")
+      .is("email_sent_at", null)
+      .lt("created_at", tenMinAgo);
+
+    if (undelivered && undelivered.length > 0) {
+      await sendSlackAlert({
+        type: "critical",
+        title: "Insurance Emails NOT Delivered",
+        message: `${undelivered.length} order(s) processed but email NEVER sent!`,
+        fields: undelivered.map((o: { order_number: string; customer_email: string }) => ({
+          label: `#${o.order_number}`,
+          value: o.customer_email,
+        })),
+      });
+      return { name: "insurance_email_delivery", status: "error", message: `${undelivered.length} orders without email` };
+    }
+
+    return { name: "insurance_email_delivery", status: "ok", message: "All orders have emails delivered" };
+  } catch (err) {
+    return { name: "insurance_email_delivery", status: "error", message: `Check failed: ${err}` };
+  }
+}
+
 async function checkRecentErrors(adminClient: ReturnType<typeof createAdminClient>): Promise<CheckResult> {
   try {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
@@ -207,6 +236,7 @@ export async function GET(request: Request) {
     checkDatevToken(adminClient),
     checkRecentErrors(adminClient),
     checkInsurancePipeline(adminClient),
+    checkUndeliveredInsurance(adminClient),
   ]);
 
   // Fetch previous check statuses for change detection
