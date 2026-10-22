@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { notify } from "@/lib/notifications";
 import { sendEmail } from "@/lib/email";
 import { sendSlackAlert } from "@/lib/slack";
+import { logAudit } from "@/lib/audit";
 
 export async function PATCH(
   request: Request,
@@ -54,6 +55,17 @@ export async function PATCH(
 
   const ta = invoice.profiles as { id: string; first_name: string; last_name: string; email: string };
   const taName = `${ta.first_name || ""} ${ta.last_name || ""}`.trim() || ta.email;
+
+  // Audit log for invoice status changes
+  if (body.status === "approved" || body.status === "rejected") {
+    logAudit({
+      userId: user.id,
+      action: body.status === "approved" ? "invoice_approved" : "invoice_rejected",
+      targetId: id,
+      targetType: "invoice",
+      details: `Invoice ${invoice.invoice_number} ${body.status} for ${taName} (EUR${Number(invoice.total).toFixed(2)})`,
+    });
+  }
 
   // Notify TA of status change
   await notify({

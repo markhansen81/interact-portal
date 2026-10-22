@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { TAProfileEditor } from "@/components/admin/ta-profile-editor";
+import { logAudit } from "@/lib/audit";
+import { getCurrentUser } from "@/lib/auth";
 
 export default async function TAProfilePage({
   params,
@@ -20,6 +22,17 @@ export default async function TAProfilePage({
 
   if (!ta) {
     notFound();
+  }
+
+  // Audit: log admin viewing TA profile
+  const adminUser = await getCurrentUser();
+  if (adminUser) {
+    logAudit({
+      userId: adminUser.id,
+      action: "profile_viewed",
+      targetId: id,
+      targetType: "ta_profile",
+    });
   }
 
   return (

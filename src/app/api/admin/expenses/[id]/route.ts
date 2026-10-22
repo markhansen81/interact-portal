@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notify } from "@/lib/notifications";
 import { sendSlackAlert } from "@/lib/slack";
+import { logAudit } from "@/lib/audit";
 
 export async function PATCH(
   request: Request,
@@ -53,6 +54,17 @@ export async function PATCH(
 
   const ta = claim.profiles as { id: string; first_name: string; last_name: string; email: string };
   const taName = `${ta.first_name || ""} ${ta.last_name || ""}`.trim() || ta.email;
+
+  // Audit log for expense status changes
+  if (body.status === "approved" || body.status === "rejected") {
+    logAudit({
+      userId: user.id,
+      action: body.status === "approved" ? "expense_approved" : "expense_rejected",
+      targetId: id,
+      targetType: "expense_claim",
+      details: `Expense claim ${body.status} for ${taName} (EUR${Number(claim.total).toFixed(2)})`,
+    });
+  }
 
   // Slack alert when high-value expense is flagged for review
   if (body.status === "flagged" || (claim.needs_review && Number(claim.total) > 100)) {
