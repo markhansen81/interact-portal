@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { rateLimit, getClientIP, rateLimitResponse } from "@/lib/rate-limit";
 
 const DOC_TYPE_DESCRIPTIONS: Record<string, string> = {
   right_to_work: "A passport, visa, work permit, or residence permit that proves the holder has the legal right to work in Germany",
@@ -10,6 +11,10 @@ const DOC_TYPE_DESCRIPTIONS: Record<string, string> = {
 };
 
 export async function POST(request: Request) {
+  const ip = getClientIP(request);
+  const { ok } = rateLimit(`extract:${ip}`, 10, 60_000); // 10 per minute per IP
+  if (!ok) return rateLimitResponse();
+
   const supabase = await createClient();
   const {
     data: { user },

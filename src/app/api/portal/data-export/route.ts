@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { logAudit } from "@/lib/audit";
+import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 /**
  * GDPR Art. 20 — Right to data portability.
@@ -15,6 +16,10 @@ export async function GET() {
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // Rate limit: 3 per hour per user
+  const { ok } = rateLimit(`data-export:${user.id}`, 3, 3_600_000);
+  if (!ok) return rateLimitResponse();
 
   // Fetch all TA data in parallel
   const [

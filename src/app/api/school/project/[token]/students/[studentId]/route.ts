@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { rateLimit, getClientIP, rateLimitResponse } from "@/lib/rate-limit";
+import { sanitizeHTML } from "@/lib/sanitize";
 
 async function getProjectByToken(token: string) {
   const adminClient = createAdminClient();
@@ -15,6 +17,10 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ token: string; studentId: string }> }
 ) {
+  const ip = getClientIP(request);
+  const { ok } = rateLimit(`school:${ip}`, 20, 60_000);
+  if (!ok) return rateLimitResponse();
+
   const { token, studentId } = await params;
   const project = await getProjectByToken(token);
 
@@ -45,7 +51,7 @@ export async function PATCH(
   const body = await request.json();
   const updates: Record<string, unknown> = {};
 
-  if ("needs_notes" in body) updates.needs_notes = body.needs_notes;
+  if ("needs_notes" in body) updates.needs_notes = sanitizeHTML(String(body.needs_notes));
   if ("first_name" in body) updates.first_name = body.first_name;
   if ("last_name" in body) updates.last_name = body.last_name;
 
@@ -64,7 +70,8 @@ export async function PATCH(
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    console.error("[SCHOOL/STUDENTS] PATCH error:", error.message);
+    return NextResponse.json({ error: process.env.NODE_ENV === 'production' ? "Request failed" : error.message }, { status: 400 });
   }
 
   return NextResponse.json({ student: updated });

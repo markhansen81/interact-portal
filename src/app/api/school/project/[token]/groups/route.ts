@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { rateLimit, getClientIP, rateLimitResponse } from "@/lib/rate-limit";
 
 async function getProjectByToken(token: string) {
   const adminClient = createAdminClient();
@@ -15,6 +16,10 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ token: string }> }
 ) {
+  const ip = getClientIP(request);
+  const { ok } = rateLimit(`school:${ip}`, 20, 60_000);
+  if (!ok) return rateLimitResponse();
+
   const { token } = await params;
   const project = await getProjectByToken(token);
 
@@ -30,7 +35,8 @@ export async function GET(
     .order("created_at", { ascending: true });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    console.error("[SCHOOL/GROUPS] GET error:", error.message);
+    return NextResponse.json({ error: process.env.NODE_ENV === 'production' ? "Request failed" : error.message }, { status: 400 });
   }
 
   return NextResponse.json({ groups: groups || [] });
@@ -40,6 +46,10 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ token: string }> }
 ) {
+  const ip = getClientIP(request);
+  const { ok } = rateLimit(`school:${ip}`, 20, 60_000);
+  if (!ok) return rateLimitResponse();
+
   const { token } = await params;
   const project = await getProjectByToken(token);
 
@@ -67,7 +77,8 @@ export async function POST(
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    console.error("[SCHOOL/GROUPS] POST error:", error.message);
+    return NextResponse.json({ error: process.env.NODE_ENV === 'production' ? "Request failed" : error.message }, { status: 400 });
   }
 
   return NextResponse.json({ group });

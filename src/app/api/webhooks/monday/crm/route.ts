@@ -29,7 +29,15 @@ export async function POST(request: Request) {
   // Verify the request comes from Monday
   const authToken = request.headers.get("authorization");
   const expectedToken = process.env.MONDAY_WEBHOOK_SECRET;
-  if (expectedToken && authToken !== expectedToken) {
+  // In production, webhook secret MUST be set
+  if (process.env.NODE_ENV === 'production' && !expectedToken) {
+    console.error("[WEBHOOK] MONDAY_WEBHOOK_SECRET not configured!");
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+  }
+  const isAuthorized =
+    (expectedToken && authToken === expectedToken) ||
+    (!expectedToken && process.env.NODE_ENV !== 'production');
+  if (!isAuthorized) {
     console.error("[WEBHOOK] Unauthorized request - invalid token");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -90,7 +98,7 @@ export async function POST(request: Request) {
     console.error("[CRM Webhook Error]", error);
     sendSlackAlert({ type: "critical", title: "CRM Webhook Processing Failed", message: String(error) }).catch(() => {});
     return NextResponse.json(
-      { error: "Internal error", message: String(error) },
+      { error: process.env.NODE_ENV === 'production' ? "Request failed" : String(error) },
       { status: 500 }
     );
   }
