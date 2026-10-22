@@ -11,14 +11,14 @@ export function AdminHeader({ email }: { email: string }) {
   }
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-zinc-200 border-t-2 border-t-slate-500 bg-white px-6 dark:border-zinc-800 dark:border-t-slate-500 dark:bg-zinc-900">
+    <header className="flex h-14 items-center justify-between border-b border-neutral-200 bg-white px-6">
       <div />
       <div className="flex items-center gap-4">
         <NotificationBell />
-        <span className="text-sm text-zinc-500">{email}</span>
+        <span className="text-sm text-neutral-500">{email}</span>
         <button
           onClick={handleSignOut}
-          className="rounded-lg px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+          className="px-3 py-1.5 text-sm text-neutral-600 hover:text-neutral-900 hover:underline transition-colors"
         >
           Sign out
         </button>

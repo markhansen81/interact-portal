@@ -6,145 +6,97 @@ import { usePathname } from "next/navigation";
 interface NavItem {
   href: string;
   label: string;
-  icon: string;
 }
 
 interface NavSection {
-  label: string;
+  label?: string;
   items: NavItem[];
 }
 
 const navSections: NavSection[] = [
   {
-    label: "",
+    items: [{ href: "/admin", label: "Home" }],
+  },
+  {
+    label: "Staffing",
     items: [
-      { href: "/admin", label: "Dashboard", icon: "grid" },
+      { href: "/admin/teaching-artists", label: "Teaching Artists" },
+      { href: "/admin/onboarding", label: "Onboarding" },
+      { href: "/admin/training", label: "Training" },
+      { href: "/admin/availability", label: "Availability" },
+      { href: "/admin/lanes-planes", label: "Lanes & Planes" },
     ],
   },
   {
-    label: "STAFFING",
+    label: "Projects",
     items: [
-      { href: "/admin/teaching-artists", label: "Teaching Artists", icon: "users" },
-      { href: "/admin/onboarding", label: "Onboarding", icon: "users" },
-      { href: "/admin/training", label: "Training", icon: "briefcase" },
-      { href: "/admin/availability", label: "Availability", icon: "calendar" },
-      { href: "/admin/lanes-planes", label: "Lanes & Planes", icon: "briefcase" },
+      { href: "/admin/jobs", label: "School Projects" },
+      { href: "/admin/projects", label: "TA Assignments" },
+      { href: "/admin/work-orders", label: "Work Orders" },
+      { href: "/admin/church", label: "CRM Pipeline" },
     ],
   },
   {
-    label: "PROJECTS",
+    label: "Finance",
     items: [
-      { href: "/admin/jobs", label: "School Projects", icon: "briefcase" },
-      { href: "/admin/projects", label: "TA Assignments", icon: "clipboard" },
-      { href: "/admin/work-orders", label: "Work Orders", icon: "file-text" },
-      { href: "/admin/church", label: "CRM Pipeline", icon: "calendar" },
+      { href: "/admin/invoices", label: "Invoices" },
+      { href: "/admin/services", label: "Services & Rates" },
+      { href: "/admin/insurance-orders", label: "Insurance" },
     ],
   },
   {
-    label: "FINANCE",
     items: [
-      { href: "/admin/invoices", label: "Invoices", icon: "receipt" },
-      { href: "/admin/services", label: "Services & Rates", icon: "settings" },
-      { href: "/admin/insurance-orders", label: "Insurance", icon: "shield" },
+      { href: "/admin/messages", label: "Messages" },
+      { href: "/admin/templates", label: "Templates" },
+      { href: "/admin/contracts", label: "Contracts" },
     ],
   },
   {
-    label: "COMMUNICATION",
-    items: [
-      { href: "/admin/messages", label: "Messages", icon: "message-circle" },
-      { href: "/admin/templates", label: "Templates", icon: "pen-tool" },
-      { href: "/admin/contracts", label: "Contracts", icon: "pen-tool" },
-    ],
-  },
-  {
-    label: "SETTINGS",
-    items: [
-      { href: "/admin/users", label: "Admin Users", icon: "settings" },
-    ],
+    items: [{ href: "/admin/users", label: "Admin Users" }],
   },
 ];
 
-const superAdminItems = [
-  { href: "/admin/datev-settings", label: "DATEV Settings", icon: "settings" },
-  { href: "/admin/system-health", label: "System Health", icon: "shield" },
+const superAdminItems: NavItem[] = [
+  { href: "/admin/datev-settings", label: "DATEV Settings" },
+  { href: "/admin/system-health", label: "System Health" },
 ];
 
-const iconPaths: Record<string, React.ReactNode> = {
-  grid: (
-    <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" />
-  ),
-  users: (
-    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-  ),
-  "file-text": (
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" />
-  ),
-  "pen-tool": (
-    <path d="M12 19l7-7 3 3-7 7-3-3zM18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5zM2 2l7.586 7.586M11 13a2 2 0 1 1-4 0 2 2 0 0 1 4 0z" />
-  ),
-  receipt: (
-    <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1zM16 8H8M16 12H8M16 16H8" />
-  ),
-  settings: (
-    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
-  ),
-  "message-circle": (
-    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-  ),
-  briefcase: (
-    <path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-  ),
-  clipboard: (
-    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M9 2h6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" />
-  ),
-  calendar: (
-    <path d="M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM16 2v4M8 2v4M3 10h18" />
-  ),
-  shield: (
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-  ),
-  upload: (
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-  ),
-};
-
-export function AdminSidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
+export function AdminSidebar({
+  isSuperAdmin = false,
+}: {
+  isSuperAdmin?: boolean;
+}) {
   const pathname = usePathname();
 
   const allSections: NavSection[] = isSuperAdmin
     ? [
         ...navSections,
         {
-          label: "SYSTEM",
+          label: "System",
           items: superAdminItems,
         },
       ]
     : navSections;
 
   return (
-    <aside className="flex w-64 flex-col border-r border-zinc-200 border-t-[3px] border-t-slate-600 bg-white dark:border-zinc-800 dark:border-t-indigo-600 dark:bg-zinc-900">
-      <div className="flex h-16 items-center border-b border-zinc-200 px-6 dark:border-zinc-800">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-700 text-white text-sm font-bold">
-          iA
-        </div>
-        <div className="ml-3 flex flex-col">
-          <h1 className="text-lg font-bold leading-tight text-zinc-900 dark:text-zinc-50">
-            InterACT
-          </h1>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Admin
-          </span>
-        </div>
+    <aside className="flex w-[220px] shrink-0 flex-col border-r border-neutral-200 bg-white">
+      {/* Logo */}
+      <div className="px-6 pt-6 pb-8">
+        <span className="text-lg font-bold tracking-tight text-neutral-900">
+          InterACT
+        </span>
       </div>
-      <nav className="flex-1 overflow-y-auto p-3">
-        {allSections.map((section) => (
-          <div key={section.label || "_top"}>
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto px-6 pb-6">
+        {allSections.map((section, sectionIdx) => (
+          <div key={section.label || `section-${sectionIdx}`} className="mb-6">
             {section.label && (
-              <p className="mt-4 mb-1 px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              <p className="mb-2 text-xs font-medium text-neutral-400 uppercase tracking-wider">
                 {section.label}
               </p>
             )}
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {section.items.map((item) => {
                 const isActive =
                   item.href === "/admin"
@@ -155,22 +107,21 @@ export function AdminSidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean 
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    className={`block py-1.5 text-sm transition-colors ${
                       isActive
-                        ? "bg-slate-100 text-slate-900 dark:bg-slate-800/50 dark:text-slate-50"
-                        : "text-zinc-600 hover:bg-slate-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-50"
+                        ? "font-semibold text-neutral-900"
+                        : "text-neutral-600 hover:text-neutral-900"
                     }`}
                   >
-                    <svg
-                      className="h-5 w-5 shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                      viewBox="0 0 24 24"
+                    <span
+                      className={
+                        isActive
+                          ? "border-b-2 border-neutral-900 pb-0.5"
+                          : ""
+                      }
                     >
-                      {iconPaths[item.icon]}
-                    </svg>
-                    {item.label}
+                      {item.label}
+                    </span>
                   </Link>
                 );
               })}
@@ -178,6 +129,40 @@ export function AdminSidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean 
           </div>
         ))}
       </nav>
+
+      {/* Bottom actions */}
+      <div className="border-t border-neutral-200 px-6 py-4 flex items-center gap-4">
+        <Link
+          href="/admin/users"
+          className="text-neutral-400 hover:text-neutral-600 transition-colors"
+          title="Settings"
+        >
+          <svg
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            viewBox="0 0 24 24"
+          >
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+          </svg>
+        </Link>
+        <Link
+          href="/admin/messages"
+          className="text-neutral-400 hover:text-neutral-600 transition-colors"
+          title="Help"
+        >
+          <svg
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            viewBox="0 0 24 24"
+          >
+            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 16v-4M12 8h.01" />
+          </svg>
+        </Link>
+      </div>
     </aside>
   );
 }
