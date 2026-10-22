@@ -7,6 +7,7 @@ import {
 } from "@/lib/insurance-invoice-pdf";
 import { mondayQuery } from "@/lib/monday";
 import { sendSlackAlert } from "@/lib/slack";
+import { getSecureUrl } from "@/lib/storage";
 
 const INSURANCE_BOARD_ID = "18426362720";
 const INSURANCE_ORDERS_GROUP = "group_mm66afmz";
@@ -260,9 +261,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "PDF upload failed" }, { status: 500 });
   }
 
-  const {
-    data: { publicUrl },
-  } = adminClient.storage.from("documents").getPublicUrl(storagePath);
+  const publicUrl = await getSecureUrl("documents", storagePath);
 
   // Insert order record
   const { error: insertError } = await adminClient

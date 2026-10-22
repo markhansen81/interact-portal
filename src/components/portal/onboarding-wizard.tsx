@@ -1233,9 +1233,10 @@ function UploadFlow({
       return;
     }
 
-    const { data: urlData } = supabase.storage
+    const { data: signedData } = await supabase.storage
       .from("documents")
-      .getPublicUrl(data.path);
+      .createSignedUrl(data.path, 86400);
+    const fileUrl = signedData?.signedUrl || null;
 
     try {
       if (isPhoto) {
@@ -1243,7 +1244,7 @@ function UploadFlow({
         await fetch("/api/portal/profile", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ photo_url: urlData.publicUrl, school_photo_url: urlData.publicUrl }),
+          body: JSON.stringify({ photo_url: fileUrl, school_photo_url: fileUrl }),
         });
       } else {
         await fetch("/api/portal/documents", {
@@ -1251,12 +1252,12 @@ function UploadFlow({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             type: task.docType,
-            file_url: urlData.publicUrl,
+            file_url: fileUrl,
           }),
         });
       }
 
-      onUploaded({ type: task.docType!, status: "uploaded", file_url: urlData.publicUrl });
+      onUploaded({ type: task.docType!, status: "uploaded", file_url: fileUrl || undefined });
     } catch {
       // Silently ignore — file was uploaded to storage successfully
     }

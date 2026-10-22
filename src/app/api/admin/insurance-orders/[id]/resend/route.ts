@@ -7,6 +7,7 @@ import {
   type InsuranceOrderData,
 } from "@/lib/insurance-invoice-pdf";
 import { sendSlackAlert } from "@/lib/slack";
+import { getSecureUrl } from "@/lib/storage";
 
 export async function POST(
   _request: Request,
@@ -109,16 +110,14 @@ export async function POST(
       upsert: true,
     });
 
-    const {
-      data: { publicUrl },
-    } = adminClient.storage.from("documents").getPublicUrl(storagePath);
+    const signedUrl = await getSecureUrl("documents", storagePath);
 
-    pdfUrl = publicUrl;
+    pdfUrl = signedUrl;
 
     // Update order with PDF URL
     await adminClient
       .from("insurance_orders")
-      .update({ invoice_pdf_url: publicUrl })
+      .update({ invoice_pdf_url: signedUrl })
       .eq("id", id);
   } else {
     // Download existing PDF for attachment

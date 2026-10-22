@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendToDATEV } from "@/lib/datev";
 import { sendSlackAlert } from "@/lib/slack";
+import { getSecureUrl } from "@/lib/storage";
 
 async function getAdminUser() {
   const supabase = await createClient();
@@ -113,9 +114,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const {
-    data: { publicUrl },
-  } = adminClient.storage.from("documents").getPublicUrl(storagePath);
+  const publicUrl = await getSecureUrl("documents", storagePath);
 
   // Send to DATEV (API first, email fallback)
   const belegNumber = invoiceNumber || `ADM-${Date.now()}`;

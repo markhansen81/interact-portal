@@ -69,10 +69,10 @@ export function TAWorkOrderView({
 
     let pdfUrl = null;
     if (uploadData) {
-      const { data: urlData } = supabase.storage
+      const { data: signedData } = await supabase.storage
         .from("documents")
-        .getPublicUrl(uploadData.path);
-      pdfUrl = urlData.publicUrl;
+        .createSignedUrl(uploadData.path, 86400);
+      pdfUrl = signedData?.signedUrl || null;
     }
 
     // 3. Sign the work order with PDF URL

@@ -84,11 +84,12 @@ export function InvoiceUploader({
       return;
     }
 
-    const { data: urlData } = supabase.storage
+    const { data: signedData } = await supabase.storage
       .from("documents")
-      .getPublicUrl(data.path);
+      .createSignedUrl(data.path, 86400);
+    const signedUrl = signedData?.signedUrl || "";
 
-    setUploadedUrl(urlData.publicUrl);
+    setUploadedUrl(signedUrl);
     setUploading(false);
 
     // Run AI check
@@ -100,7 +101,7 @@ export function InvoiceUploader({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          file_url: urlData.publicUrl,
+          file_url: signedUrl,
           work_order: wo,
         }),
       });
