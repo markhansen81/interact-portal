@@ -31,7 +31,7 @@ const preferenceStyles: Record<string, { label: string; className: string }> = {
   pro: { label: "Pro", className: "bg-green-100 text-green-700" },
   yes: { label: "Can do", className: "bg-yellow-100 text-yellow-700" },
   no: { label: "Not for me", className: "bg-red-100 text-red-700" },
-  unknown: { label: "Unknown", className: "bg-zinc-100 text-zinc-500" },
+  unknown: { label: "Unknown", className: "bg-neutral-100 text-neutral-500" },
 };
 
 function formatDate(dateStr: string): string {
@@ -125,14 +125,14 @@ export function StaffingWizard({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-zinc-900">
+      <div className="relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-sm bg-white">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
+        <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+            <h2 className="text-lg font-semibold text-neutral-900">
               Staff Project
             </h2>
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-neutral-500">
               {project.name} {project.school ? `- ${project.school}` : ""}
               {project.start_date && project.end_date && (
                 <span className="ml-2">
@@ -143,7 +143,7 @@ export function StaffingWizard({
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800"
+            className="rounded-sm p-2 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path d="M6 18L18 6M6 6l12 12" />
@@ -152,13 +152,13 @@ export function StaffingWizard({
         </div>
 
         {/* Steps indicator */}
-        <div className="flex border-b border-zinc-200 px-6 dark:border-zinc-800">
+        <div className="flex border-b border-neutral-200 px-6">
           <button
             onClick={() => !result && setStep(1)}
             className={`border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
               step === 1
-                ? "border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100"
-                : "border-transparent text-zinc-400 hover:text-zinc-600"
+                ? "border-neutral-900 text-neutral-900"
+                : "border-transparent text-neutral-400 hover:text-neutral-600"
             }`}
           >
             1. Select TAs
@@ -167,8 +167,8 @@ export function StaffingWizard({
             onClick={() => selected.size > 0 && !result && setStep(2)}
             className={`border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
               step === 2
-                ? "border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100"
-                : "border-transparent text-zinc-400 hover:text-zinc-600"
+                ? "border-neutral-900 text-neutral-900"
+                : "border-transparent text-neutral-400 hover:text-neutral-600"
             }`}
           >
             2. Confirm & Send
@@ -178,7 +178,7 @@ export function StaffingWizard({
         {/* Content */}
         <div className="max-h-[calc(90vh-180px)] overflow-y-auto px-6 py-4">
           {error && (
-            <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-400">
+            <div className="mb-4 rounded-sm bg-red-50 p-3 text-sm text-red-700">
               {error}
             </div>
           )}
@@ -190,14 +190,14 @@ export function StaffingWizard({
                   <path d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+              <h3 className="text-lg font-semibold text-neutral-900">
                 Work Orders Sent
               </h3>
-              <p className="mt-1 text-sm text-zinc-500">
+              <p className="mt-1 text-sm text-neutral-500">
                 {result.created.length} work order{result.created.length !== 1 ? "s" : ""} created and sent.
               </p>
               {result.errors && result.errors.length > 0 && (
-                <div className="mt-4 rounded-lg bg-yellow-50 p-3 text-left text-sm text-yellow-700">
+                <div className="mt-4 rounded-sm bg-yellow-50 p-3 text-left text-sm text-yellow-700">
                   <p className="font-medium">Some issues:</p>
                   <ul className="mt-1 list-disc pl-4">
                     {result.errors.map((e, i) => (
@@ -208,7 +208,7 @@ export function StaffingWizard({
               )}
               <button
                 onClick={onClose}
-                className="mt-6 rounded-lg bg-zinc-900 px-6 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900"
+                className="mt-6 rounded-sm bg-neutral-900 px-6 py-2 text-sm font-medium text-white hover:bg-neutral-800"
               >
                 Close
               </button>
@@ -217,20 +217,20 @@ export function StaffingWizard({
             <div>
               {loading ? (
                 <div className="flex items-center justify-center py-12">
-                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
+                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900" />
                 </div>
               ) : tas.length === 0 ? (
-                <p className="py-8 text-center text-sm text-zinc-500">
+                <p className="py-8 text-center text-sm text-neutral-500">
                   No active TAs found. Make sure TAs have submitted availability for the project dates.
                 </p>
               ) : (
                 <>
                   <div className="mb-3 flex items-center justify-between">
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-neutral-500">
                       {tas.length} Teaching Artist{tas.length !== 1 ? "s" : ""} found
                       {totalDays > 0 && ` - ${totalDays} project day${totalDays !== 1 ? "s" : ""}`}
                     </p>
-                    <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    <p className="text-sm font-medium text-neutral-700">
                       {selected.size} selected
                     </p>
                   </div>
@@ -245,22 +245,22 @@ export function StaffingWizard({
                         <div
                           key={ta.id}
                           onClick={() => !ta.is_already_assigned && toggleTA(ta.id)}
-                          className={`flex items-center gap-4 rounded-lg border p-4 transition-colors ${
+                          className={`flex items-center gap-4 rounded-sm border p-4 transition-colors ${
                             ta.is_already_assigned
-                              ? "cursor-not-allowed border-zinc-100 bg-zinc-50 opacity-60 dark:border-zinc-800 dark:bg-zinc-800/50"
+                              ? "cursor-not-allowed border-neutral-100 bg-neutral-50 opacity-60"
                               : isSelected
-                                ? "cursor-pointer border-blue-300 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20"
-                                : "cursor-pointer border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:border-zinc-700 dark:hover:bg-zinc-800/50"
+                                ? "cursor-pointer border-blue-300 bg-blue-50"
+                                : "cursor-pointer border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50"
                           }`}
                         >
                           {/* Checkbox */}
                           <div
                             className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
                               ta.is_already_assigned
-                                ? "border-zinc-300 bg-zinc-200 dark:border-zinc-600"
+                                ? "border-neutral-300 bg-neutral-200"
                                 : isSelected
                                   ? "border-blue-500 bg-blue-500 text-white"
-                                  : "border-zinc-300 dark:border-zinc-600"
+                                  : "border-neutral-300"
                             }`}
                           >
                             {(isSelected || ta.is_already_assigned) && (
@@ -271,7 +271,7 @@ export function StaffingWizard({
                           </div>
 
                           {/* Photo */}
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-sm font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-sm font-medium text-neutral-600">
                             {ta.photo_url ? (
                               <img
                                 src={ta.photo_url}
@@ -289,16 +289,16 @@ export function StaffingWizard({
                           {/* Name & details */}
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                              <span className="text-sm font-medium text-neutral-900">
                                 {ta.name}
                               </span>
                               {ta.is_already_assigned && (
-                                <span className="rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400">
+                                <span className="rounded-full bg-neutral-200 px-2 py-0.5 text-[10px] font-medium text-neutral-600">
                                   Already assigned
                                 </span>
                               )}
                             </div>
-                            <p className="text-xs text-zinc-500">
+                            <p className="text-xs text-neutral-500">
                               Pay level {ta.pay_level || "N/A"}
                             </p>
                           </div>
@@ -349,7 +349,7 @@ export function StaffingWizard({
           ) : (
             /* Step 2: Confirm & Send */
             <div>
-              <h3 className="mb-4 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+              <h3 className="mb-4 text-sm font-semibold text-neutral-900">
                 Selected Teaching Artists ({selectedTAs.length})
               </h3>
 
@@ -359,10 +359,10 @@ export function StaffingWizard({
                   return (
                     <div
                       key={ta.id}
-                      className="flex items-center justify-between rounded-lg border border-zinc-200 p-3 dark:border-zinc-800"
+                      className="flex items-center justify-between rounded-sm border border-neutral-200 p-3"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-xs font-medium text-neutral-600">
                           {ta.photo_url ? (
                             <img
                               src={ta.photo_url}
@@ -377,10 +377,10 @@ export function StaffingWizard({
                           )}
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                          <p className="text-sm font-medium text-neutral-900">
                             {ta.name}
                           </p>
-                          <p className="text-xs text-zinc-500">
+                          <p className="text-xs text-neutral-500">
                             {ta.available_days}/{ta.total_days} days available
                           </p>
                         </div>
@@ -391,7 +391,7 @@ export function StaffingWizard({
                         </span>
                         <button
                           onClick={() => toggleTA(ta.id)}
-                          className="text-zinc-400 hover:text-red-500"
+                          className="text-neutral-400 hover:text-red-500"
                         >
                           <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                             <path d="M6 18L18 6M6 6l12 12" />
@@ -405,20 +405,20 @@ export function StaffingWizard({
 
               {/* Sign by date */}
               <div className="mb-6">
-                <label className="mb-1 block text-xs font-medium text-zinc-500">
+                <label className="mb-1 block text-xs font-medium text-neutral-500">
                   Sign by date (optional)
                 </label>
                 <input
                   type="date"
                   value={signBy}
                   onChange={(e) => setSignBy(e.target.value)}
-                  className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                  className="rounded-sm border border-neutral-300 px-3 py-2 text-sm"
                 />
               </div>
 
-              <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800/50">
-                <h4 className="text-sm font-medium text-zinc-900 dark:text-zinc-50">Summary</h4>
-                <ul className="mt-2 space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
+              <div className="rounded-sm bg-neutral-50 p-4">
+                <h4 className="text-sm font-medium text-neutral-900">Summary</h4>
+                <ul className="mt-2 space-y-1 text-sm text-neutral-600">
                   <li>Project: {project.name}</li>
                   <li>School: {project.school || "N/A"}</li>
                   <li>Program: {project.program_type || "N/A"}</li>
@@ -434,10 +434,10 @@ export function StaffingWizard({
 
         {/* Footer */}
         {!result && (
-          <div className="flex items-center justify-between border-t border-zinc-200 px-6 py-4 dark:border-zinc-800">
+          <div className="flex items-center justify-between border-t border-neutral-200 px-6 py-4">
             <button
               onClick={step === 1 ? onClose : () => setStep(1)}
-              className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="rounded-sm border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
             >
               {step === 1 ? "Cancel" : "Back"}
             </button>
@@ -445,7 +445,7 @@ export function StaffingWizard({
               <button
                 onClick={() => setStep(2)}
                 disabled={selected.size === 0}
-                className="rounded-lg bg-zinc-900 px-6 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                className="rounded-sm bg-neutral-900 px-6 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
               >
                 Next: Review ({selected.size} selected)
               </button>
@@ -453,7 +453,7 @@ export function StaffingWizard({
               <button
                 onClick={sendWorkOrders}
                 disabled={sending || selectedTAs.length === 0}
-                className="rounded-lg bg-green-600 px-6 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                className="rounded-sm bg-green-600 px-6 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
               >
                 {sending ? "Sending..." : `Create & Send ${selectedTAs.length} Work Order${selectedTAs.length !== 1 ? "s" : ""}`}
               </button>
