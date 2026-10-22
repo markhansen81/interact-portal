@@ -88,13 +88,13 @@ function PortalBottomNav({ unreadCount = 0 }: { unreadCount?: number }) {
       {moreOpen && (
         <div className="fixed inset-0 z-40 flex md:hidden" onClick={() => setMoreOpen(false)}>
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/40" />
+          <div className="absolute inset-0 bg-black/30" />
           {/* Panel from bottom */}
           <div
-            className="absolute bottom-16 left-0 right-0 z-50 rounded-t-2xl border-t border-zinc-200 bg-white pb-[env(safe-area-inset-bottom)] dark:border-zinc-700 dark:bg-zinc-900"
+            className="absolute bottom-16 left-0 right-0 z-50 border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="mx-auto my-2 h-1 w-10 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+            <div className="mx-auto my-2 h-1 w-10 rounded-full bg-neutral-200" />
             <nav className="grid grid-cols-2 sm:grid-cols-3 gap-1 px-4 pb-4 pt-2">
               {overflowNavItems.map((item) => {
                 const active = isActive(item.href);
@@ -103,15 +103,15 @@ function PortalBottomNav({ unreadCount = 0 }: { unreadCount?: number }) {
                     key={item.href}
                     href={item.href}
                     onClick={() => setMoreOpen(false)}
-                    className={`flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 text-[11px] font-medium transition-colors ${
+                    className={`flex flex-col items-center gap-1.5 px-2 py-3 text-[11px] font-medium transition-colors ${
                       active
-                        ? "bg-amber-50 text-amber-900 dark:bg-amber-900/20 dark:text-amber-100"
-                        : "text-zinc-500 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                        ? "text-amber-700"
+                        : "text-neutral-500 hover:text-neutral-900"
                     }`}
                   >
                     <NavIcon
                       icon={item.icon}
-                      className={`h-5 w-5 ${active ? "text-amber-600 dark:text-amber-400" : ""}`}
+                      className={`h-5 w-5 ${active ? "text-amber-600" : ""}`}
                     />
                     {item.label}
                   </Link>
@@ -123,7 +123,7 @@ function PortalBottomNav({ unreadCount = 0 }: { unreadCount?: number }) {
       )}
 
       {/* Bottom tab bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex border-t border-zinc-200 bg-white pb-[env(safe-area-inset-bottom)] dark:border-zinc-800 dark:bg-zinc-900 md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
         {bottomNavItems.map((item) => {
           const active = isActive(item.href);
           const showBadge = item.href === "/portal" && unreadCount > 0;
@@ -133,13 +133,13 @@ function PortalBottomNav({ unreadCount = 0 }: { unreadCount?: number }) {
               href={item.href}
               className={`relative flex flex-1 flex-col items-center gap-0.5 pb-1 pt-2 text-[10px] font-medium transition-colors ${
                 active
-                  ? "border-t-2 border-amber-500 text-amber-600 dark:text-amber-400"
-                  : "border-t-2 border-transparent text-zinc-400 dark:text-zinc-500"
+                  ? "border-t-2 border-amber-500 text-amber-600"
+                  : "border-t-2 border-transparent text-neutral-400"
               }`}
             >
               <NavIcon
                 icon={item.icon}
-                className={`h-5 w-5 ${active ? "text-amber-600 dark:text-amber-400" : ""}`}
+                className={`h-5 w-5 ${active ? "text-amber-600" : ""}`}
               />
               {showBadge && (
                 <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
@@ -155,13 +155,13 @@ function PortalBottomNav({ unreadCount = 0 }: { unreadCount?: number }) {
           onClick={() => setMoreOpen((v) => !v)}
           className={`flex flex-1 flex-col items-center gap-0.5 pb-1 pt-2 text-[10px] font-medium transition-colors ${
             moreOpen
-              ? "border-t-2 border-amber-500 text-amber-600 dark:text-amber-400"
-              : "border-t-2 border-transparent text-zinc-400 dark:text-zinc-500"
+              ? "border-t-2 border-amber-500 text-amber-600"
+              : "border-t-2 border-transparent text-neutral-400"
           }`}
         >
           <NavIcon
             icon={moreOpen ? "x" : "menu"}
-            className={`h-5 w-5 ${moreOpen ? "text-amber-600 dark:text-amber-400" : ""}`}
+            className={`h-5 w-5 ${moreOpen ? "text-amber-600" : ""}`}
           />
           More
         </button>
@@ -177,19 +177,19 @@ function DesktopSidebar({ profile }: { profile: Profile }) {
   const initials = [profile.first_name?.[0], profile.last_name?.[0]].filter(Boolean).join("").toUpperCase() || "?";
 
   return (
-    <aside className="hidden w-[260px] flex-col border-r border-zinc-200/80 bg-white dark:border-zinc-800 dark:bg-zinc-900 md:flex">
+    <aside className="hidden w-[260px] flex-col border-r border-neutral-200 bg-white md:flex">
       {/* Logo */}
-      <div className="flex h-[72px] items-center gap-3 border-b border-zinc-200/80 px-6 dark:border-zinc-800">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-600">
+      <div className="flex h-14 items-center gap-3 border-b border-neutral-200 px-6">
+        <div className="flex h-8 w-8 items-center justify-center bg-neutral-900">
           <span className="text-xs font-bold text-white">iA</span>
         </div>
         <div>
-          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">InterACT</p>
-          <p className="text-[11px] text-zinc-400">Teaching Artist Portal</p>
+          <p className="text-sm font-semibold text-neutral-900">InterACT</p>
+          <p className="text-[11px] text-neutral-400">Teaching Artist Portal</p>
         </div>
       </div>
 
-      {/* Nav */}
+      {/* Nav — text-only like admin, underline active */}
       <nav className="flex-1 space-y-0.5 px-3 py-4">
         {navItems.map((item) => {
           const isActive =
@@ -201,16 +201,12 @@ function DesktopSidebar({ profile }: { profile: Profile }) {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all ${
+              className={`flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium transition-colors ${
                 isActive
-                  ? "bg-amber-50 text-amber-900 dark:bg-amber-900/20 dark:text-amber-100"
-                  : "text-zinc-500 hover:bg-amber-50/50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-50"
+                  ? "text-neutral-900 underline underline-offset-4"
+                  : "text-neutral-500 hover:text-neutral-900"
               }`}
             >
-              <NavIcon
-                icon={item.icon}
-                className={`h-[18px] w-[18px] shrink-0 ${isActive ? "text-amber-600 dark:text-amber-400" : ""}`}
-              />
               {item.label}
             </Link>
           );
@@ -218,20 +214,20 @@ function DesktopSidebar({ profile }: { profile: Profile }) {
       </nav>
 
       {/* User card */}
-      <div className="border-t border-zinc-200/80 p-4 dark:border-zinc-800">
+      <div className="border-t border-neutral-200 p-4">
         <div className="flex items-center gap-3">
           {profile.photo_url ? (
             <img src={profile.photo_url} alt="" className="h-9 w-9 rounded-full object-cover" />
           ) : (
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-xs font-semibold text-neutral-600">
               {initials}
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
+            <p className="truncate text-sm font-medium text-neutral-900">
               {profile.first_name} {profile.last_name}
             </p>
-            <p className="text-[11px] text-zinc-400">Teaching Artist</p>
+            <p className="text-[11px] text-neutral-400">Teaching Artist</p>
           </div>
         </div>
       </div>

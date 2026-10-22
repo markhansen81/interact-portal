@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { InviteTAButton } from "@/components/admin/invite-ta-button";
 import { TASearchFilter } from "@/components/admin/ta-search-filter";
+import { PageHeader } from "@/components/ui";
 
 export default async function TeachingArtistsPage() {
   const supabase = await createClient();
@@ -24,17 +25,12 @@ export default async function TeachingArtistsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-          Teaching Artists
-        </h2>
-        <InviteTAButton />
-      </div>
+      <PageHeader title="Teaching Artists" action={<InviteTAButton />} />
 
       {!tas || tas.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-12 text-center dark:border-zinc-700 dark:bg-zinc-900">
-          <p className="text-zinc-500">No teaching artists yet.</p>
-          <p className="mt-1 text-sm text-zinc-400">Invite your first TA to get started.</p>
+        <div className="border border-dashed border-neutral-300 bg-white p-12 text-center rounded-sm">
+          <p className="text-neutral-500">No teaching artists yet.</p>
+          <p className="mt-1 text-sm text-neutral-400">Invite your first TA to get started.</p>
         </div>
       ) : (
         <TASearchFilter tas={tas as any} docsByTA={docsByTA} />

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AdminUploadForm } from "./admin-upload-form";
+import { StatCard, Badge, Button } from "@/components/ui";
 
 interface Invoice {
   id: string;
@@ -81,11 +82,11 @@ type Tab = "all" | "pending" | "approved" | "paid" | "rejected" | "expenses" | "
 type ExpenseFilter = "all" | "flagged";
 
 const STATUS_STYLES: Record<string, string> = {
-  draft: "bg-zinc-100 text-zinc-600",
-  submitted: "bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400",
-  approved: "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400",
-  paid: "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400",
-  rejected: "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400",
+  draft: "bg-neutral-100 text-neutral-600",
+  submitted: "bg-amber-50 text-amber-700",
+  approved: "bg-neutral-200 text-neutral-800",
+  paid: "bg-neutral-900 text-white",
+  rejected: "bg-red-50 text-red-700",
 };
 
 export function FinancialDashboard({ invoices, expenses, adminUploads }: { invoices: Invoice[]; expenses: Expense[]; adminUploads: AdminUpload[] }) {
@@ -120,34 +121,52 @@ export function FinancialDashboard({ invoices, expenses, adminUploads }: { invoi
     <div className="space-y-6">
       {/* Summary cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-6">
-        <SummaryCard label="TA Pending" value={totalPending} count={pending.length} color="amber" onClick={() => setTab("pending")} />
-        <SummaryCard label="Approved" value={totalApproved} count={approved.length} color="blue" onClick={() => setTab("approved")} />
-        <SummaryCard label="Paid" value={totalPaid} count={paid.length} color="green" onClick={() => setTab("paid")} />
-        <SummaryCard
-          label="Expenses Flagged"
-          value={totalFlagged}
-          count={flaggedExpenses.length}
-          color="red"
-          onClick={() => { setTab("expenses"); setExpenseFilter("flagged"); }}
-        />
-        <SummaryCard
-          label="DATEV Sent"
-          value={datevSentExpenses.reduce((s, e) => s + Number(e.total), 0)}
-          count={datevSentExpenses.length}
-          color="green"
-          onClick={() => { setTab("expenses"); setExpenseFilter("all"); }}
-        />
-        <SummaryCard
-          label="Eingangsrechnungen"
-          value={adminUploadsOutstanding}
-          count={adminUploads.length}
-          color="purple"
-          onClick={() => setTab("admin-uploads")}
-        />
+        <button onClick={() => setTab("pending")} className="text-left">
+          <StatCard
+            label="TA Pending"
+            value={`\u20AC${totalPending.toLocaleString("de-DE", { minimumFractionDigits: 2 })}`}
+            change={`${pending.length} item${pending.length !== 1 ? "s" : ""}`}
+          />
+        </button>
+        <button onClick={() => setTab("approved")} className="text-left">
+          <StatCard
+            label="Approved"
+            value={`\u20AC${totalApproved.toLocaleString("de-DE", { minimumFractionDigits: 2 })}`}
+            change={`${approved.length} item${approved.length !== 1 ? "s" : ""}`}
+          />
+        </button>
+        <button onClick={() => setTab("paid")} className="text-left">
+          <StatCard
+            label="Paid"
+            value={`\u20AC${totalPaid.toLocaleString("de-DE", { minimumFractionDigits: 2 })}`}
+            change={`${paid.length} item${paid.length !== 1 ? "s" : ""}`}
+          />
+        </button>
+        <button onClick={() => { setTab("expenses"); setExpenseFilter("flagged"); }} className="text-left">
+          <StatCard
+            label="Expenses Flagged"
+            value={`\u20AC${totalFlagged.toLocaleString("de-DE", { minimumFractionDigits: 2 })}`}
+            change={`${flaggedExpenses.length} item${flaggedExpenses.length !== 1 ? "s" : ""}`}
+          />
+        </button>
+        <button onClick={() => { setTab("expenses"); setExpenseFilter("all"); }} className="text-left">
+          <StatCard
+            label="DATEV Sent"
+            value={`\u20AC${datevSentExpenses.reduce((s, e) => s + Number(e.total), 0).toLocaleString("de-DE", { minimumFractionDigits: 2 })}`}
+            change={`${datevSentExpenses.length} item${datevSentExpenses.length !== 1 ? "s" : ""}`}
+          />
+        </button>
+        <button onClick={() => setTab("admin-uploads")} className="text-left">
+          <StatCard
+            label="Eingangsrechnungen"
+            value={`\u20AC${adminUploadsOutstanding.toLocaleString("de-DE", { minimumFractionDigits: 2 })}`}
+            change={`${adminUploads.length} item${adminUploads.length !== 1 ? "s" : ""}`}
+          />
+        </button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 overflow-x-auto rounded-xl border border-zinc-200/80 bg-zinc-100/50 p-1 dark:border-zinc-800 dark:bg-zinc-900">
+      {/* Tabs — underline style */}
+      <div className="flex gap-6 overflow-x-auto border-b border-neutral-200">
         {([
           { id: "all", label: `TA Rechnungen (${invoices.length})` },
           { id: "pending", label: `Pending (${pending.length})` },
@@ -160,10 +179,10 @@ export function FinancialDashboard({ invoices, expenses, adminUploads }: { invoi
           <button
             key={t.id}
             onClick={() => { setTab(t.id); if (t.id !== "expenses") setExpenseFilter("all"); }}
-            className={`whitespace-nowrap rounded-lg px-4 py-2 text-[13px] font-medium transition-all ${
+            className={`whitespace-nowrap pb-3 text-[13px] font-medium transition-colors border-b-2 -mb-px ${
               tab === t.id
-                ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-50"
-                : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400"
+                ? "border-neutral-900 text-neutral-900"
+                : "border-transparent text-neutral-500 hover:text-neutral-700"
             }`}
           >
             {t.label}
@@ -180,35 +199,6 @@ export function FinancialDashboard({ invoices, expenses, adminUploads }: { invoi
         <InvoicesTable invoices={filteredInvoices} />
       )}
     </div>
-  );
-}
-
-function SummaryCard({ label, value, count, color, onClick }: {
-  label: string; value: number; count: number; color: string; onClick: () => void;
-}) {
-  const colors: Record<string, string> = {
-    amber: "border-amber-200 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-900/10",
-    blue: "border-blue-200 bg-blue-50 dark:border-blue-900/40 dark:bg-blue-900/10",
-    green: "border-green-200 bg-green-50 dark:border-green-900/40 dark:bg-green-900/10",
-    purple: "border-purple-200 bg-purple-50 dark:border-purple-900/40 dark:bg-purple-900/10",
-    red: "border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-900/10",
-  };
-  const textColors: Record<string, string> = {
-    amber: "text-amber-700 dark:text-amber-400",
-    blue: "text-blue-700 dark:text-blue-400",
-    green: "text-green-700 dark:text-green-400",
-    purple: "text-purple-700 dark:text-purple-400",
-    red: "text-red-700 dark:text-red-400",
-  };
-
-  return (
-    <button onClick={onClick} className={`rounded-2xl border p-5 text-left transition-all hover:shadow-sm ${colors[color] || colors.amber}`}>
-      <p className="text-[13px] font-medium text-zinc-500">{label}</p>
-      <p className={`mt-1 text-2xl font-bold tabular-nums ${textColors[color] || textColors.amber}`}>
-        {"\u20AC"}{value.toLocaleString("de-DE", { minimumFractionDigits: 2 })}
-      </p>
-      <p className="mt-0.5 text-xs text-zinc-400">{count} item{count !== 1 ? "s" : ""}</p>
-    </button>
   );
 }
 
@@ -230,28 +220,28 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
 
   if (invoices.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-12 text-center dark:border-zinc-700 dark:bg-zinc-900">
-        <p className="text-sm text-zinc-500">No invoices in this view.</p>
+      <div className="border border-dashed border-neutral-300 bg-white p-12 text-center rounded-sm">
+        <p className="text-sm text-neutral-500">No invoices in this view.</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="overflow-hidden border border-neutral-200 bg-white rounded-sm">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-zinc-100 dark:border-zinc-800">
-            <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Invoice</th>
-            <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Teaching Artist</th>
-            <th className="px-5 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Amount</th>
-            <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Source</th>
-            <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Date</th>
-            <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Status</th>
-            <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">DATEV</th>
-            <th className="px-5 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Actions</th>
+          <tr className="border-b border-neutral-200">
+            <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-neutral-500">Invoice</th>
+            <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-neutral-500">Teaching Artist</th>
+            <th className="px-5 py-3 text-right text-[11px] font-medium uppercase tracking-wider text-neutral-500">Amount</th>
+            <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-neutral-500">Source</th>
+            <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-neutral-500">Date</th>
+            <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-neutral-500">Status</th>
+            <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-neutral-500">DATEV</th>
+            <th className="px-5 py-3 text-right text-[11px] font-medium uppercase tracking-wider text-neutral-500">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-50 dark:divide-zinc-800/50">
+        <tbody className="divide-y divide-neutral-100">
           {invoices.map((inv) => {
             const ta = inv.profiles;
             const taName = ta?.first_name && ta?.last_name ? `${ta.first_name} ${ta.last_name}` : ta?.email || "\u2014";
@@ -261,47 +251,43 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
             const hasAiDetails = inv.ai_check_result !== null && inv.ai_check_result !== undefined;
 
             return (
-              <tr key={inv.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20">
+              <tr key={inv.id} className="hover:bg-neutral-50 transition-colors">
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                    <span className="text-sm font-medium text-neutral-900">
                       {inv.invoice_number || inv.id.slice(0, 8)}
                     </span>
-                    {/* AI Check badge */}
                     {inv.ai_check_passed === true && (
-                      <span className="inline-flex items-center gap-0.5 rounded-full bg-green-50 px-1.5 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                      <Badge variant="success">
+                        <svg className="h-3 w-3 mr-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                         </svg>
                         AI Passed
-                      </span>
+                      </Badge>
                     )}
                     {inv.ai_check_passed === false && (
-                      <button
-                        onClick={() => setExpandedId(isExpanded ? null : inv.id)}
-                        className="inline-flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400"
-                      >
-                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        AI Failed
+                      <button onClick={() => setExpandedId(isExpanded ? null : inv.id)}>
+                        <Badge variant="error">
+                          <svg className="h-3 w-3 mr-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          AI Failed
+                        </Badge>
                       </button>
                     )}
                     {inv.ai_check_passed === null && (
-                      <span className="inline-flex items-center rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-400 dark:bg-zinc-800">
-                        No check
-                      </span>
+                      <Badge variant="default">No check</Badge>
                     )}
                     {pdfUrl && (
                       <a href={pdfUrl} target="_blank" rel="noopener noreferrer"
-                        className="rounded-md bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800">
+                        className="text-[10px] font-medium text-neutral-500 underline hover:text-neutral-900">
                         PDF
                       </a>
                     )}
                     {hasAiDetails && (
                       <button
                         onClick={() => setExpandedId(isExpanded ? null : inv.id)}
-                        className="rounded-md bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800"
+                        className="text-[10px] font-medium text-neutral-500 underline hover:text-neutral-900"
                       >
                         {isExpanded ? "Hide" : "Details"}
                       </button>
@@ -313,26 +299,24 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
                     {ta?.photo_url ? (
                       <img src={ta.photo_url} alt="" className="h-7 w-7 rounded-full object-cover" />
                     ) : (
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-100 text-[10px] font-semibold text-zinc-500 dark:bg-zinc-800">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-100 text-[10px] font-semibold text-neutral-500">
                         {initials}
                       </div>
                     )}
-                    <span className="text-sm text-zinc-700 dark:text-zinc-300">{taName}</span>
+                    <span className="text-sm text-neutral-700">{taName}</span>
                   </Link>
                 </td>
                 <td className="px-5 py-3 text-right">
-                  <span className="text-sm font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
+                  <span className="text-sm font-semibold tabular-nums text-neutral-900">
                     {"\u20AC"}{Number(inv.total).toFixed(2)}
                   </span>
                 </td>
                 <td className="px-5 py-3">
-                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                    inv.source === "upload" ? "bg-purple-50 text-purple-600 dark:bg-purple-900/20" : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800"
-                  }`}>
+                  <Badge variant={inv.source === "upload" ? "info" : "default"}>
                     {inv.source === "upload" ? "PDF Upload" : "Calculator"}
-                  </span>
+                  </Badge>
                 </td>
-                <td className="px-5 py-3 text-[13px] text-zinc-500">
+                <td className="px-5 py-3 text-[13px] text-neutral-500">
                   {inv.submitted_at ? new Date(inv.submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "\u2014"}
                 </td>
                 <td className="px-5 py-3">
@@ -340,56 +324,58 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
                     {inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}
                   </span>
                 </td>
-                {/* DATEV status column */}
                 <td className="px-5 py-3">
                   {inv.datev_sent_at ? (
                     <div className="flex flex-col gap-0.5">
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-600 dark:text-green-400">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-neutral-900">
                         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                         </svg>
                         {new Date(inv.datev_sent_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                       </span>
                       {inv.datev_document_id && (
-                        <span className="inline-flex items-center rounded bg-zinc-100 px-1.5 py-0.5 text-[9px] font-mono text-zinc-500 dark:bg-zinc-800">
+                        <span className="inline-flex items-center rounded-sm bg-neutral-100 px-1.5 py-0.5 text-[9px] font-mono text-neutral-500">
                           {inv.datev_document_id}
                         </span>
                       )}
                     </div>
                   ) : inv.status === "submitted" ? (
-                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:bg-amber-900/20 dark:text-amber-400">
-                      Pending approval
-                    </span>
+                    <Badge variant="warning">Pending approval</Badge>
                   ) : (
-                    <span className="text-zinc-300 dark:text-zinc-600">&mdash;</span>
+                    <span className="text-neutral-300">&mdash;</span>
                   )}
                 </td>
                 <td className="px-5 py-3 text-right">
                   {loadingId === inv.id ? (
-                    <span className="text-xs text-zinc-400">...</span>
+                    <span className="text-xs text-neutral-400">...</span>
                   ) : (
                     <div className="flex items-center justify-end gap-1">
                       {inv.status === "submitted" && (
                         <>
-                          <button onClick={() => updateStatus(inv.id, "approved")}
-                            className={`rounded-lg px-2.5 py-1 text-[11px] font-medium text-white ${
-                              inv.ai_check_passed === false
-                                ? "bg-amber-500 hover:bg-amber-600"
-                                : "bg-green-600 hover:bg-green-700"
-                            }`}>
+                          <Button
+                            size="sm"
+                            variant="primary"
+                            onClick={() => updateStatus(inv.id, "approved")}
+                          >
                             {inv.ai_check_passed === false ? "Approve (AI flagged)" : "Approve"}
-                          </button>
-                          <button onClick={() => updateStatus(inv.id, "rejected")}
-                            className="rounded-lg border border-red-200 px-2.5 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50 dark:border-red-800">
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="danger"
+                            onClick={() => updateStatus(inv.id, "rejected")}
+                          >
                             Reject
-                          </button>
+                          </Button>
                         </>
                       )}
                       {inv.status === "approved" && (
-                        <button onClick={() => updateStatus(inv.id, "paid")}
-                          className="rounded-lg bg-blue-600 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-blue-700">
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          onClick={() => updateStatus(inv.id, "paid")}
+                        >
                           Mark Paid
-                        </button>
+                        </Button>
                       )}
                     </div>
                   )}
@@ -405,38 +391,38 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
         if (expandedId !== inv.id || !inv.ai_check_result) return null;
         const result = inv.ai_check_result;
         return (
-          <div key={`ai-${inv.id}`} className="border-t border-zinc-100 bg-zinc-50/50 px-5 py-4 dark:border-zinc-800 dark:bg-zinc-900/50">
+          <div key={`ai-${inv.id}`} className="border-t border-neutral-200 bg-white px-5 py-4">
             {inv.ai_check_passed === false && (
-              <div className="mb-3 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] font-medium text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+              <div className="mb-3 flex items-center gap-2 border border-neutral-200 bg-white px-3 py-2 text-[12px] font-medium text-neutral-700 rounded-sm">
                 <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                 </svg>
                 AI flagged issues -- review before approving
               </div>
             )}
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">AI Validation Details</p>
+            <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-neutral-500">AI Validation Details</p>
             {result.issues && result.issues.length > 0 && (
               <div className="mb-2">
-                <p className="text-[11px] font-semibold text-red-600 dark:text-red-400 mb-1">Issues</p>
+                <p className="text-[11px] font-medium text-red-600 mb-1">Issues</p>
                 <ul className="list-disc list-inside space-y-0.5">
                   {result.issues.map((issue, i) => (
-                    <li key={i} className="text-[12px] text-red-600 dark:text-red-400">{issue}</li>
+                    <li key={i} className="text-[12px] text-red-600">{issue}</li>
                   ))}
                 </ul>
               </div>
             )}
             {result.warnings && result.warnings.length > 0 && (
               <div className="mb-2">
-                <p className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 mb-1">Warnings</p>
+                <p className="text-[11px] font-medium text-amber-700 mb-1">Warnings</p>
                 <ul className="list-disc list-inside space-y-0.5">
                   {result.warnings.map((warning, i) => (
-                    <li key={i} className="text-[12px] text-amber-600 dark:text-amber-400">{warning}</li>
+                    <li key={i} className="text-[12px] text-amber-700">{warning}</li>
                   ))}
                 </ul>
               </div>
             )}
             {result.passed && (!result.issues || result.issues.length === 0) && (
-              <p className="inline-flex items-center gap-1 text-[12px] font-medium text-green-600 dark:text-green-400">
+              <p className="inline-flex items-center gap-1 text-[12px] font-medium text-neutral-900">
                 <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
@@ -487,52 +473,52 @@ function ExpensesTable({ expenses, defaultFilter }: { expenses: Expense[]; defau
 
   if (expenses.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-12 text-center dark:border-zinc-700 dark:bg-zinc-900">
-        <p className="text-sm text-zinc-500">No expense claims submitted yet.</p>
+      <div className="border border-dashed border-neutral-300 bg-white p-12 text-center rounded-sm">
+        <p className="text-sm text-neutral-500">No expense claims submitted yet.</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-3">
-      {/* Sub-filter tabs */}
-      <div className="flex gap-2">
+      {/* Sub-filter tabs — underline style */}
+      <div className="flex gap-6 border-b border-neutral-200">
         <button
           onClick={() => setFilter("all")}
-          className={`rounded-lg px-3 py-1.5 text-[12px] font-medium transition-all ${
+          className={`whitespace-nowrap pb-2 text-[12px] font-medium transition-colors border-b-2 -mb-px ${
             filter === "all"
-              ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-              : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400"
+              ? "border-neutral-900 text-neutral-900"
+              : "border-transparent text-neutral-500 hover:text-neutral-700"
           }`}
         >
           All Expenses ({expenses.length})
         </button>
         <button
           onClick={() => setFilter("flagged")}
-          className={`rounded-lg px-3 py-1.5 text-[12px] font-medium transition-all ${
+          className={`whitespace-nowrap pb-2 text-[12px] font-medium transition-colors border-b-2 -mb-px ${
             filter === "flagged"
-              ? "bg-red-600 text-white"
-              : "bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400"
+              ? "border-neutral-900 text-neutral-900"
+              : "border-transparent text-neutral-500 hover:text-neutral-700"
           }`}
         >
           Flagged ({flaggedExpenses.length})
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="overflow-hidden border border-neutral-200 bg-white rounded-sm">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-zinc-100 dark:border-zinc-800">
-              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Teaching Artist</th>
-              <th className="px-5 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Amount</th>
-              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Items</th>
-              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Submitted</th>
-              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Status</th>
-              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">DATEV</th>
-              <th className="px-5 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Actions</th>
+            <tr className="border-b border-neutral-200">
+              <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-neutral-500">Teaching Artist</th>
+              <th className="px-5 py-3 text-right text-[11px] font-medium uppercase tracking-wider text-neutral-500">Amount</th>
+              <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-neutral-500">Items</th>
+              <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-neutral-500">Submitted</th>
+              <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-neutral-500">Status</th>
+              <th className="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-neutral-500">DATEV</th>
+              <th className="px-5 py-3 text-right text-[11px] font-medium uppercase tracking-wider text-neutral-500">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-50 dark:divide-zinc-800/50">
+          <tbody className="divide-y divide-neutral-100">
             {displayedExpenses.map((exp) => {
               const ta = exp.profiles;
               const taName = ta?.first_name && ta?.last_name ? `${ta.first_name} ${ta.last_name}` : ta?.email || "\u2014";
@@ -542,47 +528,47 @@ function ExpensesTable({ expenses, defaultFilter }: { expenses: Expense[]; defau
               const isExpanded = expandedId === exp.id;
 
               return (
-                <tr key={exp.id} className="group">
+                <tr key={exp.id} className="group hover:bg-neutral-50 transition-colors">
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-2">
                       <Link href={`/admin/teaching-artists/${ta?.id}`} className="flex items-center gap-2">
                         {ta?.photo_url ? (
                           <img src={ta.photo_url} alt="" className="h-7 w-7 rounded-full object-cover" />
                         ) : (
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-100 text-[10px] font-semibold text-zinc-500 dark:bg-zinc-800">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-100 text-[10px] font-semibold text-neutral-500">
                             {initials}
                           </div>
                         )}
-                        <span className="text-sm text-zinc-700 dark:text-zinc-300">{taName}</span>
+                        <span className="text-sm text-neutral-700">{taName}</span>
                       </Link>
                       {exp.needs_review && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/20 dark:text-amber-400" title={exp.review_reason || "Needs review"}>
+                        <Badge variant="warning" className="gap-1">
                           <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                           </svg>
                           {exp.review_reason || "Flagged"}
-                        </span>
+                        </Badge>
                       )}
                     </div>
                   </td>
                   <td className="px-5 py-3 text-right">
-                    <span className="text-sm font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
+                    <span className="text-sm font-semibold tabular-nums text-neutral-900">
                       {"\u20AC"}{Number(exp.total).toFixed(2)}
                     </span>
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-[13px] text-zinc-700 dark:text-zinc-300">
+                      <span className="text-[13px] text-neutral-700">
                         {items.length} item{items.length !== 1 ? "s" : ""}
                       </span>
                       {categories.length > 0 && (
-                        <span className="text-[10px] text-zinc-400 truncate max-w-[120px]">
+                        <span className="text-[10px] text-neutral-400 truncate max-w-[120px]">
                           {categories.join(", ")}
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="px-5 py-3 text-[13px] text-zinc-500">
+                  <td className="px-5 py-3 text-[13px] text-neutral-500">
                     {exp.submitted_at ? new Date(exp.submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "\u2014"}
                   </td>
                   <td className="px-5 py-3">
@@ -592,60 +578,73 @@ function ExpensesTable({ expenses, defaultFilter }: { expenses: Expense[]; defau
                   </td>
                   <td className="px-5 py-3">
                     {exp.datev_sent_at ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-600 dark:text-green-400">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-neutral-900">
                         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                         </svg>
                         {new Date(exp.datev_sent_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                       </span>
                     ) : exp.needs_review ? (
-                      <span className="inline-flex items-center rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-medium text-orange-600 dark:bg-orange-900/20 dark:text-orange-400">
-                        Pending Review
-                      </span>
+                      <Badge variant="warning">Pending Review</Badge>
                     ) : (
-                      <span className="text-zinc-300 dark:text-zinc-600">&mdash;</span>
+                      <span className="text-neutral-300">&mdash;</span>
                     )}
                   </td>
                   <td className="px-5 py-3 text-right">
                     {loadingId === exp.id || datevLoadingId === exp.id ? (
-                      <span className="text-xs text-zinc-400">...</span>
+                      <span className="text-xs text-neutral-400">...</span>
                     ) : (
                       <div className="flex items-center justify-end gap-1 flex-wrap">
                         {exp.pdf_url && (
                           <a href={exp.pdf_url} target="_blank" rel="noopener noreferrer"
-                            className="rounded-lg border border-zinc-200 px-2 py-1 text-[11px] font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400">
+                            className="text-[11px] font-medium text-neutral-500 underline hover:text-neutral-900">
                             View PDF
                           </a>
                         )}
                         {items.length > 0 && (
-                          <button onClick={() => setExpandedId(isExpanded ? null : exp.id)}
-                            className="rounded-lg border border-zinc-200 px-2 py-1 text-[11px] font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setExpandedId(isExpanded ? null : exp.id)}
+                          >
                             {isExpanded ? "Hide" : "Receipts"}
-                          </button>
+                          </Button>
                         )}
                         {exp.needs_review && !exp.datev_sent_at && (
-                          <button onClick={() => sendToDatev(exp.id)}
-                            className="rounded-lg bg-indigo-600 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-indigo-700">
+                          <Button
+                            size="sm"
+                            variant="primary"
+                            onClick={() => sendToDatev(exp.id)}
+                          >
                             Send to DATEV
-                          </button>
+                          </Button>
                         )}
                         {exp.status === "submitted" && (
                           <>
-                            <button onClick={() => updateStatus(exp.id, "approved")}
-                              className="rounded-lg bg-green-600 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-green-700">
+                            <Button
+                              size="sm"
+                              variant="primary"
+                              onClick={() => updateStatus(exp.id, "approved")}
+                            >
                               Approve
-                            </button>
-                            <button onClick={() => updateStatus(exp.id, "rejected")}
-                              className="rounded-lg border border-red-200 px-2.5 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50 dark:border-red-800">
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="danger"
+                              onClick={() => updateStatus(exp.id, "rejected")}
+                            >
                               Reject
-                            </button>
+                            </Button>
                           </>
                         )}
                         {exp.status === "approved" && (
-                          <button onClick={() => updateStatus(exp.id, "paid")}
-                            className="rounded-lg bg-blue-600 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-blue-700">
+                          <Button
+                            size="sm"
+                            variant="primary"
+                            onClick={() => updateStatus(exp.id, "paid")}
+                          >
                             Mark Paid
-                          </button>
+                          </Button>
                         )}
                       </div>
                     )}
@@ -660,21 +659,21 @@ function ExpensesTable({ expenses, defaultFilter }: { expenses: Expense[]; defau
         {displayedExpenses.map((exp) => {
           if (expandedId !== exp.id || !exp.expense_items?.length) return null;
           return (
-            <div key={`items-${exp.id}`} className="border-t border-zinc-100 bg-zinc-50/50 px-5 py-4 dark:border-zinc-800 dark:bg-zinc-900/50">
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Receipts & Items</p>
+            <div key={`items-${exp.id}`} className="border-t border-neutral-200 bg-white px-5 py-4">
+              <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-neutral-500">Receipts & Items</p>
               <div className="grid gap-2">
                 {exp.expense_items.map((item) => (
-                  <div key={item.id} className="flex items-center gap-4 rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-800">
+                  <div key={item.id} className="flex items-center gap-4 border border-neutral-200 bg-white p-3 rounded-sm">
                     {item.receipt_url && (
                       <a href={item.receipt_url} target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
-                        <img src={item.receipt_url} alt="Receipt" className="h-12 w-12 rounded-md object-cover border border-zinc-200 dark:border-zinc-600" />
+                        <img src={item.receipt_url} alt="Receipt" className="h-12 w-12 rounded-sm object-cover border border-neutral-200" />
                       </a>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50 truncate">{item.description}</p>
-                      <p className="text-[11px] text-zinc-400">{item.category}</p>
+                      <p className="text-sm font-medium text-neutral-900 truncate">{item.description}</p>
+                      <p className="text-[11px] text-neutral-400">{item.category}</p>
                     </div>
-                    <span className="text-sm font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
+                    <span className="text-sm font-semibold tabular-nums text-neutral-900">
                       {"\u20AC"}{Number(item.amount).toFixed(2)}
                     </span>
                   </div>

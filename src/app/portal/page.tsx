@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth";
 import Link from "next/link";
+import { StatCard, Card, Badge } from "@/components/ui";
 
 const REQUIRED_DOCS = [
   { type: "right_to_work", label: "Right to Work", desc: "Upload your passport, visa, or work permit" },
@@ -161,59 +162,57 @@ export default async function PortalDashboard() {
     <div className="space-y-8">
       {/* Page title */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-3xl font-bold tracking-tight text-neutral-900">
           Dashboard
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-sm text-neutral-500">
           Track your onboarding progress and manage your work.
         </p>
       </div>
 
       {/* Onboarding Progress */}
-      <div className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <Card noPadding>
         <div className="px-7 pt-6 pb-5">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+              <h2 className="text-base font-semibold text-neutral-900">
                 {allDone ? "Onboarding Complete" : "Onboarding Progress"}
               </h2>
-              <p className="mt-0.5 text-sm text-zinc-500">
+              <p className="mt-0.5 text-sm text-neutral-500">
                 {allDone
                   ? "You're all set! Your profile is complete."
                   : `${completedCount} of ${totalCount} tasks complete`}
               </p>
             </div>
             <div className="text-right">
-              <span className={`text-2xl md:text-3xl font-bold tabular-nums ${allDone ? "text-green-600" : "text-zinc-900 dark:text-zinc-50"}`}>
+              <span className={`text-2xl md:text-3xl font-bold tabular-nums ${allDone ? "text-green-600" : "text-neutral-900"}`}>
                 {completedCount}/{totalCount}
               </span>
-              <p className="text-xs text-zinc-400">tasks done</p>
+              <p className="text-xs text-neutral-400">tasks done</p>
             </div>
           </div>
-          <div className="mt-4 h-2 w-full rounded-full bg-zinc-100 dark:bg-zinc-800">
+          <div className="mt-4 h-2 w-full rounded-full bg-neutral-100">
             <div
-              className={`h-2 rounded-full transition-all duration-700 ease-out ${allDone ? "bg-green-500" : "bg-green-500"}`}
+              className="h-2 rounded-full bg-green-500 transition-all duration-700 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
 
-        {/* Task cards */}
-        <div className="border-t border-zinc-100 dark:border-zinc-800">
-          <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+        {/* Task list */}
+        <div className="border-t border-neutral-200">
+          <div className="divide-y divide-neutral-100">
             {tasks.map((task) => (
               <Link
                 key={task.id}
                 href={task.href}
-                className={`flex items-center gap-4 px-7 py-5 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50 ${
-                  task.done ? "bg-green-50/30 dark:bg-green-900/5" : ""
-                }`}
+                className="flex items-center gap-4 px-7 py-5 transition-colors hover:bg-neutral-50"
               >
                 {/* Icon */}
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-sm ${
                   task.done
-                    ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-                    : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
+                    ? "bg-green-50 text-green-600"
+                    : "bg-neutral-100 text-neutral-400"
                 }`}>
                   {task.done ? (
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -227,23 +226,23 @@ export default async function PortalDashboard() {
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <h3 className={`text-sm font-semibold ${
-                    task.done ? "text-green-700 dark:text-green-400" : "text-zinc-900 dark:text-zinc-50"
+                    task.done ? "text-green-700" : "text-neutral-900"
                   }`}>
                     {task.title}
                   </h3>
-                  <p className="mt-0.5 text-[13px] text-zinc-500">{task.desc}</p>
+                  <p className="mt-0.5 text-[13px] text-neutral-500">{task.desc}</p>
                   {/* Sub-progress bar for form tasks */}
                   {task.total && !task.done && (
                     <div className="mt-2.5 flex items-center gap-2.5">
-                      <div className="h-1.5 flex-1 rounded-full bg-zinc-100 dark:bg-zinc-800">
+                      <div className="h-1.5 flex-1 rounded-full bg-neutral-100">
                         <div
                           className={`h-1.5 rounded-full transition-all duration-500 ${
-                            task.filled! > 0 ? "bg-blue-400" : "bg-zinc-200 dark:bg-zinc-700"
+                            task.filled! > 0 ? "bg-blue-400" : "bg-neutral-200"
                           }`}
                           style={{ width: `${Math.round((task.filled! / task.total) * 100)}%` }}
                         />
                       </div>
-                      <span className="text-[11px] font-medium tabular-nums text-zinc-400">
+                      <span className="text-[11px] font-medium tabular-nums text-neutral-400">
                         {task.filled}/{task.total}
                       </span>
                     </div>
@@ -251,26 +250,42 @@ export default async function PortalDashboard() {
                 </div>
 
                 {/* Arrow */}
-                <svg className="h-5 w-5 shrink-0 text-zinc-300 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <svg className="h-5 w-5 shrink-0 text-neutral-300" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                 </svg>
               </Link>
             ))}
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Pending Work Orders" value={pendingWOs ?? 0} href="/portal/work-orders" highlight={!!pendingWOs} />
-        <StatCard label="Unread Messages" value={unreadMessages ?? 0} href="/portal/messages" highlight={!!unreadMessages} />
-        <StatCard label="Pay Level" value={profile.pay_level} href="/portal/profile" />
-        <StatCard label="Total Projects" value={profile.total_projects ?? 0} href="/portal/work-orders" />
+        <StatCard
+          label="Pending Work Orders"
+          value={pendingWOs ?? 0}
+          action={{ label: "View", href: "/portal/work-orders" }}
+        />
+        <StatCard
+          label="Unread Messages"
+          value={unreadMessages ?? 0}
+          action={{ label: "View", href: "/portal/messages" }}
+        />
+        <StatCard
+          label="Pay Level"
+          value={profile.pay_level}
+          action={{ label: "Profile", href: "/portal/profile" }}
+        />
+        <StatCard
+          label="Total Projects"
+          value={profile.total_projects ?? 0}
+          action={{ label: "View", href: "/portal/work-orders" }}
+        />
       </div>
 
       {/* Training */}
       <div>
-        <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-50">Training</h2>
+        <h2 className="mb-3 text-sm font-semibold text-neutral-900">Training</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <TrainingCard label="Online Onboarding" done={profile.training_online} />
           <TrainingCard label="Offline Foundation" done={profile.training_offline} />
@@ -307,47 +322,16 @@ function TaskIcon({ type }: { type: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// Stat & Training Cards
+// Training Card
 // ---------------------------------------------------------------------------
-
-function StatCard({ label, value, href, highlight }: {
-  label: string; value: number; href: string; highlight?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`group rounded-2xl border p-5 transition-all hover:shadow-sm ${
-        highlight
-          ? "border-amber-200 bg-amber-50 hover:border-amber-300 dark:border-amber-900/40 dark:bg-amber-900/10"
-          : "border-zinc-200/80 bg-white hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900"
-      }`}
-    >
-      <p className="text-[13px] font-medium text-zinc-500">{label}</p>
-      <p className={`mt-2 text-2xl md:text-3xl font-bold tabular-nums ${
-        highlight ? "text-amber-700 dark:text-amber-400" : "text-zinc-900 dark:text-zinc-50"
-      }`}>
-        {value}
-      </p>
-    </Link>
-  );
-}
 
 function TrainingCard({ label, done }: { label: string; done: boolean }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-zinc-200/80 bg-white px-5 py-4 dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{label}</p>
-      <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
-        done
-          ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-          : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800"
-      }`}>
-        {done && (
-          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-          </svg>
-        )}
+    <div className="flex items-center justify-between border border-neutral-200 bg-white px-5 py-4 rounded-sm">
+      <p className="text-sm font-medium text-neutral-700">{label}</p>
+      <Badge variant={done ? "success" : "default"}>
         {done ? "Complete" : "Pending"}
-      </span>
+      </Badge>
     </div>
   );
 }
