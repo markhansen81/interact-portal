@@ -1,759 +1,759 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from"react";
 
 const DOCUMENT_TYPES = [
-  { value: "eingangsrechnung", label: "Eingangsrechnung (Incoming Invoice)" },
-  { value: "ausgangsrechnung", label: "Ausgangsrechnung (Outgoing Invoice)" },
-  { value: "beleg", label: "Sonstiger Beleg (Other Receipt)" },
-  { value: "vertrag", label: "Vertrag (Contract)" },
-  { value: "sonstiges", label: "Sonstiges (Other)" },
+ { value:"eingangsrechnung", label:"Eingangsrechnung (Incoming Invoice)"},
+ { value:"ausgangsrechnung", label:"Ausgangsrechnung (Outgoing Invoice)"},
+ { value:"beleg", label:"Sonstiger Beleg (Other Receipt)"},
+ { value:"vertrag", label:"Vertrag (Contract)"},
+ { value:"sonstiges", label:"Sonstiges (Other)"},
 ] as const;
 
 type Upload = {
-  id: string;
-  filename: string;
-  document_type: string;
-  description: string | null;
-  supplier: string | null;
-  invoice_number: string | null;
-  amount: number | null;
-  invoice_date: string | null;
-  due_date: string | null;
-  created_at: string;
-  status: string;
+ id: string;
+ filename: string;
+ document_type: string;
+ description: string | null;
+ supplier: string | null;
+ invoice_number: string | null;
+ amount: number | null;
+ invoice_date: string | null;
+ due_date: string | null;
+ created_at: string;
+ status: string;
 };
 
-type FilterTab = "all" | "pending" | "booked" | "paid" | "overdue";
+type FilterTab ="all"|"pending" |"booked" |"paid" |"overdue";
 
 type ExtractedData = {
-  supplier: string | null;
-  amount: number | null;
-  invoice_number: string | null;
-  invoice_date: string | null;
-  due_date: string | null;
-  document_type: string | null;
-  description: string | null;
+ supplier: string | null;
+ amount: number | null;
+ invoice_number: string | null;
+ invoice_date: string | null;
+ due_date: string | null;
+ document_type: string | null;
+ description: string | null;
 };
 
 const STATUS_BADGES: Record<string, { label: string; className: string }> = {
-  sent: {
-    label: "Sent",
-    className:
-      "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400",
-  },
-  booked: {
-    label: "Booked",
-    className:
-      "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400",
-  },
-  paid: {
-    label: "Paid",
-    className:
-      "bg-green-50 text-green-800 font-bold dark:bg-green-900/30 dark:text-green-300",
-  },
-  overdue: {
-    label: "Overdue",
-    className: "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400",
-  },
+ sent: {
+ label:"Sent",
+ className:
+"bg-blue-50 text-blue-700",
+ },
+ booked: {
+ label:"Booked",
+ className:
+"bg-green-50 text-green-700",
+ },
+ paid: {
+ label:"Paid",
+ className:
+"bg-green-50 text-green-800 font-bold",
+ },
+ overdue: {
+ label:"Overdue",
+ className:"bg-red-50 text-red-700",
+ },
 };
 
 function isOverdue(u: Upload): boolean {
-  if (u.status === "paid") return false;
-  if (!u.due_date) return false;
-  return new Date(u.due_date) < new Date();
+ if (u.status ==="paid") return false;
+ if (!u.due_date) return false;
+ return new Date(u.due_date) < new Date();
 }
 
 function getDisplayStatus(u: Upload): string {
-  if (isOverdue(u)) return "overdue";
-  return u.status;
+ if (isOverdue(u)) return"overdue";
+ return u.status;
 }
 
 function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("de-DE", {
-    style: "currency",
-    currency: "EUR",
-  }).format(amount);
+ return new Intl.NumberFormat("de-DE", {
+ style:"currency",
+ currency:"EUR",
+ }).format(amount);
 }
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("de-DE", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+ return new Date(dateStr).toLocaleDateString("de-DE", {
+ day:"2-digit",
+ month:"2-digit",
+ year:"numeric",
+ });
 }
 
-const Spinner = ({ className = "h-4 w-4" }: { className?: string }) => (
-  <svg className={`animate-spin ${className}`} fill="none" viewBox="0 0 24 24">
-    <circle
-      className="opacity-25"
-      cx="12"
-      cy="12"
-      r="10"
-      stroke="currentColor"
-      strokeWidth="4"
-    />
-    <path
-      className="opacity-75"
-      fill="currentColor"
-      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-    />
-  </svg>
+const Spinner = ({ className ="h-4 w-4"}: { className?: string }) => (
+ <svg className={`animate-spin ${className}`} fill="none"viewBox="0 0 24 24">
+ <circle
+ className="opacity-25"
+ cx="12"
+ cy="12"
+ r="10"
+ stroke="currentColor"
+ strokeWidth="4"
+ />
+ <path
+ className="opacity-75"
+ fill="currentColor"
+ d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+ />
+ </svg>
 );
 
 export function AdminUploadForm() {
-  const [file, setFile] = useState<File | null>(null);
-  const [documentType, setDocumentType] = useState("eingangsrechnung");
-  const [description, setDescription] = useState("");
-  const [supplier, setSupplier] = useState("");
-  const [invoiceNumber, setInvoiceNumber] = useState("");
-  const [amount, setAmount] = useState("");
-  const [invoiceDate, setInvoiceDate] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [uploading, setUploading] = useState(false);
-  const [extracting, setExtracting] = useState(false);
-  const [extracted, setExtracted] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
-  const [uploads, setUploads] = useState<Upload[]>([]);
-  const [dragging, setDragging] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+ const [file, setFile] = useState<File | null>(null);
+ const [documentType, setDocumentType] = useState("eingangsrechnung");
+ const [description, setDescription] = useState("");
+ const [supplier, setSupplier] = useState("");
+ const [invoiceNumber, setInvoiceNumber] = useState("");
+ const [amount, setAmount] = useState("");
+ const [invoiceDate, setInvoiceDate] = useState("");
+ const [dueDate, setDueDate] = useState("");
+ const [uploading, setUploading] = useState(false);
+ const [extracting, setExtracting] = useState(false);
+ const [extracted, setExtracted] = useState(false);
+ const [message, setMessage] = useState<{
+ type:"success"|"error";
+ text: string;
+ } | null>(null);
+ const [uploads, setUploads] = useState<Upload[]>([]);
+ const [dragging, setDragging] = useState(false);
+ const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
+ const [updatingId, setUpdatingId] = useState<string | null>(null);
+ const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchUploads = useCallback(async () => {
-    try {
-      const res = await fetch("/api/admin/upload-invoices");
-      if (res.ok) {
-        const data = await res.json();
-        setUploads(data.uploads || []);
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
+ const fetchUploads = useCallback(async () => {
+ try {
+ const res = await fetch("/api/admin/upload-invoices");
+ if (res.ok) {
+ const data = await res.json();
+ setUploads(data.uploads || []);
+ }
+ } catch {
+ // ignore
+ }
+ }, []);
 
-  useEffect(() => {
-    fetchUploads();
-  }, [fetchUploads]);
+ useEffect(() => {
+ fetchUploads();
+ }, [fetchUploads]);
 
-  const { totalOutstanding, overdueCount, filteredUploads } = useMemo(() => {
-    const outstanding = uploads
-      .filter((u) => u.status !== "paid")
-      .reduce((sum, u) => sum + (u.amount || 0), 0);
+ const { totalOutstanding, overdueCount, filteredUploads } = useMemo(() => {
+ const outstanding = uploads
+ .filter((u) => u.status !=="paid")
+ .reduce((sum, u) => sum + (u.amount || 0), 0);
 
-    const overdue = uploads.filter((u) => isOverdue(u)).length;
+ const overdue = uploads.filter((u) => isOverdue(u)).length;
 
-    let filtered = uploads;
-    switch (activeFilter) {
-      case "pending":
-        filtered = uploads.filter(
-          (u) => u.status === "sent" && !isOverdue(u)
-        );
-        break;
-      case "booked":
-        filtered = uploads.filter((u) => u.status === "booked");
-        break;
-      case "paid":
-        filtered = uploads.filter((u) => u.status === "paid");
-        break;
-      case "overdue":
-        filtered = uploads.filter((u) => isOverdue(u));
-        break;
-    }
+ let filtered = uploads;
+ switch (activeFilter) {
+ case"pending":
+ filtered = uploads.filter(
+ (u) => u.status ==="sent"&& !isOverdue(u)
+ );
+ break;
+ case"booked":
+ filtered = uploads.filter((u) => u.status ==="booked");
+ break;
+ case"paid":
+ filtered = uploads.filter((u) => u.status ==="paid");
+ break;
+ case"overdue":
+ filtered = uploads.filter((u) => isOverdue(u));
+ break;
+ }
 
-    return {
-      totalOutstanding: outstanding,
-      overdueCount: overdue,
-      filteredUploads: filtered,
-    };
-  }, [uploads, activeFilter]);
+ return {
+ totalOutstanding: outstanding,
+ overdueCount: overdue,
+ filteredUploads: filtered,
+ };
+ }, [uploads, activeFilter]);
 
-  const resetForm = () => {
-    setFile(null);
-    setDescription("");
-    setSupplier("");
-    setInvoiceNumber("");
-    setAmount("");
-    setInvoiceDate("");
-    setDueDate("");
-    setDocumentType("eingangsrechnung");
-    setExtracted(false);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
+ const resetForm = () => {
+ setFile(null);
+ setDescription("");
+ setSupplier("");
+ setInvoiceNumber("");
+ setAmount("");
+ setInvoiceDate("");
+ setDueDate("");
+ setDocumentType("eingangsrechnung");
+ setExtracted(false);
+ if (fileInputRef.current) fileInputRef.current.value ="";
+ };
 
-  const extractInvoiceData = async (pdfFile: File) => {
-    setExtracting(true);
-    setMessage(null);
+ const extractInvoiceData = async (pdfFile: File) => {
+ setExtracting(true);
+ setMessage(null);
 
-    try {
-      const formData = new FormData();
-      formData.append("file", pdfFile);
+ try {
+ const formData = new FormData();
+ formData.append("file", pdfFile);
 
-      const res = await fetch("/api/admin/upload-invoices/extract", {
-        method: "POST",
-        body: formData,
-      });
+ const res = await fetch("/api/admin/upload-invoices/extract", {
+ method:"POST",
+ body: formData,
+ });
 
-      const data = await res.json();
+ const data = await res.json();
 
-      if (!res.ok) {
-        setMessage({
-          type: "error",
-          text: data.error || "Extraction failed. Fill in fields manually.",
-        });
-        setExtracted(true); // still show form so admin can fill manually
-        return;
-      }
+ if (!res.ok) {
+ setMessage({
+ type:"error",
+ text: data.error ||"Extraction failed. Fill in fields manually.",
+ });
+ setExtracted(true); // still show form so admin can fill manually
+ return;
+ }
 
-      const ext: ExtractedData = data.extracted;
+ const ext: ExtractedData = data.extracted;
 
-      // Auto-fill fields from extracted data
-      if (ext.supplier) setSupplier(ext.supplier);
-      if (ext.amount != null) setAmount(String(ext.amount));
-      if (ext.invoice_number) setInvoiceNumber(ext.invoice_number);
-      if (ext.invoice_date) setInvoiceDate(ext.invoice_date);
-      if (ext.due_date) setDueDate(ext.due_date);
-      if (ext.description) setDescription(ext.description);
-      if (
-        ext.document_type &&
-        DOCUMENT_TYPES.some((t) => t.value === ext.document_type)
-      ) {
-        setDocumentType(ext.document_type);
-      }
+ // Auto-fill fields from extracted data
+ if (ext.supplier) setSupplier(ext.supplier);
+ if (ext.amount != null) setAmount(String(ext.amount));
+ if (ext.invoice_number) setInvoiceNumber(ext.invoice_number);
+ if (ext.invoice_date) setInvoiceDate(ext.invoice_date);
+ if (ext.due_date) setDueDate(ext.due_date);
+ if (ext.description) setDescription(ext.description);
+ if (
+ ext.document_type &&
+ DOCUMENT_TYPES.some((t) => t.value === ext.document_type)
+ ) {
+ setDocumentType(ext.document_type);
+ }
 
-      setExtracted(true);
-    } catch {
-      setMessage({
-        type: "error",
-        text: "Extraction failed. Fill in fields manually.",
-      });
-      setExtracted(true);
-    } finally {
-      setExtracting(false);
-    }
-  };
+ setExtracted(true);
+ } catch {
+ setMessage({
+ type:"error",
+ text:"Extraction failed. Fill in fields manually.",
+ });
+ setExtracted(true);
+ } finally {
+ setExtracting(false);
+ }
+ };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(true);
-  };
+ const handleDragOver = (e: React.DragEvent) => {
+ e.preventDefault();
+ setDragging(true);
+ };
 
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-  };
+ const handleDragLeave = (e: React.DragEvent) => {
+ e.preventDefault();
+ setDragging(false);
+ };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-    const dropped = e.dataTransfer.files[0];
-    if (dropped && dropped.type === "application/pdf") {
-      setFile(dropped);
-      extractInvoiceData(dropped);
-    } else {
-      setMessage({ type: "error", text: "Only PDF files are accepted." });
-    }
-  };
+ const handleDrop = (e: React.DragEvent) => {
+ e.preventDefault();
+ setDragging(false);
+ const dropped = e.dataTransfer.files[0];
+ if (dropped && dropped.type ==="application/pdf") {
+ setFile(dropped);
+ extractInvoiceData(dropped);
+ } else {
+ setMessage({ type:"error", text:"Only PDF files are accepted."});
+ }
+ };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (selected) {
-      setFile(selected);
-      setMessage(null);
-      extractInvoiceData(selected);
-    }
-  };
+ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+ const selected = e.target.files?.[0];
+ if (selected) {
+ setFile(selected);
+ setMessage(null);
+ extractInvoiceData(selected);
+ }
+ };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!file || !supplier.trim() || !amount) return;
+ const handleSubmit = async (e: React.FormEvent) => {
+ e.preventDefault();
+ if (!file || !supplier.trim() || !amount) return;
 
-    setUploading(true);
-    setMessage(null);
+ setUploading(true);
+ setMessage(null);
 
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("document_type", documentType);
-      formData.append("description", description);
-      formData.append("supplier", supplier.trim());
-      if (invoiceNumber.trim())
-        formData.append("invoice_number", invoiceNumber.trim());
-      formData.append("amount", amount);
-      if (invoiceDate) formData.append("invoice_date", invoiceDate);
-      if (dueDate) formData.append("due_date", dueDate);
+ try {
+ const formData = new FormData();
+ formData.append("file", file);
+ formData.append("document_type", documentType);
+ formData.append("description", description);
+ formData.append("supplier", supplier.trim());
+ if (invoiceNumber.trim())
+ formData.append("invoice_number", invoiceNumber.trim());
+ formData.append("amount", amount);
+ if (invoiceDate) formData.append("invoice_date", invoiceDate);
+ if (dueDate) formData.append("due_date", dueDate);
 
-      const res = await fetch("/api/admin/upload-invoices", {
-        method: "POST",
-        body: formData,
-      });
+ const res = await fetch("/api/admin/upload-invoices", {
+ method:"POST",
+ body: formData,
+ });
 
-      const data = await res.json();
+ const data = await res.json();
 
-      if (!res.ok) {
-        setMessage({ type: "error", text: data.error || "Upload failed" });
-      } else {
-        setMessage({
-          type: "success",
-          text: `"${file.name}" sent to DATEV successfully.`,
-        });
-        resetForm();
-        fetchUploads();
-      }
-    } catch {
-      setMessage({ type: "error", text: "Upload failed. Please try again." });
-    } finally {
-      setUploading(false);
-    }
-  };
+ if (!res.ok) {
+ setMessage({ type:"error", text: data.error ||"Upload failed"});
+ } else {
+ setMessage({
+ type:"success",
+ text: `"${file.name}"sent to DATEV successfully.`,
+ });
+ resetForm();
+ fetchUploads();
+ }
+ } catch {
+ setMessage({ type:"error", text:"Upload failed. Please try again."});
+ } finally {
+ setUploading(false);
+ }
+ };
 
-  const handleUpdateStatus = async (id: string, status: string) => {
-    setUpdatingId(id);
-    try {
-      const res = await fetch(`/api/admin/upload-invoices/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-      if (res.ok) {
-        fetchUploads();
-      }
-    } catch {
-      // ignore
-    } finally {
-      setUpdatingId(null);
-    }
-  };
+ const handleUpdateStatus = async (id: string, status: string) => {
+ setUpdatingId(id);
+ try {
+ const res = await fetch(`/api/admin/upload-invoices/${id}`, {
+ method:"PATCH",
+ headers: {"Content-Type":"application/json"},
+ body: JSON.stringify({ status }),
+ });
+ if (res.ok) {
+ fetchUploads();
+ }
+ } catch {
+ // ignore
+ } finally {
+ setUpdatingId(null);
+ }
+ };
 
-  const typeLabel = (type: string) =>
-    DOCUMENT_TYPES.find((t) => t.value === type)?.label || type;
+ const typeLabel = (type: string) =>
+ DOCUMENT_TYPES.find((t) => t.value === type)?.label || type;
 
-  const FILTER_TABS: { key: FilterTab; label: string }[] = [
-    { key: "all", label: "All" },
-    { key: "pending", label: "Pending" },
-    { key: "booked", label: "Booked" },
-    { key: "paid", label: "Paid" },
-    { key: "overdue", label: "Overdue" },
-  ];
+ const FILTER_TABS: { key: FilterTab; label: string }[] = [
+ { key:"all", label:"All"},
+ { key:"pending", label:"Pending"},
+ { key:"booked", label:"Booked"},
+ { key:"paid", label:"Paid"},
+ { key:"overdue", label:"Overdue"},
+ ];
 
-  const inputClass =
-    "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500";
-  const labelClass =
-    "mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300";
+ const inputClass =
+"w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500";
+ const labelClass =
+"mb-1.5 block text-sm font-medium text-neutral-700";
 
-  return (
-    <div className="space-y-8">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-            Outstanding
-          </p>
-          <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-            {formatCurrency(totalOutstanding)}
-          </p>
-          <p className="mt-0.5 text-xs text-zinc-400">
-            Total unpaid invoices
-          </p>
-        </div>
-        <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-            Overdue
-          </p>
-          <p
-            className={`mt-1 text-2xl font-bold ${
-              overdueCount > 0
-                ? "text-red-600 dark:text-red-400"
-                : "text-zinc-900 dark:text-zinc-50"
-            }`}
-          >
-            {overdueCount}
-          </p>
-          <p className="mt-0.5 text-xs text-zinc-400">
-            Past due date &amp; unpaid
-          </p>
-        </div>
-      </div>
+ return (
+ <div className="space-y-8">
+ {/* Summary Cards */}
+ <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+ <div className="rounded-sm border border-neutral-200 bg-white p-5">
+ <p className="text-xs font-medium uppercase tracking-wider text-neutral-500">
+ Outstanding
+ </p>
+ <p className="mt-1 text-2xl font-bold text-neutral-900">
+ {formatCurrency(totalOutstanding)}
+ </p>
+ <p className="mt-0.5 text-xs text-neutral-400">
+ Total unpaid invoices
+ </p>
+ </div>
+ <div className="rounded-sm border border-neutral-200 bg-white p-5">
+ <p className="text-xs font-medium uppercase tracking-wider text-neutral-500">
+ Overdue
+ </p>
+ <p
+ className={`mt-1 text-2xl font-bold ${
+ overdueCount > 0
+ ?"text-red-600"
+ :"text-neutral-900"
+ }`}
+ >
+ {overdueCount}
+ </p>
+ <p className="mt-0.5 text-xs text-neutral-400">
+ Past due date &amp; unpaid
+ </p>
+ </div>
+ </div>
 
-      {/* Upload Form */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="space-y-5">
-          {/* Step 1: Drop zone — always visible when no file or extracting */}
-          {!extracted && !extracting && (
-            <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 transition-colors ${
-                dragging
-                  ? "border-slate-500 bg-slate-50 dark:border-slate-400 dark:bg-slate-900/50"
-                  : "border-zinc-300 bg-zinc-50 hover:border-slate-400 hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-800/50 dark:hover:border-slate-600"
-              }`}
-            >
-              <svg
-                className="mb-3 h-12 w-12 text-slate-400"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.5}
-                viewBox="0 0 24 24"
-              >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-              </svg>
-              <p className="text-base font-medium text-slate-600 dark:text-slate-400">
-                Drop an invoice PDF here
-              </p>
-              <p className="mt-1 text-sm text-zinc-400">
-                or click to select — AI will read it automatically
-              </p>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="application/pdf"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </div>
-          )}
+ {/* Upload Form */}
+ <div className="rounded-sm border border-neutral-200 bg-white p-6">
+ <div className="space-y-5">
+ {/* Step 1: Drop zone — always visible when no file or extracting */}
+ {!extracted && !extracting && (
+ <div
+ onDragOver={handleDragOver}
+ onDragLeave={handleDragLeave}
+ onDrop={handleDrop}
+ onClick={() => fileInputRef.current?.click()}
+ className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 transition-colors ${
+ dragging
+ ?"border-neutral-500 bg-neutral-50"
+ :"border-neutral-300 bg-neutral-50 hover:border-neutral-400 hover:bg-neutral-50"
+ }`}
+ >
+ <svg
+ className="mb-3 h-12 w-12 text-neutral-400"
+ fill="none"
+ stroke="currentColor"
+ strokeWidth={1.5}
+ viewBox="0 0 24 24"
+ >
+ <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+ </svg>
+ <p className="text-base font-medium text-neutral-600">
+ Drop an invoice PDF here
+ </p>
+ <p className="mt-1 text-sm text-neutral-400">
+ or click to select — AI will read it automatically
+ </p>
+ <input
+ ref={fileInputRef}
+ type="file"
+ accept="application/pdf"
+ onChange={handleFileChange}
+ className="hidden"
+ />
+ </div>
+ )}
 
-          {/* Step 2: Extracting spinner */}
-          {extracting && (
-            <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-12 dark:border-slate-700 dark:bg-slate-900/50">
-              <Spinner className="h-8 w-8 text-slate-500" />
-              <p className="mt-4 text-sm font-medium text-slate-600 dark:text-slate-400">
-                Reading invoice...
-              </p>
-              <p className="mt-1 text-xs text-zinc-400">
-                {file?.name}
-              </p>
-            </div>
-          )}
+ {/* Step 2: Extracting spinner */}
+ {extracting && (
+ <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-neutral-300 bg-neutral-50 p-12">
+ <Spinner className="h-8 w-8 text-neutral-500"/>
+ <p className="mt-4 text-sm font-medium text-neutral-600">
+ Reading invoice...
+ </p>
+ <p className="mt-1 text-xs text-neutral-400">
+ {file?.name}
+ </p>
+ </div>
+ )}
 
-          {/* Step 3: Extracted data — editable fields + submit */}
-          {extracted && !extracting && (
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-5">
-                {/* File indicator */}
-                <div className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3 dark:bg-slate-800/50">
-                  <div className="flex items-center gap-3">
-                    <svg
-                      className="h-5 w-5 text-slate-500"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      {file?.name}
-                    </span>
-                    <span className="text-xs text-zinc-400">
-                      ({file ? (file.size / 1024).toFixed(0) : 0} KB)
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={resetForm}
-                    className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-                  >
-                    Change file
-                  </button>
-                </div>
+ {/* Step 3: Extracted data — editable fields + submit */}
+ {extracted && !extracting && (
+ <form onSubmit={handleSubmit}>
+ <div className="space-y-5">
+ {/* File indicator */}
+ <div className="flex items-center justify-between rounded-lg bg-neutral-50 px-4 py-3">
+ <div className="flex items-center gap-3">
+ <svg
+ className="h-5 w-5 text-neutral-500"
+ fill="none"
+ stroke="currentColor"
+ strokeWidth={1.5}
+ viewBox="0 0 24 24"
+ >
+ <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+ </svg>
+ <span className="text-sm font-medium text-neutral-700">
+ {file?.name}
+ </span>
+ <span className="text-xs text-neutral-400">
+ ({file ? (file.size / 1024).toFixed(0) : 0} KB)
+ </span>
+ </div>
+ <button
+ type="button"
+ onClick={resetForm}
+ className="text-xs text-neutral-400 hover:text-neutral-600"
+ >
+ Change file
+ </button>
+ </div>
 
-                {/* Document type */}
-                <div>
-                  <label className={labelClass}>Document Type</label>
-                  <select
-                    value={documentType}
-                    onChange={(e) => setDocumentType(e.target.value)}
-                    className={inputClass}
-                  >
-                    {DOCUMENT_TYPES.map((t) => (
-                      <option key={t.value} value={t.value}>
-                        {t.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+ {/* Document type */}
+ <div>
+ <label className={labelClass}>Document Type</label>
+ <select
+ value={documentType}
+ onChange={(e) => setDocumentType(e.target.value)}
+ className={inputClass}
+ >
+ {DOCUMENT_TYPES.map((t) => (
+ <option key={t.value} value={t.value}>
+ {t.label}
+ </option>
+ ))}
+ </select>
+ </div>
 
-                {/* Supplier & Invoice Number */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className={labelClass}>
-                      Supplier <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={supplier}
-                      onChange={(e) => setSupplier(e.target.value)}
-                      placeholder='e.g. "Amazon", "Telekom", "Landlord"'
-                      required
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClass}>
-                      Invoice Number{" "}
-                      <span className="text-zinc-400 font-normal">
-                        (optional)
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      value={invoiceNumber}
-                      onChange={(e) => setInvoiceNumber(e.target.value)}
-                      placeholder="Supplier's invoice number"
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
+ {/* Supplier & Invoice Number */}
+ <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+ <div>
+ <label className={labelClass}>
+ Supplier <span className="text-red-500">*</span>
+ </label>
+ <input
+ type="text"
+ value={supplier}
+ onChange={(e) => setSupplier(e.target.value)}
+ placeholder='e.g."Amazon","Telekom","Landlord"'
+ required
+ className={inputClass}
+ />
+ </div>
+ <div>
+ <label className={labelClass}>
+ Invoice Number{""}
+ <span className="text-neutral-400 font-normal">
+ (optional)
+ </span>
+ </label>
+ <input
+ type="text"
+ value={invoiceNumber}
+ onChange={(e) => setInvoiceNumber(e.target.value)}
+ placeholder="Supplier's invoice number"
+ className={inputClass}
+ />
+ </div>
+ </div>
 
-                {/* Amount, Invoice Date, Due Date */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <div>
-                    <label className={labelClass}>
-                      Amount (&euro;) <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      placeholder="0.00"
-                      required
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClass}>
-                      Invoice Date{" "}
-                      <span className="text-zinc-400 font-normal">
-                        (optional)
-                      </span>
-                    </label>
-                    <input
-                      type="date"
-                      value={invoiceDate}
-                      onChange={(e) => setInvoiceDate(e.target.value)}
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClass}>
-                      Due Date{" "}
-                      <span className="text-zinc-400 font-normal">
-                        (optional)
-                      </span>
-                    </label>
-                    <input
-                      type="date"
-                      value={dueDate}
-                      onChange={(e) => setDueDate(e.target.value)}
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
+ {/* Amount, Invoice Date, Due Date */}
+ <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+ <div>
+ <label className={labelClass}>
+ Amount (&euro;) <span className="text-red-500">*</span>
+ </label>
+ <input
+ type="number"
+ step="0.01"
+ min="0"
+ value={amount}
+ onChange={(e) => setAmount(e.target.value)}
+ placeholder="0.00"
+ required
+ className={inputClass}
+ />
+ </div>
+ <div>
+ <label className={labelClass}>
+ Invoice Date{""}
+ <span className="text-neutral-400 font-normal">
+ (optional)
+ </span>
+ </label>
+ <input
+ type="date"
+ value={invoiceDate}
+ onChange={(e) => setInvoiceDate(e.target.value)}
+ className={inputClass}
+ />
+ </div>
+ <div>
+ <label className={labelClass}>
+ Due Date{""}
+ <span className="text-neutral-400 font-normal">
+ (optional)
+ </span>
+ </label>
+ <input
+ type="date"
+ value={dueDate}
+ onChange={(e) => setDueDate(e.target.value)}
+ className={inputClass}
+ />
+ </div>
+ </div>
 
-                {/* Description */}
-                <div>
-                  <label className={labelClass}>
-                    Description{" "}
-                    <span className="text-zinc-400 font-normal">
-                      (optional)
-                    </span>
-                  </label>
-                  <input
-                    type="text"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder='e.g. "Office supplies" or "Rent October"'
-                    className={inputClass}
-                  />
-                </div>
+ {/* Description */}
+ <div>
+ <label className={labelClass}>
+ Description{""}
+ <span className="text-neutral-400 font-normal">
+ (optional)
+ </span>
+ </label>
+ <input
+ type="text"
+ value={description}
+ onChange={(e) => setDescription(e.target.value)}
+ placeholder='e.g."Office supplies"or"Rent October"'
+ className={inputClass}
+ />
+ </div>
 
-                {/* Message */}
-                {message && (
-                  <div
-                    className={`rounded-lg px-4 py-3 text-sm ${
-                      message.type === "success"
-                        ? "bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                        : "bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-400"
-                    }`}
-                  >
-                    {message.text}
-                  </div>
-                )}
+ {/* Message */}
+ {message && (
+ <div
+ className={`rounded-lg px-4 py-3 text-sm ${
+ message.type ==="success"
+ ?"bg-green-50 text-green-800"
+ :"bg-red-50 text-red-800"
+ }`}
+ >
+ {message.text}
+ </div>
+ )}
 
-                {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={
-                    !file || !supplier.trim() || !amount || uploading
-                  }
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-slate-700 px-5 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-600 dark:hover:bg-slate-500"
-                >
-                  {uploading ? (
-                    <>
-                      <Spinner />
-                      Sending to DATEV...
-                    </>
-                  ) : (
-                    <>
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M5 13l4 4L19 7" />
-                      </svg>
-                      Send to DATEV
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          )}
+ {/* Submit */}
+ <button
+ type="submit"
+ disabled={
+ !file || !supplier.trim() || !amount || uploading
+ }
+ className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-700 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
+ >
+ {uploading ? (
+ <>
+ <Spinner />
+ Sending to DATEV...
+ </>
+ ) : (
+ <>
+ <svg
+ className="h-4 w-4"
+ fill="none"
+ stroke="currentColor"
+ strokeWidth={2}
+ viewBox="0 0 24 24"
+ >
+ <path d="M5 13l4 4L19 7"/>
+ </svg>
+ Send to DATEV
+ </>
+ )}
+ </button>
+ </div>
+ </form>
+ )}
 
-          {/* Message shown on drop zone screen (e.g. after successful send) */}
-          {!extracted && !extracting && message && (
-            <div
-              className={`rounded-lg px-4 py-3 text-sm ${
-                message.type === "success"
-                  ? "bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                  : "bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-400"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
-        </div>
-      </div>
+ {/* Message shown on drop zone screen (e.g. after successful send) */}
+ {!extracted && !extracting && message && (
+ <div
+ className={`rounded-lg px-4 py-3 text-sm ${
+ message.type ==="success"
+ ?"bg-green-50 text-green-800"
+ :"bg-red-50 text-red-800"
+ }`}
+ >
+ {message.text}
+ </div>
+ )}
+ </div>
+ </div>
 
-      {/* Invoices Table */}
-      <div className="rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
-          <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-            Invoices
-          </h2>
-          {/* Filter Tabs */}
-          <div className="mt-3 flex gap-1">
-            {FILTER_TABS.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setActiveFilter(tab.key)}
-                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                  activeFilter === tab.key
-                    ? "bg-slate-700 text-white dark:bg-slate-600"
-                    : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                }`}
-              >
-                {tab.label}
-                {tab.key === "overdue" && overdueCount > 0 && (
-                  <span className="ml-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                    {overdueCount}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-        {filteredUploads.length === 0 ? (
-          <div className="px-6 py-12 text-center text-sm text-zinc-400">
-            No invoices found.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-zinc-100 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-                  <th className="px-6 py-3">Supplier</th>
-                  <th className="px-6 py-3">Invoice #</th>
-                  <th className="px-6 py-3 text-right">Amount</th>
-                  <th className="px-6 py-3">Due Date</th>
-                  <th className="px-6 py-3">Type</th>
-                  <th className="px-6 py-3">Status</th>
-                  <th className="px-6 py-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                {filteredUploads.map((u) => {
-                  const displayStatus = getDisplayStatus(u);
-                  const badge = STATUS_BADGES[displayStatus] ||
-                    STATUS_BADGES["sent"] || {
-                      label: u.status,
-                      className: "",
-                    };
+ {/* Invoices Table */}
+ <div className="rounded-sm border border-neutral-200 bg-white">
+ <div className="border-b border-neutral-200 px-6 py-4">
+ <h2 className="text-base font-semibold text-neutral-900">
+ Invoices
+ </h2>
+ {/* Filter Tabs */}
+ <div className="mt-3 flex gap-1">
+ {FILTER_TABS.map((tab) => (
+ <button
+ key={tab.key}
+ type="button"
+ onClick={() => setActiveFilter(tab.key)}
+ className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+ activeFilter === tab.key
+ ?"bg-neutral-700 text-white"
+ :"text-neutral-600 hover:bg-neutral-100"
+ }`}
+ >
+ {tab.label}
+ {tab.key ==="overdue"&& overdueCount > 0 && (
+ <span className="ml-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+ {overdueCount}
+ </span>
+ )}
+ </button>
+ ))}
+ </div>
+ </div>
+ {filteredUploads.length === 0 ? (
+ <div className="px-6 py-12 text-center text-sm text-neutral-400">
+ No invoices found.
+ </div>
+ ) : (
+ <div className="overflow-x-auto">
+ <table className="w-full text-sm">
+ <thead>
+ <tr className="border-b border-neutral-100 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
+ <th className="px-6 py-3">Supplier</th>
+ <th className="px-6 py-3">Invoice #</th>
+ <th className="px-6 py-3 text-right">Amount</th>
+ <th className="px-6 py-3">Due Date</th>
+ <th className="px-6 py-3">Type</th>
+ <th className="px-6 py-3">Status</th>
+ <th className="px-6 py-3">Actions</th>
+ </tr>
+ </thead>
+ <tbody className="divide-y divide-neutral-100">
+ {filteredUploads.map((u) => {
+ const displayStatus = getDisplayStatus(u);
+ const badge = STATUS_BADGES[displayStatus] ||
+ STATUS_BADGES["sent"] || {
+ label: u.status,
+ className:"",
+ };
 
-                  return (
-                    <tr
-                      key={u.id}
-                      className="text-zinc-700 dark:text-zinc-300"
-                    >
-                      <td className="whitespace-nowrap px-6 py-3 font-medium">
-                        {u.supplier || "\u2014"}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-3 text-zinc-500">
-                        {u.invoice_number || "\u2014"}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-3 text-right font-medium">
-                        {u.amount != null ? formatCurrency(u.amount) : "\u2014"}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-3 text-zinc-500">
-                        {u.due_date ? formatDate(u.due_date) : "\u2014"}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-3 text-zinc-500">
-                        {typeLabel(u.document_type)}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-3">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${badge.className}`}
-                        >
-                          {badge.label}
-                        </span>
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-3">
-                        <div className="flex gap-2">
-                          {u.status !== "booked" && u.status !== "paid" && (
-                            <button
-                              type="button"
-                              disabled={updatingId === u.id}
-                              onClick={() =>
-                                handleUpdateStatus(u.id, "booked")
-                              }
-                              className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-200 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-                            >
-                              Mark Booked
-                            </button>
-                          )}
-                          {u.status !== "paid" && (
-                            <button
-                              type="button"
-                              disabled={updatingId === u.id}
-                              onClick={() => handleUpdateStatus(u.id, "paid")}
-                              className="rounded-md bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 transition-colors hover:bg-green-200 disabled:opacity-50 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50"
-                            >
-                              Mark Paid
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+ return (
+ <tr
+ key={u.id}
+ className="text-neutral-700"
+ >
+ <td className="whitespace-nowrap px-6 py-3 font-medium">
+ {u.supplier ||"\u2014"}
+ </td>
+ <td className="whitespace-nowrap px-6 py-3 text-neutral-500">
+ {u.invoice_number ||"\u2014"}
+ </td>
+ <td className="whitespace-nowrap px-6 py-3 text-right font-medium">
+ {u.amount != null ? formatCurrency(u.amount) :"\u2014"}
+ </td>
+ <td className="whitespace-nowrap px-6 py-3 text-neutral-500">
+ {u.due_date ? formatDate(u.due_date) :"\u2014"}
+ </td>
+ <td className="whitespace-nowrap px-6 py-3 text-neutral-500">
+ {typeLabel(u.document_type)}
+ </td>
+ <td className="whitespace-nowrap px-6 py-3">
+ <span
+ className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${badge.className}`}
+ >
+ {badge.label}
+ </span>
+ </td>
+ <td className="whitespace-nowrap px-6 py-3">
+ <div className="flex gap-2">
+ {u.status !=="booked"&& u.status !=="paid" && (
+ <button
+ type="button"
+ disabled={updatingId === u.id}
+ onClick={() =>
+ handleUpdateStatus(u.id,"booked")
+ }
+ className="rounded-md bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-200 disabled:opacity-50"
+ >
+ Mark Booked
+ </button>
+ )}
+ {u.status !=="paid"&& (
+ <button
+ type="button"
+ disabled={updatingId === u.id}
+ onClick={() => handleUpdateStatus(u.id,"paid")}
+ className="rounded-md bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 transition-colors hover:bg-green-200 disabled:opacity-50"
+ >
+ Mark Paid
+ </button>
+ )}
+ </div>
+ </td>
+ </tr>
+ );
+ })}
+ </tbody>
+ </table>
+ </div>
+ )}
+ </div>
+ </div>
+ );
 }
