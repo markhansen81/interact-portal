@@ -274,8 +274,8 @@ function PhotoUpload({ label, subtitle, url, profileId, folder, onUploaded }: {
     const fileName = `${folder}/${profileId}/${Date.now()}-${file.name}`;
     const { data, error } = await supabase.storage.from("documents").upload(fileName, file);
     if (error) { setUploading(false); return; }
-    const { data: urlData } = supabase.storage.from("documents").getPublicUrl(data.path);
-    onUploaded(urlData.publicUrl);
+    const { data: signedData } = await supabase.storage.from("documents").createSignedUrl(data.path, 86400);
+    onUploaded(signedData?.signedUrl || "");
     setUploading(false);
   }
 

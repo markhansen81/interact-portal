@@ -177,8 +177,8 @@ function ProgramEditPanel({
     const fileName = `program-images/${program.id}/${Date.now()}-${file.name}`;
     const { data, error } = await supabase.storage.from("documents").upload(fileName, file);
     if (error) { setUploading(false); return; }
-    const { data: urlData } = supabase.storage.from("documents").getPublicUrl(data.path);
-    const url = urlData.publicUrl;
+    const { data: signedData } = await supabase.storage.from("documents").createSignedUrl(data.path, 86400);
+    const url = signedData?.signedUrl || "";
     setImageUrl(url);
     await saveField(program.id, "image_url", url);
     setUploading(false);

@@ -20,12 +20,11 @@ export async function getSecureUrl(
     .createSignedUrl(path, expiresIn);
 
   if (error || !data?.signedUrl) {
-    console.warn(
+    console.error(
       `[STORAGE] Failed to create signed URL for ${bucket}/${path}:`,
       error?.message || "No signed URL returned"
     );
-    // Fallback to public URL (will still work while bucket is public)
-    return adminClient.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+    return "";
   }
 
   return data.signedUrl;

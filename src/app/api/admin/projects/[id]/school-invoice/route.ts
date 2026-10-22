@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateSchoolInvoicePDF } from "@/lib/school-invoice-pdf";
 import { sendSlackAlert } from "@/lib/slack";
+import { getSecureUrl } from "@/lib/storage";
 
 export async function GET(
   _request: Request,
@@ -184,9 +185,7 @@ export async function POST(
     );
   }
 
-  const {
-    data: { publicUrl },
-  } = adminClient.storage.from("documents").getPublicUrl(fileName);
+  const publicUrl = await getSecureUrl("documents", fileName);
 
   // Create invoice record
   const { data: invoice, error: insertError } = await adminClient

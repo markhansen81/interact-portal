@@ -186,10 +186,10 @@ export function ExpenseClaimForm({
             .from("documents")
             .upload(fileName, item.receiptFile);
           if (data) {
-            const { data: urlData } = supabase.storage
+            const { data: signedData } = await supabase.storage
               .from("documents")
-              .getPublicUrl(data.path);
-            receipt_url = urlData.publicUrl;
+              .createSignedUrl(data.path, 86400);
+            receipt_url = signedData?.signedUrl || null;
           }
         }
         return {

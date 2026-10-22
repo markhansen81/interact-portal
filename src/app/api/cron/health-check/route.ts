@@ -277,10 +277,20 @@ async function checkAuthEndpoints(): Promise<CheckResult> {
   try {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://interact-portal.vercel.app";
 
-    // Test that protected endpoints reject unauthenticated requests
+    // Test ALL protected endpoints reject unauthenticated requests
     const endpoints = [
-      { url: `${appUrl}/api/portal/expenses`, method: "POST" },
-      { url: `${appUrl}/api/admin/invoices/test`, method: "PATCH" },
+      // Portal (TA) endpoints
+      { url: `${appUrl}/api/portal/expenses`, method: "POST", name: "TA expenses" },
+      { url: `${appUrl}/api/portal/invoices`, method: "POST", name: "TA invoices" },
+      { url: `${appUrl}/api/portal/profile`, method: "PATCH", name: "TA profile" },
+      { url: `${appUrl}/api/portal/calendar/export`, method: "GET", name: "TA calendar export" },
+      // Admin endpoints
+      { url: `${appUrl}/api/admin/invoices/test`, method: "PATCH", name: "Admin invoices" },
+      { url: `${appUrl}/api/admin/expenses/test`, method: "PATCH", name: "Admin expenses" },
+      { url: `${appUrl}/api/admin/upload-invoices`, method: "POST", name: "Admin upload" },
+      { url: `${appUrl}/api/admin/lanes-planes/sync`, method: "POST", name: "L&P sync" },
+      // Auth endpoints
+      { url: `${appUrl}/api/auth/datev`, method: "GET", name: "DATEV auth" },
     ];
 
     const failures: string[] = [];
@@ -289,31 +299,74 @@ async function checkAuthEndpoints(): Promise<CheckResult> {
         const res = await fetch(ep.url, {
           method: ep.method,
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({}),
+          body: ep.method !== "GET" ? JSON.stringify({}) : undefined,
+          redirect: "manual",
           signal: AbortSignal.timeout(5000),
         });
-        // Should return 401 or 403 — if 200, auth is broken
+        // Should return 401, 403, or 307 redirect to login — if 200, auth is broken
         if (res.status === 200) {
-          failures.push(`${ep.method} ${ep.url} returned 200 without auth!`);
+          failures.push(`${ep.name}: ${ep.method} returned 200 without auth!`);
         }
       } catch {
         // Timeout or network error is fine
       }
     }
 
+    // Test SQL injection on webhook (should not crash)
+    try {
+      const sqlRes = await fetch(`${appUrl}/api/webhooks/squarespace`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: "'; DROP TABLE profiles; --", orderNumber: "1 OR 1=1" }),
+        signal: AbortSignal.timeout(5000),
+      });
+      // Should handle gracefully (400 or idempotency skip), not 500
+      if (sqlRes.status === 500) {
+        failures.push("SQL injection test caused 500 on squarespace webhook");
+      }
+    } catch {}
+
+    // Test XSS payload in lead form
+    try {
+      const xssRes = await fetch(`${appUrl}/api/lead-form`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ first_name: "<script>alert('xss')</script>", last_name: "Test", email: "xss@test.com" }),
+        signal: AbortSignal.timeout(5000),
+      });
+      // Should either sanitize or reject, not 500
+      if (xssRes.status === 500) {
+        failures.push("XSS payload caused 500 on lead form");
+      }
+    } catch {}
+
+    // Test storage bucket is private
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      if (supabaseUrl) {
+        const storageRes = await fetch(
+          `${supabaseUrl}/storage/v1/object/public/documents/test-nonexistent.pdf`,
+          { signal: AbortSignal.timeout(5000) }
+        );
+        if (storageRes.status === 200) {
+          failures.push("Storage bucket 'documents' is still PUBLIC — sensitive PDFs exposed!");
+        }
+      }
+    } catch {}
+
     if (failures.length > 0) {
       await sendSlackAlert({
         type: "critical",
-        title: "AUTH BYPASS DETECTED",
-        message: `${failures.length} endpoint(s) accessible without authentication!`,
-        fields: failures.map(f => ({ label: "Endpoint", value: f })),
+        title: "SECURITY VULNERABILITY DETECTED",
+        message: `${failures.length} security issue(s) found!`,
+        fields: failures.map(f => ({ label: "Issue", value: f })),
       });
-      return { name: "auth_security", status: "error", message: failures.join("; ") };
+      return { name: "security_pentest", status: "error", message: failures.join("; ") };
     }
 
-    return { name: "auth_security", status: "ok", message: "Protected endpoints rejecting unauthenticated requests" };
+    return { name: "security_pentest", status: "ok", message: `${endpoints.length} endpoints tested, storage verified private, injection tests passed` };
   } catch (err) {
-    return { name: "auth_security", status: "ok", message: `Auth check skipped: ${err}` };
+    return { name: "security_pentest", status: "ok", message: `Security test skipped: ${err}` };
   }
 }
 

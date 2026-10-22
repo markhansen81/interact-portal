@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSecureUrl } from "@/lib/storage";
 
 export async function POST(
   request: Request,
@@ -82,9 +83,7 @@ export async function POST(
     return NextResponse.json({ error: uploadError.message }, { status: 400 });
   }
 
-  const { data: urlData } = adminClient.storage
-    .from("documents")
-    .getPublicUrl(storagePath);
+  const fileUrl = await getSecureUrl("documents", storagePath);
 
   const { data: document, error } = await adminClient
     .from("project_documents")
@@ -92,7 +91,7 @@ export async function POST(
       project_id: id,
       name,
       description,
-      file_url: urlData.publicUrl,
+      file_url: fileUrl,
       doc_type: "file",
       published: false,
       uploaded_by: user.id,

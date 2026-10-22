@@ -173,11 +173,11 @@ function DocCard({
       return;
     }
 
-    const { data: urlData } = supabase.storage
+    const { data: signedData } = await supabase.storage
       .from("documents")
-      .getPublicUrl(data.path);
+      .createSignedUrl(data.path, 86400);
 
-    const fileUrl = urlData.publicUrl;
+    const fileUrl = signedData?.signedUrl || "";
     setPendingUrl(fileUrl);
     setUploading(false);
 
