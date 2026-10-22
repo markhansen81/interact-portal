@@ -8,10 +8,17 @@ const CLAIMS_GROUP = "group_mm668g88";
 const STATUS_COL = "color_mm66j0qt";
 
 export async function POST(request: Request) {
-  // Optional bearer token auth
+  // Verify bearer token (Zapier, cron health check, or dev mode)
   const authHeader = request.headers.get("Authorization");
   const expectedToken = process.env.SQUARESPACE_WEBHOOK_SECRET;
-  if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
+  const cronSecret = process.env.CRON_SECRET;
+
+  const isAuthorized =
+    !expectedToken ||
+    authHeader === `Bearer ${expectedToken}` ||
+    authHeader === `Bearer ${cronSecret}`;
+
+  if (!isAuthorized) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
