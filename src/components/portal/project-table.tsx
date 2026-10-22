@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Badge, Card, Button, Table, TableHeader, TableRow, TableCell, TableHeaderCell } from "@/components/ui";
 
 interface Project {
   id: string;
@@ -18,10 +19,10 @@ interface Project {
   completed_tasks: number;
 }
 
-const statusStyles: Record<string, string> = {
-  upcoming: "bg-blue-100 text-blue-700",
-  active: "bg-yellow-100 text-yellow-700",
-  completed: "bg-green-100 text-green-700",
+const statusVariant: Record<string, "default" | "success" | "warning" | "error" | "info"> = {
+  upcoming: "info",
+  active: "warning",
+  completed: "success",
 };
 
 const filters = [
@@ -50,22 +51,22 @@ export function ProjectTable({ projects }: { projects: Project[] }) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">My Projects</h2>
+      <h2 className="text-3xl font-bold tracking-tight text-neutral-900">My Projects</h2>
 
       {/* Filter tabs */}
-      <div className="flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800">
+      <div className="flex gap-1 border-b border-neutral-200">
         {filters.map((f) => (
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
-            className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
               filter === f.key
-                ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-zinc-50"
-                : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400"
+                ? "border-neutral-900 text-neutral-900"
+                : "border-transparent text-neutral-500 hover:text-neutral-700"
             }`}
           >
             {f.label}
-            <span className="ml-1.5 text-xs text-zinc-400">
+            <span className="ml-1.5 text-xs text-neutral-400">
               {counts[f.key as keyof typeof counts]}
             </span>
           </button>
@@ -73,113 +74,100 @@ export function ProjectTable({ projects }: { projects: Project[] }) {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-12 text-center dark:border-zinc-700 dark:bg-zinc-900">
-          <p className="text-zinc-500">No projects found.</p>
+        <div className="border border-dashed border-neutral-300 bg-white p-12 text-center rounded-sm">
+          <p className="text-neutral-500">No projects found.</p>
         </div>
       ) : (
         <>
           {/* Mobile card view */}
           <div className="flex flex-col gap-3 md:hidden">
             {filtered.map((p) => (
-              <div
-                key={p.id}
-                className={`rounded-xl border bg-white p-4 dark:bg-zinc-900 ${
-                  p.status === "active"
-                    ? "border-amber-200 dark:border-amber-900/40"
-                    : "border-zinc-200 dark:border-zinc-800"
-                }`}
-              >
+              <Card key={p.id} className="!p-4">
                 <div className="flex items-start justify-between gap-2">
-                  <Link href={`/portal/projects/${p.id}`} className="font-semibold text-zinc-900 hover:underline dark:text-zinc-50">
+                  <Link href={`/portal/projects/${p.id}`} className="font-semibold text-neutral-900 hover:underline">
                     {p.name}
                   </Link>
-                  <span className={`shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[p.status] || ""}`}>
+                  <Badge variant={statusVariant[p.status] || "default"}>
                     {p.status}
-                  </span>
+                  </Badge>
                 </div>
-                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                  {p.school || "—"} &middot; {p.program_type || "—"}
+                <p className="mt-1 text-sm text-neutral-500">
+                  {p.school || "\u2014"} &middot; {p.program_type || "\u2014"}
                 </p>
                 {p.start_date && p.end_date && (
-                  <p className="mt-1 text-xs text-zinc-400">
+                  <p className="mt-1 text-xs text-neutral-400">
                     {formatDate(p.start_date)} — {formatDate(p.end_date)}
                     {p.days ? ` (${p.days} day${p.days > 1 ? "s" : ""})` : ""}
                   </p>
                 )}
                 <div className="mt-3 flex items-center justify-between">
-                  <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <span className="text-sm text-neutral-600">
                     {p.completed_tasks}/{p.total_tasks} tasks done
                   </span>
-                  <Link
-                    href={`/portal/projects/${p.id}`}
-                    className="rounded-lg border border-zinc-300 px-4 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                  >
-                    View
+                  <Link href={`/portal/projects/${p.id}`}>
+                    <Button variant="secondary" size="sm">View</Button>
                   </Link>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
 
           {/* Desktop table view */}
-          <div className="hidden md:block overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
-                  <th className="px-4 py-3 text-left font-medium text-zinc-500">Project Name</th>
-                  <th className="px-4 py-3 text-left font-medium text-zinc-500">Program</th>
-                  <th className="px-4 py-3 text-left font-medium text-zinc-500">School</th>
-                  <th className="px-4 py-3 text-left font-medium text-zinc-500">Dates</th>
-                  <th className="px-4 py-3 text-center font-medium text-zinc-500">Status</th>
-                  <th className="px-4 py-3 text-center font-medium text-zinc-500">Tasks</th>
-                  <th className="px-4 py-3 text-right font-medium text-zinc-500">Actions</th>
+          <div className="hidden md:block border border-neutral-200 rounded-sm bg-white">
+            <Table>
+              <TableHeader>
+                <tr>
+                  <TableHeaderCell>Project Name</TableHeaderCell>
+                  <TableHeaderCell>Program</TableHeaderCell>
+                  <TableHeaderCell>School</TableHeaderCell>
+                  <TableHeaderCell>Dates</TableHeaderCell>
+                  <TableHeaderCell className="text-center">Status</TableHeaderCell>
+                  <TableHeaderCell className="text-center">Tasks</TableHeaderCell>
+                  <TableHeaderCell className="text-right">Actions</TableHeaderCell>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+              </TableHeader>
+              <tbody>
                 {filtered.map((p) => (
-                  <tr key={p.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                    <td className="px-4 py-3">
-                      <Link href={`/portal/projects/${p.id}`} className="font-medium text-zinc-900 hover:underline dark:text-zinc-50">
+                  <TableRow key={p.id}>
+                    <TableCell className="px-4">
+                      <Link href={`/portal/projects/${p.id}`} className="font-medium text-neutral-900 hover:underline">
                         {p.name}
                       </Link>
-                    </td>
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{p.program_type || "—"}</td>
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
-                      <div>{p.school || "—"}</div>
-                      {p.location && <div className="text-xs text-zinc-400">{p.location}</div>}
-                    </td>
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+                    </TableCell>
+                    <TableCell className="px-4 text-neutral-600">{p.program_type || "\u2014"}</TableCell>
+                    <TableCell className="px-4 text-neutral-600">
+                      <div>{p.school || "\u2014"}</div>
+                      {p.location && <div className="text-xs text-neutral-400">{p.location}</div>}
+                    </TableCell>
+                    <TableCell className="px-4 text-neutral-600 whitespace-nowrap">
                       {p.start_date && p.end_date ? (
                         <>
                           <div>{formatDate(p.start_date)} — {formatDate(p.end_date)}</div>
-                          {p.days && <div className="text-xs text-zinc-400">{p.days} day{p.days > 1 ? "s" : ""}</div>}
+                          {p.days && <div className="text-xs text-neutral-400">{p.days} day{p.days > 1 ? "s" : ""}</div>}
                         </>
                       ) : (
-                        "—"
+                        "\u2014"
                       )}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[p.status] || ""}`}>
+                    </TableCell>
+                    <TableCell className="px-4 text-center">
+                      <Badge variant={statusVariant[p.status] || "default"}>
                         {p.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="px-4 text-center">
+                      <span className="text-sm text-neutral-600">
                         {p.completed_tasks}/{p.total_tasks} done
                       </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <Link
-                        href={`/portal/projects/${p.id}`}
-                        className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                      >
-                        View
+                    </TableCell>
+                    <TableCell className="px-4 text-right">
+                      <Link href={`/portal/projects/${p.id}`}>
+                        <Button variant="secondary" size="sm">View</Button>
                       </Link>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
               </tbody>
-            </table>
+            </Table>
           </div>
         </>
       )}

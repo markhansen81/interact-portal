@@ -27,13 +27,13 @@ export default async function PortalLayout({
   // No gate — dashboard shows onboarding tasks for everyone
 
   return (
-    <div className="flex h-screen bg-zinc-50 dark:bg-zinc-950">
+    <div className="flex h-screen bg-white">
       <PWARegister />
       <PortalSidebar profile={profile} unreadCount={unreadCount ?? 0} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <PortalHeader profile={profile} />
         <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-7xl px-4 py-4 pb-20 md:px-8 md:py-8 md:pb-8">{children}</div>
+          <div className="mx-auto max-w-7xl px-4 py-6 pb-20 md:px-8 md:py-8 md:pb-8">{children}</div>
         </main>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { DeleteTAButton } from "@/components/admin/delete-ta-button";
 import { TrainingToggle } from "@/components/admin/training-toggle";
+import { Badge } from "@/components/ui";
 
 interface TAProfile {
   id: string;
@@ -147,13 +148,15 @@ export function TASearchFilter({
     return missing;
   }
 
+  const selectClassName = "border border-neutral-300 bg-white rounded-sm px-3 py-2 text-sm text-neutral-700 focus:outline-none focus:border-black focus:ring-0 transition-colors";
+
   return (
     <div className="space-y-4">
       {/* Search and Filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <svg
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={2}
@@ -170,14 +173,14 @@ export function TASearchFilter({
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Search by name, email..."
-            className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-10 pr-4 text-sm text-zinc-900 placeholder-zinc-400 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder-zinc-500 dark:focus:border-slate-500 dark:focus:ring-slate-500"
+            className="w-full border border-neutral-300 bg-white rounded-sm py-2 pl-10 pr-4 text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-0 transition-colors"
           />
         </div>
         <div className="flex flex-wrap gap-2">
           <select
             value={onboardingFilter}
             onChange={(e) => setOnboardingFilter(e.target.value)}
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+            className={selectClassName}
           >
             <option value="all">All Onboarding</option>
             <option value="pending">Pending</option>
@@ -186,7 +189,7 @@ export function TASearchFilter({
           <select
             value={payLevelFilter}
             onChange={(e) => setPayLevelFilter(e.target.value)}
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+            className={selectClassName}
           >
             <option value="all">All Levels</option>
             <option value="1">Level 1</option>
@@ -198,7 +201,7 @@ export function TASearchFilter({
           <select
             value={trainingFilter}
             onChange={(e) => setTrainingFilter(e.target.value)}
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+            className={selectClassName}
           >
             <option value="all">All Training</option>
             <option value="complete">Complete</option>
@@ -207,7 +210,7 @@ export function TASearchFilter({
           <select
             value={activeFilter}
             onChange={(e) => setActiveFilter(e.target.value)}
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+            className={selectClassName}
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -217,46 +220,46 @@ export function TASearchFilter({
       </div>
 
       {/* Result count */}
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-neutral-500">
         Showing {filtered.length} of {tas.length} Teaching Artists
       </p>
 
       {/* Table */}
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-12 text-center dark:border-zinc-700 dark:bg-zinc-900">
-          <p className="text-zinc-500">No teaching artists match your filters.</p>
-          <p className="mt-1 text-sm text-zinc-400">Try adjusting your search or filters.</p>
+        <div className="border border-dashed border-neutral-300 bg-white p-12 text-center rounded-sm">
+          <p className="text-neutral-500">No teaching artists match your filters.</p>
+          <p className="mt-1 text-sm text-neutral-400">Try adjusting your search or filters.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="overflow-x-auto border border-neutral-200 bg-white rounded-sm">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
+              <tr className="border-b border-neutral-200">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                   Name
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-zinc-500">
+                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-neutral-500">
                   Level
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                   Onboarding
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                   Missing
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-zinc-500">
+                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-neutral-500">
                   Online
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-zinc-500">
+                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-neutral-500">
                   Offline
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-zinc-500">
+                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-neutral-500">
                   Projects
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-zinc-500"></th>
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-neutral-500"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+            <tbody className="divide-y divide-neutral-100">
               {filtered.map((ta) => {
                 const sectionsComplete = (ta.onboarding_sections_complete || {}) as Record<
                   string,
@@ -267,7 +270,7 @@ export function TASearchFilter({
                 const missing = getMissing(ta);
 
                 return (
-                  <tr key={ta.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                  <tr key={ta.id} className="hover:bg-neutral-50 transition-colors">
                     <td className="px-4 py-3">
                       <Link
                         href={`/admin/teaching-artists/${ta.id}`}
@@ -280,62 +283,51 @@ export function TASearchFilter({
                             className="h-8 w-8 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 text-xs font-medium text-neutral-600">
                             {(ta.first_name?.[0] || ta.email[0]).toUpperCase()}
                           </div>
                         )}
                         <div>
-                          <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                          <span className="text-sm font-medium text-neutral-900">
                             {ta.first_name && ta.last_name
                               ? `${ta.first_name} ${ta.last_name}`
                               : ta.email}
                           </span>
-                          <p className="text-xs text-zinc-400">{ta.email}</p>
+                          <p className="text-xs text-neutral-400">{ta.email}</p>
                         </div>
                       </Link>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">
-                        {ta.pay_level}
-                      </span>
+                      <Badge>{ta.pay_level}</Badge>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-16 rounded-full bg-zinc-100 dark:bg-zinc-800">
+                        <div className="h-1.5 w-16 rounded-full bg-neutral-100">
                           <div
                             className={`h-1.5 rounded-full transition-all ${
                               progress === 100
-                                ? "bg-green-500"
+                                ? "bg-neutral-900"
                                 : progress > 0
-                                  ? "bg-blue-500"
-                                  : "bg-zinc-300"
+                                  ? "bg-neutral-400"
+                                  : "bg-neutral-200"
                             }`}
                             style={{ width: `${progress}%` }}
                           />
                         </div>
-                        <span className="text-[10px] text-zinc-400">{progress}%</span>
+                        <span className="text-[10px] text-neutral-400">{progress}%</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex max-w-[200px] flex-wrap gap-1">
                         {missing.length === 0 ? (
-                          <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700">
-                            Complete
-                          </span>
+                          <Badge variant="success">Complete</Badge>
                         ) : (
                           missing.slice(0, 4).map((m) => (
-                            <span
-                              key={m}
-                              className="inline-flex items-center rounded-full bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-600"
-                            >
-                              {m}
-                            </span>
+                            <Badge key={m} variant="error">{m}</Badge>
                           ))
                         )}
                         {missing.length > 4 && (
-                          <span className="inline-flex items-center rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] text-zinc-500">
-                            +{missing.length - 4}
-                          </span>
+                          <Badge>+{missing.length - 4}</Badge>
                         )}
                       </div>
                     </td>
@@ -353,7 +345,7 @@ export function TASearchFilter({
                         checked={ta.training_offline}
                       />
                     </td>
-                    <td className="px-4 py-3 text-center text-sm text-zinc-500">
+                    <td className="px-4 py-3 text-center text-sm text-neutral-500">
                       {ta.qualifying_projects}/{ta.total_projects}
                     </td>
                     <td className="px-4 py-3 text-right">

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import { StatCard, Card, Badge, Button, PageHeader } from "@/components/ui";
 
 export default async function TAInvoicesPage() {
   const profile = await requireAuth(["ta"]);
@@ -21,87 +22,64 @@ export default async function TAInvoicesPage() {
     .eq("ta_id", profile.id)
     .order("created_at", { ascending: false });
 
-  const statusStyles: Record<string, string> = {
-    draft: "bg-zinc-100 text-zinc-600",
-    submitted: "bg-yellow-100 text-yellow-700",
-    approved: "bg-blue-100 text-blue-700",
-    paid: "bg-green-100 text-green-700",
-    rejected: "bg-red-100 text-red-700",
+  const statusVariant: Record<string, "default" | "success" | "warning" | "error" | "info"> = {
+    draft: "default",
+    submitted: "warning",
+    approved: "info",
+    paid: "success",
+    rejected: "error",
   };
 
   return (
     <div className="space-y-8">
-      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-        Invoices
-      </h2>
+      <PageHeader title="Invoices" />
 
       {/* Earnings Summary */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-500">Level</p>
-          <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-            {profile.pay_level}
-          </p>
-        </div>
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-500">Qualifying Projects</p>
-          <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-            {profile.qualifying_projects}
-          </p>
-        </div>
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-500">Total Projects</p>
-          <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-            {profile.total_projects}
-          </p>
-        </div>
+        <StatCard label="Level" value={profile.pay_level} />
+        <StatCard label="Qualifying Projects" value={profile.qualifying_projects} />
+        <StatCard label="Total Projects" value={profile.total_projects} />
       </div>
 
       {/* Upload Invoice */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+      <Card>
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+            <h3 className="text-lg font-semibold text-neutral-900">
               Upload Invoice
             </h3>
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-sm text-neutral-500">
               Upload your own invoice PDF. Our AI will check it has all required information.
             </p>
           </div>
-          <Link
-            href="/portal/invoices/upload"
-            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
-          >
-            Upload PDF
+          <Link href="/portal/invoices/upload">
+            <Button variant="secondary" size="sm">Upload PDF</Button>
           </Link>
         </div>
-      </div>
+      </Card>
 
       {/* Or use Calculator */}
       {signedWOs && signedWOs.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+          <h3 className="text-lg font-semibold text-neutral-900">
             Or Use Invoice Calculator
           </h3>
-          <div className="space-y-2">
+          <div className="divide-y divide-neutral-100 border border-neutral-200 rounded-sm bg-white">
             {signedWOs.map((wo) => (
               <div
                 key={wo.id}
-                className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+                className="flex items-center justify-between p-4"
               >
                 <div>
-                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                  <p className="text-sm font-medium text-neutral-900">
                     {wo.project_name}
                   </p>
-                  <p className="text-xs text-zinc-500">
-                    {wo.program_type} — {wo.days} days — €{Number(wo.total).toFixed(2)}
+                  <p className="text-xs text-neutral-500">
+                    {wo.program_type} — {wo.days} days — &euro;{Number(wo.total).toFixed(2)}
                   </p>
                 </div>
-                <Link
-                  href={`/portal/invoices/new/${wo.id}`}
-                  className="rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900"
-                >
-                  Create Invoice
+                <Link href={`/portal/invoices/new/${wo.id}`}>
+                  <Button size="sm">Create Invoice</Button>
                 </Link>
               </div>
             ))}
@@ -111,31 +89,31 @@ export default async function TAInvoicesPage() {
 
       {/* Existing Invoices */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+        <h3 className="text-lg font-semibold text-neutral-900">
           Invoice History
         </h3>
         {!invoices || invoices.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-8 text-center dark:border-zinc-700 dark:bg-zinc-900">
-            <p className="text-sm text-zinc-500">No invoices yet.</p>
+          <div className="border border-dashed border-neutral-300 bg-white p-8 text-center rounded-sm">
+            <p className="text-sm text-neutral-500">No invoices yet.</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="divide-y divide-neutral-100 border border-neutral-200 rounded-sm bg-white">
             {invoices.map((inv) => (
               <div
                 key={inv.id}
-                className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+                className="flex items-center justify-between p-4"
               >
                 <div>
-                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                  <p className="text-sm font-medium text-neutral-900">
                     Invoice #{inv.invoice_number || inv.id.slice(0, 8)}
                   </p>
-                  <p className="text-xs text-zinc-500">
-                    €{Number(inv.total).toFixed(2)} — {inv.submitted_at ? new Date(inv.submitted_at).toLocaleDateString() : "Draft"}
+                  <p className="text-xs text-neutral-500">
+                    &euro;{Number(inv.total).toFixed(2)} — {inv.submitted_at ? new Date(inv.submitted_at).toLocaleDateString() : "Draft"}
                   </p>
                 </div>
-                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[inv.status] || ""}`}>
+                <Badge variant={statusVariant[inv.status] || "default"}>
                   {inv.status}
-                </span>
+                </Badge>
               </div>
             ))}
           </div>

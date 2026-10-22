@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Badge, Card, Button, Table, TableHeader, TableRow, TableCell, TableHeaderCell } from "@/components/ui";
 
 interface WorkOrder {
   id: string;
@@ -19,11 +20,11 @@ interface WorkOrder {
   created_at: string;
 }
 
-const statusStyles: Record<string, string> = {
-  draft: "bg-zinc-100 text-zinc-600",
-  sent: "bg-yellow-100 text-yellow-700",
-  signed: "bg-green-100 text-green-700",
-  declined: "bg-red-100 text-red-700",
+const statusVariant: Record<string, "default" | "success" | "warning" | "error" | "info"> = {
+  draft: "default",
+  sent: "warning",
+  signed: "success",
+  declined: "error",
 };
 
 const statusLabels: Record<string, string> = {
@@ -64,7 +65,7 @@ function DeadlineBadge({ signBy, status }: { signBy: string | null; status: stri
   if (days <= 3) {
     return <span className="text-xs font-medium text-yellow-600">{days}d left</span>;
   }
-  return <span className="text-xs text-zinc-500">{days}d left</span>;
+  return <span className="text-xs text-neutral-500">{days}d left</span>;
 }
 
 export function WorkOrderTable({ workOrders, projectMap = {} }: { workOrders: WorkOrder[]; projectMap?: Record<string, string> }) {
@@ -81,22 +82,22 @@ export function WorkOrderTable({ workOrders, projectMap = {} }: { workOrders: Wo
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">My Work Orders</h2>
+      <h2 className="text-3xl font-bold tracking-tight text-neutral-900">My Work Orders</h2>
 
       {/* Filter tabs */}
-      <div className="flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800">
+      <div className="flex gap-1 border-b border-neutral-200">
         {filters.map((f) => (
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
-            className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
               filter === f.key
-                ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-zinc-50"
-                : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400"
+                ? "border-neutral-900 text-neutral-900"
+                : "border-transparent text-neutral-500 hover:text-neutral-700"
             }`}
           >
             {f.label}
-            <span className="ml-1.5 text-xs text-zinc-400">
+            <span className="ml-1.5 text-xs text-neutral-400">
               {counts[f.key as keyof typeof counts]}
             </span>
           </button>
@@ -104,132 +105,110 @@ export function WorkOrderTable({ workOrders, projectMap = {} }: { workOrders: Wo
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-12 text-center dark:border-zinc-700 dark:bg-zinc-900">
-          <p className="text-zinc-500">No work orders found.</p>
+        <div className="border border-dashed border-neutral-300 bg-white p-12 text-center rounded-sm">
+          <p className="text-neutral-500">No work orders found.</p>
         </div>
       ) : (
         <>
           {/* Mobile card view */}
           <div className="flex flex-col gap-3 md:hidden">
             {filtered.map((wo) => (
-              <div
-                key={wo.id}
-                className={`rounded-xl border bg-white p-4 dark:bg-zinc-900 ${
-                  wo.status === "sent"
-                    ? "border-amber-200 dark:border-amber-900/40"
-                    : "border-zinc-200 dark:border-zinc-800"
-                }`}
-              >
+              <Card key={wo.id} className="!p-4">
                 <div className="flex items-start justify-between gap-2">
-                  <Link href={`/portal/work-orders/${wo.id}`} className="font-semibold text-zinc-900 hover:underline dark:text-zinc-50">
+                  <Link href={`/portal/work-orders/${wo.id}`} className="font-semibold text-neutral-900 hover:underline">
                     {wo.project_name}
                   </Link>
-                  <span className={`shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[wo.status] || ""}`}>
+                  <Badge variant={statusVariant[wo.status] || "default"}>
                     {statusLabels[wo.status] || wo.status}
-                  </span>
+                  </Badge>
                 </div>
-                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="mt-1 text-sm text-neutral-500">
                   {wo.school} &middot; {wo.program_type}
                 </p>
-                <p className="mt-1 text-xs text-zinc-400">
+                <p className="mt-1 text-xs text-neutral-400">
                   {formatDate(wo.start_date)} — {formatDate(wo.end_date)} ({wo.days} day{wo.days > 1 ? "s" : ""})
                 </p>
                 <div className="mt-3 flex items-center justify-between">
-                  <span className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
-                    {wo.total ? `€${Number(wo.total).toFixed(2)}` : "—"}
+                  <span className="text-lg font-bold text-neutral-900">
+                    {wo.total ? `\u20AC${Number(wo.total).toFixed(2)}` : "\u2014"}
                   </span>
                   <div className="flex items-center gap-2">
                     <DeadlineBadge signBy={wo.sign_by} status={wo.status} />
-                    <Link
-                      href={`/portal/work-orders/${wo.id}`}
-                      className={`rounded-lg px-4 py-1.5 text-xs font-medium ${
-                        wo.status === "sent"
-                          ? "bg-amber-500 text-white hover:bg-amber-600"
-                          : "border border-zinc-300 text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                      }`}
-                    >
-                      {wo.status === "sent" ? "Sign" : "View"}
+                    <Link href={`/portal/work-orders/${wo.id}`}>
+                      <Button variant={wo.status === "sent" ? "primary" : "secondary"} size="sm">
+                        {wo.status === "sent" ? "Sign" : "View"}
+                      </Button>
                     </Link>
                   </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
 
           {/* Desktop table view */}
-          <div className="hidden md:block overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
-                  <th className="px-4 py-3 text-left font-medium text-zinc-500">Project</th>
-                  <th className="px-4 py-3 text-left font-medium text-zinc-500">Program</th>
-                  <th className="px-4 py-3 text-left font-medium text-zinc-500">School</th>
-                  <th className="px-4 py-3 text-left font-medium text-zinc-500">Dates</th>
-                  <th className="px-4 py-3 text-right font-medium text-zinc-500">Total</th>
-                  <th className="px-4 py-3 text-center font-medium text-zinc-500">Status</th>
-                  <th className="px-4 py-3 text-center font-medium text-zinc-500">Deadline</th>
-                  <th className="px-4 py-3 text-right font-medium text-zinc-500">Actions</th>
+          <div className="hidden md:block border border-neutral-200 rounded-sm bg-white">
+            <Table>
+              <TableHeader>
+                <tr>
+                  <TableHeaderCell>Project</TableHeaderCell>
+                  <TableHeaderCell>Program</TableHeaderCell>
+                  <TableHeaderCell>School</TableHeaderCell>
+                  <TableHeaderCell>Dates</TableHeaderCell>
+                  <TableHeaderCell className="text-right">Total</TableHeaderCell>
+                  <TableHeaderCell className="text-center">Status</TableHeaderCell>
+                  <TableHeaderCell className="text-center">Deadline</TableHeaderCell>
+                  <TableHeaderCell className="text-right">Actions</TableHeaderCell>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+              </TableHeader>
+              <tbody>
                 {filtered.map((wo) => (
-                  <tr key={wo.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                    <td className="px-4 py-3">
-                      <Link href={`/portal/work-orders/${wo.id}`} className="font-medium text-zinc-900 hover:underline dark:text-zinc-50">
+                  <TableRow key={wo.id}>
+                    <TableCell className="px-4">
+                      <Link href={`/portal/work-orders/${wo.id}`} className="font-medium text-neutral-900 hover:underline">
                         {wo.project_name}
                       </Link>
-                    </td>
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{wo.program_type}</td>
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
+                    </TableCell>
+                    <TableCell className="px-4 text-neutral-600">{wo.program_type}</TableCell>
+                    <TableCell className="px-4 text-neutral-600">
                       <div>{wo.school}</div>
-                      <div className="text-xs text-zinc-400">{wo.location}</div>
-                    </td>
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+                      <div className="text-xs text-neutral-400">{wo.location}</div>
+                    </TableCell>
+                    <TableCell className="px-4 text-neutral-600 whitespace-nowrap">
                       <div>{formatDate(wo.start_date)} — {formatDate(wo.end_date)}</div>
-                      <div className="text-xs text-zinc-400">{wo.days} day{wo.days > 1 ? "s" : ""}</div>
-                    </td>
-                    <td className="px-4 py-3 text-right font-semibold text-zinc-900 dark:text-zinc-50">
-                      {wo.total ? `€${Number(wo.total).toFixed(2)}` : "—"}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[wo.status] || ""}`}>
+                      <div className="text-xs text-neutral-400">{wo.days} day{wo.days > 1 ? "s" : ""}</div>
+                    </TableCell>
+                    <TableCell className="px-4 text-right font-semibold text-neutral-900">
+                      {wo.total ? `\u20AC${Number(wo.total).toFixed(2)}` : "\u2014"}
+                    </TableCell>
+                    <TableCell className="px-4 text-center">
+                      <Badge variant={statusVariant[wo.status] || "default"}>
                         {statusLabels[wo.status] || wo.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="px-4 text-center">
                       <DeadlineBadge signBy={wo.sign_by} status={wo.status} />
-                    </td>
-                    <td className="px-4 py-3 text-right">
+                    </TableCell>
+                    <TableCell className="px-4 text-right">
                       <div className="flex justify-end gap-2">
-                        <Link
-                          href={`/portal/work-orders/${wo.id}`}
-                          className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                        >
-                          View
+                        <Link href={`/portal/work-orders/${wo.id}`}>
+                          <Button variant="secondary" size="sm">View</Button>
                         </Link>
                         {wo.status === "signed" && wo.pdf_url && (
-                          <a
-                            href={wo.pdf_url}
-                            target="_blank"
-                            className="rounded-lg bg-green-600 px-3 py-1 text-xs font-medium text-white hover:bg-green-700"
-                          >
-                            PDF
+                          <a href={wo.pdf_url} target="_blank">
+                            <Button variant="primary" size="sm" className="bg-green-600 hover:bg-green-700">PDF</Button>
                           </a>
                         )}
                         {wo.status === "signed" && projectMap[wo.id] && (
-                          <Link
-                            href={`/portal/projects/${projectMap[wo.id]}`}
-                            className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700"
-                          >
-                            Project
+                          <Link href={`/portal/projects/${projectMap[wo.id]}`}>
+                            <Button variant="primary" size="sm" className="bg-blue-600 hover:bg-blue-700">Project</Button>
                           </Link>
                         )}
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
               </tbody>
-            </table>
+            </Table>
           </div>
         </>
       )}

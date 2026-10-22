@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { StatCard, Badge, Button } from "@/components/ui";
 
 interface InsuranceOrder {
   id: string;
@@ -33,26 +34,17 @@ function getDeliveryStatus(order: InsuranceOrder): DeliveryStatus {
 }
 
 function DeliveryBadge({ status }: { status: DeliveryStatus }) {
-  switch (status) {
-    case "delivered":
-      return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/20 dark:text-green-400">
-          Delivered
-        </span>
-      );
-    case "failed":
-      return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/20 dark:text-red-400">
-          Failed
-        </span>
-      );
-    case "processing":
-      return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
-          Processing
-        </span>
-      );
-  }
+  const variants: Record<DeliveryStatus, "success" | "error" | "warning"> = {
+    delivered: "success",
+    failed: "error",
+    processing: "warning",
+  };
+  const labels: Record<DeliveryStatus, string> = {
+    delivered: "Delivered",
+    failed: "Failed",
+    processing: "Processing",
+  };
+  return <Badge variant={variants[status]}>{labels[status]}</Badge>;
 }
 
 function ResendButton({
@@ -87,14 +79,15 @@ function ResendButton({
 
   return (
     <div className="flex items-center gap-2">
-      <button
+      <Button
+        variant="danger"
+        size="sm"
         onClick={handleResend}
         disabled={loading}
-        className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
       >
         {loading ? (
           <svg
-            className="h-3 w-3 animate-spin"
+            className="h-3 w-3 animate-spin mr-1"
             fill="none"
             viewBox="0 0 24 24"
           >
@@ -114,9 +107,9 @@ function ResendButton({
           </svg>
         ) : null}
         Resend
-      </button>
+      </Button>
       {error && (
-        <span className="text-xs text-red-500">{error}</span>
+        <span className="text-xs text-red-600">{error}</span>
       )}
     </div>
   );
@@ -156,53 +149,26 @@ export function InsuranceOrdersTable({ orders: initialOrders }: { orders: Insura
     <div className="space-y-6">
       {/* Summary cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-        <div className="rounded-xl border border-zinc-200/80 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-500">Total Orders</p>
-          <p className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-            {orders.length}
-          </p>
-        </div>
-        <div className="rounded-xl border border-zinc-200/80 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-500">Total Revenue</p>
-          <p className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-            &euro;{totalRevenue.toFixed(2)}
-          </p>
-        </div>
-        <div className="rounded-xl border border-zinc-200/80 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-500">Emails Sent</p>
-          <p className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-            {orders.filter((o) => o.email_sent_at).length}
-          </p>
-        </div>
-        {failedCount > 0 ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-900/40 dark:bg-red-900/10">
-            <p className="text-sm text-red-600 dark:text-red-400">Failed</p>
-            <p className="text-2xl font-bold text-red-700 dark:text-red-400">
-              {failedCount}
-            </p>
-          </div>
-        ) : (
-          <div className="rounded-xl border border-green-200 bg-green-50 p-4 dark:border-green-900/40 dark:bg-green-900/10">
-            <p className="text-sm text-green-600 dark:text-green-400">Failed</p>
-            <p className="text-2xl font-bold text-green-700 dark:text-green-400">
-              0
-            </p>
-          </div>
-        )}
-        <div className="rounded-xl border border-zinc-200/80 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-500">Last Order</p>
-          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-            {lastOrder
+        <StatCard label="Total Orders" value={orders.length} />
+        <StatCard label="Total Revenue" value={`\u20AC${totalRevenue.toFixed(2)}`} />
+        <StatCard label="Emails Sent" value={orders.filter((o) => o.email_sent_at).length} />
+        <StatCard
+          label="Failed"
+          value={failedCount}
+          change={failedCount > 0 ? `${failedCount} need attention` : "All clear"}
+        />
+        <StatCard
+          label="Last Order"
+          value={
+            lastOrder
               ? new Date(lastOrder.created_at).toLocaleDateString("de-DE", {
                   day: "2-digit",
                   month: "2-digit",
                   year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
                 })
-              : "-"}
-          </p>
-        </div>
+              : "-"
+          }
+        />
       </div>
 
       {/* Search */}
@@ -212,49 +178,49 @@ export function InsuranceOrdersTable({ orders: initialOrders }: { orders: Insura
           placeholder="Search by name, email, school..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-sm rounded-lg border border-zinc-200 px-4 py-2 text-sm focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+          className="w-full max-w-sm border border-neutral-300 bg-white rounded-sm px-4 py-2 text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-0 transition-colors"
         />
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-zinc-200/80 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="overflow-x-auto border border-neutral-200 bg-white rounded-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-zinc-100 dark:border-zinc-800">
-              <th className="px-4 py-3 text-left font-medium text-zinc-500">
+            <tr className="border-b border-neutral-200">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                 Order #
               </th>
-              <th className="px-4 py-3 text-left font-medium text-zinc-500">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                 Date
               </th>
-              <th className="px-4 py-3 text-left font-medium text-zinc-500">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                 Customer
               </th>
-              <th className="px-4 py-3 text-left font-medium text-zinc-500">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                 Insured Person
               </th>
-              <th className="px-4 py-3 text-left font-medium text-zinc-500">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                 School
               </th>
-              <th className="px-4 py-3 text-left font-medium text-zinc-500">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                 Project Date
               </th>
-              <th className="px-4 py-3 text-left font-medium text-zinc-500">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                 Days
               </th>
-              <th className="px-4 py-3 text-left font-medium text-zinc-500">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                 Fee
               </th>
-              <th className="px-4 py-3 text-left font-medium text-zinc-500">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                 Total
               </th>
-              <th className="px-4 py-3 text-left font-medium text-zinc-500">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                 PDF
               </th>
-              <th className="px-4 py-3 text-left font-medium text-zinc-500">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                 Delivery
               </th>
-              <th className="px-4 py-3 text-left font-medium text-zinc-500">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                 Actions
               </th>
             </tr>
@@ -264,7 +230,7 @@ export function InsuranceOrdersTable({ orders: initialOrders }: { orders: Insura
               <tr>
                 <td
                   colSpan={12}
-                  className="px-4 py-8 text-center text-zinc-400"
+                  className="px-4 py-8 text-center text-neutral-400"
                 >
                   {search ? "No matching orders" : "No insurance orders yet"}
                 </td>
@@ -275,44 +241,44 @@ export function InsuranceOrdersTable({ orders: initialOrders }: { orders: Insura
                 return (
                   <tr
                     key={order.id}
-                    className="border-b border-zinc-50 hover:bg-zinc-50/50 dark:border-zinc-800/50 dark:hover:bg-zinc-800/30"
+                    className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors"
                   >
-                    <td className="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-50">
+                    <td className="px-4 py-3 font-medium text-neutral-900">
                       {order.order_number || "-"}
                     </td>
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
+                    <td className="px-4 py-3 text-neutral-600">
                       {new Date(order.created_at).toLocaleDateString("de-DE")}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="text-zinc-900 dark:text-zinc-50">
+                      <div className="text-neutral-900">
                         {[order.customer_first_name, order.customer_last_name]
                           .filter(Boolean)
                           .join(" ") || "-"}
                       </div>
-                      <div className="text-xs text-zinc-500">
+                      <div className="text-xs text-neutral-500">
                         {order.customer_email}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-zinc-900 dark:text-zinc-50">
+                    <td className="px-4 py-3 text-neutral-900">
                       {[order.insured_first_name, order.insured_last_name]
                         .filter(Boolean)
                         .join(" ") || "-"}
                     </td>
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
+                    <td className="px-4 py-3 text-neutral-600">
                       {order.school_name || "-"}
                     </td>
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
+                    <td className="px-4 py-3 text-neutral-600">
                       {order.project_date || "-"}
                     </td>
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
+                    <td className="px-4 py-3 text-neutral-600">
                       {order.num_project_days ?? "-"}
                     </td>
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
+                    <td className="px-4 py-3 text-neutral-600">
                       {order.participation_fee != null
                         ? `\u20AC${Number(order.participation_fee).toFixed(2)}`
                         : "-"}
                     </td>
-                    <td className="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-50">
+                    <td className="px-4 py-3 font-medium text-neutral-900">
                       &euro;{Number(order.total).toFixed(2)}
                     </td>
                     <td className="px-4 py-3">
@@ -321,12 +287,12 @@ export function InsuranceOrdersTable({ orders: initialOrders }: { orders: Insura
                           href={order.invoice_pdf_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-blue-600 hover:underline dark:text-blue-400"
+                          className="text-sm text-neutral-900 underline hover:text-neutral-600"
                         >
                           View PDF
                         </a>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-red-500 dark:text-red-400">
+                        <span className="text-xs font-medium text-red-600">
                           No PDF
                         </span>
                       )}
