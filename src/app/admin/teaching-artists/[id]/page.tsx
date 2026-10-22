@@ -13,7 +13,7 @@ export default async function TAProfilePage({
 
   const { data: ta } = await supabase
     .from("profiles")
-    .select("id, email, first_name, last_name, preferred_name, phone, photo_url, address, street, city, postal_code, country, pay_level, camp_level, category, onboarding_status, onboarding_sections_complete, is_active, training_online, training_offline, total_projects, qualifying_projects, pd_workshop_credits, total_camps, bahncard, bahncard_expiry, deutschlandticket, nationality, school_photo_url, created_at, updated_at")
+    .select("*")
     .eq("id", id)
     .eq("role", "ta")
     .single();

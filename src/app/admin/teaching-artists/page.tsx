@@ -7,7 +7,7 @@ export default async function TeachingArtistsPage() {
 
   const { data: tas } = await supabase
     .from("profiles")
-    .select("id, email, first_name, last_name, preferred_name, phone, photo_url, pay_level, camp_level, category, onboarding_status, onboarding_sections_complete, is_active, training_online, training_offline, total_projects, qualifying_projects, pd_workshop_credits, created_at")
+    .select("*")
     .eq("role", "ta")
     .order("created_at", { ascending: false });
 
