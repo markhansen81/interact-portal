@@ -13,11 +13,16 @@ export async function POST(request: Request) {
   const expectedToken = process.env.SQUARESPACE_WEBHOOK_SECRET;
   const cronSecret = process.env.CRON_SECRET;
 
+  // In production, webhook secret MUST be set
+  if (process.env.NODE_ENV === 'production' && !expectedToken) {
+    console.error("[WEBHOOK] SQUARESPACE_WEBHOOK_SECRET not configured!");
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+  }
+  // Allow: valid token, cron secret, or dev mode (local only)
   const isAuthorized =
-    !expectedToken ||
-    authHeader === `Bearer ${expectedToken}` ||
-    authHeader === `Bearer ${cronSecret}`;
-
+    (expectedToken && authHeader === `Bearer ${expectedToken}`) ||
+    (cronSecret && authHeader === `Bearer ${cronSecret}`) ||
+    (!expectedToken && process.env.NODE_ENV !== 'production');
   if (!isAuthorized) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
