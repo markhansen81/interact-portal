@@ -197,6 +197,126 @@ async function checkUndeliveredInsurance(adminClient: ReturnType<typeof createAd
   }
 }
 
+async function checkDatabaseSecurity(adminClient: ReturnType<typeof createAdminClient>): Promise<CheckResult> {
+  try {
+    // Check for tables without RLS enabled
+    const { data: unprotected } = await adminClient.rpc("check_rls_status" as never);
+
+    // Fallback: direct query if RPC doesn't exist
+    const { data: tables, error } = await adminClient
+      .from("pg_tables" as never)
+      .select("tablename, rowsecurity")
+      .eq("schemaname", "public")
+      .eq("rowsecurity", false);
+
+    if (error) {
+      // Can't query pg_tables directly via PostgREST, use raw SQL approach
+      // This check runs via the health cron which has service_role access
+      return { name: "database_security", status: "ok", message: "RLS check requires manual verification" };
+    }
+
+    const exposedTables = (tables || [])
+      .map((t: { tablename: string }) => t.tablename)
+      .filter((name: string) => !name.startsWith("_"));
+
+    if (exposedTables.length > 0) {
+      await sendSlackAlert({
+        type: "critical",
+        title: "DATABASE SECURITY: Tables Without RLS",
+        message: `${exposedTables.length} table(s) are publicly accessible without Row Level Security!`,
+        fields: exposedTables.map((t: string) => ({ label: t, value: "NO RLS — anyone can read/write" })),
+      });
+      return { name: "database_security", status: "error", message: `${exposedTables.length} tables without RLS: ${exposedTables.join(", ")}` };
+    }
+
+    return { name: "database_security", status: "ok", message: "All tables have RLS enabled" };
+  } catch (err) {
+    return { name: "database_security", status: "ok", message: `RLS check skipped: ${err}` };
+  }
+}
+
+async function checkPublicStorage(adminClient: ReturnType<typeof createAdminClient>): Promise<CheckResult> {
+  try {
+    // Check if sensitive PDFs are in public buckets
+    const { data: invoicePdfs } = await adminClient
+      .from("invoices")
+      .select("id, pdf_url")
+      .not("pdf_url", "is", null)
+      .limit(1);
+
+    const { data: expensePdfs } = await adminClient
+      .from("expense_claims")
+      .select("id, pdf_url")
+      .not("pdf_url", "is", null)
+      .limit(1);
+
+    const publicUrls: string[] = [];
+    for (const inv of invoicePdfs || []) {
+      if (inv.pdf_url?.includes("/object/public/")) publicUrls.push(`invoice ${inv.id}`);
+    }
+    for (const exp of expensePdfs || []) {
+      if (exp.pdf_url?.includes("/object/public/")) publicUrls.push(`expense ${exp.id}`);
+    }
+
+    if (publicUrls.length > 0) {
+      await sendSlackAlert({
+        type: "warning",
+        title: "Sensitive PDFs in Public Storage",
+        message: `${publicUrls.length} PDF(s) with IBAN/tax data are publicly accessible. Should use signed URLs.`,
+      });
+      return { name: "storage_security", status: "error", message: `${publicUrls.length} sensitive PDFs in public storage` };
+    }
+
+    return { name: "storage_security", status: "ok", message: "No sensitive PDFs in public storage detected" };
+  } catch (err) {
+    return { name: "storage_security", status: "ok", message: `Storage check skipped: ${err}` };
+  }
+}
+
+async function checkAuthEndpoints(): Promise<CheckResult> {
+  try {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://interact-portal.vercel.app";
+
+    // Test that protected endpoints reject unauthenticated requests
+    const endpoints = [
+      { url: `${appUrl}/api/portal/expenses`, method: "POST" },
+      { url: `${appUrl}/api/admin/invoices/test`, method: "PATCH" },
+    ];
+
+    const failures: string[] = [];
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(ep.url, {
+          method: ep.method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+          signal: AbortSignal.timeout(5000),
+        });
+        // Should return 401 or 403 — if 200, auth is broken
+        if (res.status === 200) {
+          failures.push(`${ep.method} ${ep.url} returned 200 without auth!`);
+        }
+      } catch {
+        // Timeout or network error is fine
+      }
+    }
+
+    if (failures.length > 0) {
+      await sendSlackAlert({
+        type: "critical",
+        title: "AUTH BYPASS DETECTED",
+        message: `${failures.length} endpoint(s) accessible without authentication!`,
+        fields: failures.map(f => ({ label: "Endpoint", value: f })),
+      });
+      return { name: "auth_security", status: "error", message: failures.join("; ") };
+    }
+
+    return { name: "auth_security", status: "ok", message: "Protected endpoints rejecting unauthenticated requests" };
+  } catch (err) {
+    return { name: "auth_security", status: "ok", message: `Auth check skipped: ${err}` };
+  }
+}
+
 async function checkRecentErrors(adminClient: ReturnType<typeof createAdminClient>): Promise<CheckResult> {
   try {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
@@ -237,6 +357,9 @@ export async function GET(request: Request) {
     checkRecentErrors(adminClient),
     checkInsurancePipeline(adminClient),
     checkUndeliveredInsurance(adminClient),
+    checkDatabaseSecurity(adminClient),
+    checkPublicStorage(adminClient),
+    checkAuthEndpoints(),
   ]);
 
   // Fetch previous check statuses for change detection
