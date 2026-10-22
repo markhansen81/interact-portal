@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { InvoiceUploader } from "@/components/portal/invoice-uploader";
+import { PageHeader } from "@/components/ui";
 
 export default async function UploadInvoicePage() {
   const profile = await requireAuth(["ta"]);
@@ -18,9 +19,7 @@ export default async function UploadInvoicePage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-        Upload Invoice
-      </h2>
+      <PageHeader title="Upload Invoice" />
       <InvoiceUploader
         workOrders={signedWOs || []}
         profile={profile}

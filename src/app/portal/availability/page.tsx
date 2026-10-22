@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { AvailabilityCalendar } from "@/components/portal/availability-calendar";
+import { PageHeader } from "@/components/ui";
 
 export default async function AvailabilityPage() {
   const profile = await requireAuth(["ta"]);
@@ -15,14 +16,10 @@ export default async function AvailabilityPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Availability
-        </h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          Keep your availability updated to receive job offers. Click a day to toggle, or click the week number to toggle the whole week.
-        </p>
-      </div>
+      <PageHeader
+        title="Availability"
+        description="Keep your availability updated to receive job offers. Click a day to toggle, or click the week number to toggle the whole week."
+      />
       <AvailabilityCalendar initialData={availability || []} />
     </div>
   );

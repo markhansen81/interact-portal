@@ -1,369 +1,348 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import Link from "next/link";
+import { useState, useMemo } from"react";
+import Link from"next/link";
 
 interface WorkOrder {
-  id: string;
-  project_name: string;
-  school: string;
-  start_date: string;
-  end_date: string;
-  status: string;
+ id: string;
+ project_name: string;
+ school: string;
+ start_date: string;
+ end_date: string;
+ status: string;
 }
 
-const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December",
 ];
 
-const DAY_HEADERS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DAY_HEADERS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
 function formatDateShort(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+ const d = new Date(dateStr +"T00:00:00");
+ return d.toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric"});
 }
 
 function isSameDay(a: Date, b: Date): boolean {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+ return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
 function getMonthGrid(year: number, month: number): (Date | null)[][] {
-  const firstDay = new Date(year, month, 1);
-  // Monday = 0, Sunday = 6
-  let startOffset = firstDay.getDay() - 1;
-  if (startOffset < 0) startOffset = 6;
+ const firstDay = new Date(year, month, 1);
+ // Monday = 0, Sunday = 6
+ let startOffset = firstDay.getDay() - 1;
+ if (startOffset < 0) startOffset = 6;
 
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const totalCells = startOffset + daysInMonth;
-  const rows = Math.ceil(totalCells / 7);
+ const daysInMonth = new Date(year, month + 1, 0).getDate();
+ const totalCells = startOffset + daysInMonth;
+ const rows = Math.ceil(totalCells / 7);
 
-  const grid: (Date | null)[][] = [];
-  let dayCounter = 1;
+ const grid: (Date | null)[][] = [];
+ let dayCounter = 1;
 
-  for (let r = 0; r < rows; r++) {
-    const row: (Date | null)[] = [];
-    for (let c = 0; c < 7; c++) {
-      const cellIndex = r * 7 + c;
-      if (cellIndex < startOffset || dayCounter > daysInMonth) {
-        row.push(null);
-      } else {
-        row.push(new Date(year, month, dayCounter));
-        dayCounter++;
-      }
-    }
-    grid.push(row);
-  }
-  return grid;
+ for (let r = 0; r < rows; r++) {
+ const row: (Date | null)[] = [];
+ for (let c = 0; c < 7; c++) {
+ const cellIndex = r * 7 + c;
+ if (cellIndex < startOffset || dayCounter > daysInMonth) {
+ row.push(null);
+ } else {
+ row.push(new Date(year, month, dayCounter));
+ dayCounter++;
+ }
+ }
+ grid.push(row);
+ }
+ return grid;
 }
 
 function getWorkOrdersForDay(date: Date, workOrders: WorkOrder[]): WorkOrder[] {
-  const d = date.getTime();
-  return workOrders.filter((wo) => {
-    const start = new Date(wo.start_date + "T00:00:00").getTime();
-    const end = new Date(wo.end_date + "T00:00:00").getTime();
-    return d >= start && d <= end;
-  });
+ const d = date.getTime();
+ return workOrders.filter((wo) => {
+ const start = new Date(wo.start_date +"T00:00:00").getTime();
+ const end = new Date(wo.end_date +"T00:00:00").getTime();
+ return d >= start && d <= end;
+ });
 }
 
 export function TACalendar({ workOrders }: { workOrders: WorkOrder[] }) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+ const today = new Date();
+ today.setHours(0, 0, 0, 0);
 
-  // Start on the month of the next upcoming project, or today
-  const initialMonth = useMemo(() => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    const next = workOrders
-      .filter((wo) => new Date(wo.end_date + "T00:00:00") >= now)
-      .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())[0];
-    if (next) {
-      const d = new Date(next.start_date + "T00:00:00");
-      return { year: d.getFullYear(), month: d.getMonth() };
-    }
-    return { year: now.getFullYear(), month: now.getMonth() };
-  }, [workOrders]);
+ // Start on the month of the next upcoming project, or today
+ const initialMonth = useMemo(() => {
+ const now = new Date();
+ now.setHours(0, 0, 0, 0);
+ const next = workOrders
+ .filter((wo) => new Date(wo.end_date +"T00:00:00") >= now)
+ .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())[0];
+ if (next) {
+ const d = new Date(next.start_date +"T00:00:00");
+ return { year: d.getFullYear(), month: d.getMonth() };
+ }
+ return { year: now.getFullYear(), month: now.getMonth() };
+ }, [workOrders]);
 
-  const [year, setYear] = useState(initialMonth.year);
-  const [month, setMonth] = useState(initialMonth.month);
+ const [year, setYear] = useState(initialMonth.year);
+ const [month, setMonth] = useState(initialMonth.month);
 
-  const grid = useMemo(() => getMonthGrid(year, month), [year, month]);
+ const grid = useMemo(() => getMonthGrid(year, month), [year, month]);
 
-  const upcoming = useMemo(() => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    return workOrders
-      .filter((wo) => new Date(wo.end_date + "T00:00:00") >= now)
-      .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())
-      .slice(0, 5);
-  }, [workOrders]);
+ const upcoming = useMemo(() => {
+ const now = new Date();
+ now.setHours(0, 0, 0, 0);
+ return workOrders
+ .filter((wo) => new Date(wo.end_date +"T00:00:00") >= now)
+ .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())
+ .slice(0, 5);
+ }, [workOrders]);
 
-  function prevMonth() {
-    if (month === 0) {
-      setMonth(11);
-      setYear(year - 1);
-    } else {
-      setMonth(month - 1);
-    }
-  }
+ function prevMonth() {
+ if (month === 0) {
+ setMonth(11);
+ setYear(year - 1);
+ } else {
+ setMonth(month - 1);
+ }
+ }
 
-  function nextMonth() {
-    if (month === 11) {
-      setMonth(0);
-      setYear(year + 1);
-    } else {
-      setMonth(month + 1);
-    }
-  }
+ function nextMonth() {
+ if (month === 11) {
+ setMonth(0);
+ setYear(year + 1);
+ } else {
+ setMonth(month + 1);
+ }
+ }
 
-  function goToday() {
-    setYear(today.getFullYear());
-    setMonth(today.getMonth());
-  }
+ function goToday() {
+ setYear(today.getFullYear());
+ setMonth(today.getMonth());
+ }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Calendar</h2>
-        <a
-          href="/api/portal/calendar/export"
-          download="interact-calendar.ics"
-          className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-        >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-          </svg>
-          Export to Calendar
-        </a>
-      </div>
+ return (
+ <div className="space-y-6">
+ <div className="flex items-center justify-between">
+ <h2 className="text-2xl font-bold text-neutral-900">Calendar</h2>
+ <a
+ href="/api/portal/calendar/export"download="interact-calendar.ics"className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-white">
+ <svg className="h-4 w-4"fill="none"stroke="currentColor"strokeWidth={2} viewBox="0 0 24 24">
+ <path strokeLinecap="round"strokeLinejoin="round"d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+ </svg>
+ Export to Calendar
+ </a>
+ </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Calendar grid */}
-        <div className="flex-1 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={prevMonth}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-300 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
-              >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <button
-                onClick={nextMonth}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-300 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
-              >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-                {MONTH_NAMES[month]} {year}
-              </h3>
-            </div>
-            <button
-              onClick={goToday}
-              className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-            >
-              Today
-            </button>
-          </div>
+ <div className="flex flex-col lg:flex-row gap-6">
+ {/* Calendar grid */}
+ <div className="flex-1 overflow-hidden rounded-sm border border-neutral-200 bg-white">
+ {/* Header */}
+ <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
+ <div className="flex items-center gap-3">
+ <button
+ onClick={prevMonth}
+ className="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-300 text-neutral-600 hover:bg-white">
+ <svg className="h-4 w-4"fill="none"stroke="currentColor"strokeWidth={2} viewBox="0 0 24 24">
+ <path d="M15 19l-7-7 7-7"/>
+ </svg>
+ </button>
+ <button
+ onClick={nextMonth}
+ className="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-300 text-neutral-600 hover:bg-white">
+ <svg className="h-4 w-4"fill="none"stroke="currentColor"strokeWidth={2} viewBox="0 0 24 24">
+ <path d="M9 5l7 7-7 7"/>
+ </svg>
+ </button>
+ <h3 className="text-lg font-semibold text-neutral-900">
+ {MONTH_NAMES[month]} {year}
+ </h3>
+ </div>
+ <button
+ onClick={goToday}
+ className="rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-white">
+ Today
+ </button>
+ </div>
 
-          {/* Day headers + Grid (desktop) */}
-          <div className="hidden md:block">
-            <div className="grid grid-cols-7 border-b border-zinc-200 dark:border-zinc-800">
-              {DAY_HEADERS.map((d) => (
-                <div key={d} className="px-2 py-2 text-center text-xs font-medium text-zinc-500">
-                  {d}
-                </div>
-              ))}
-            </div>
+ {/* Day headers + Grid (desktop) */}
+ <div className="hidden md:block">
+ <div className="grid grid-cols-7 border-b border-neutral-200">
+ {DAY_HEADERS.map((d) => (
+ <div key={d} className="px-2 py-2 text-center text-xs font-medium text-neutral-500">
+ {d}
+ </div>
+ ))}
+ </div>
 
-            <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-              {grid.map((row, ri) => {
-                // Calculate spanning bars for this row
-                const bars: Array<{ wo: WorkOrder; startCol: number; endCol: number }> = [];
-                const seen = new Set<string>();
-                row.forEach((date, ci) => {
-                  if (!date) return;
-                  const dayOrders = getWorkOrdersForDay(date, workOrders);
-                  dayOrders.forEach((wo) => {
-                    if (seen.has(wo.id)) return;
-                    seen.add(wo.id);
-                    const woStart = new Date(wo.start_date + "T00:00:00");
-                    const woEnd = new Date(wo.end_date + "T00:00:00");
-                    let endCol = ci;
-                    for (let c = ci + 1; c < 7; c++) {
-                      const nextDate = row[c];
-                      if (nextDate && nextDate.getTime() >= woStart.getTime() && nextDate.getTime() <= woEnd.getTime()) {
-                        endCol = c;
-                      } else break;
-                    }
-                    bars.push({ wo, startCol: ci, endCol });
-                  });
-                });
+ <div className="divide-y divide-neutral-100">
+ {grid.map((row, ri) => {
+ // Calculate spanning bars for this row
+ const bars: Array<{ wo: WorkOrder; startCol: number; endCol: number }> = [];
+ const seen = new Set<string>();
+ row.forEach((date, ci) => {
+ if (!date) return;
+ const dayOrders = getWorkOrdersForDay(date, workOrders);
+ dayOrders.forEach((wo) => {
+ if (seen.has(wo.id)) return;
+ seen.add(wo.id);
+ const woStart = new Date(wo.start_date +"T00:00:00");
+ const woEnd = new Date(wo.end_date +"T00:00:00");
+ let endCol = ci;
+ for (let c = ci + 1; c < 7; c++) {
+ const nextDate = row[c];
+ if (nextDate && nextDate.getTime() >= woStart.getTime() && nextDate.getTime() <= woEnd.getTime()) {
+ endCol = c;
+ } else break;
+ }
+ bars.push({ wo, startCol: ci, endCol });
+ });
+ });
 
-                return (
-                  <div key={ri} className="relative">
-                    <div className="grid grid-cols-7 divide-x divide-zinc-100 dark:divide-zinc-800">
-                      {row.map((date, ci) => {
-                        if (!date) {
-                          return <div key={ci} className="min-h-[90px] bg-zinc-50/50 dark:bg-zinc-900/50" />;
-                        }
-                        const isToday = isSameDay(date, today);
-                        return (
-                          <div
-                            key={ci}
-                            className={`min-h-[90px] p-1.5 ${isToday ? "bg-blue-50/60 dark:bg-blue-950/20" : ""}`}
-                          >
-                            <span
-                              className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
-                                isToday
-                                  ? "bg-blue-600 text-white"
-                                  : "text-zinc-700 dark:text-zinc-300"
-                              }`}
-                            >
-                              {date.getDate()}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    {/* Spanning project bars */}
-                    {bars.map((bar) => {
-                      const leftPct = (bar.startCol / 7) * 100;
-                      const widthPct = ((bar.endCol - bar.startCol + 1) / 7) * 100;
-                      return (
-                        <Link
-                          key={bar.wo.id}
-                          href={`/portal/work-orders/${bar.wo.id}`}
-                          className={`absolute left-0 truncate rounded-md px-2 py-1 text-[11px] font-medium leading-tight transition-opacity hover:opacity-80 ${
-                            bar.wo.status === "signed"
-                              ? "bg-green-200 text-green-900 dark:bg-green-800/60 dark:text-green-200"
-                              : "bg-yellow-200 text-yellow-900 dark:bg-yellow-800/60 dark:text-yellow-200"
-                          }`}
-                          style={{
-                            left: `calc(${leftPct}% + 6px)`,
-                            width: `calc(${widthPct}% - 12px)`,
-                            top: "36px",
-                          }}
-                        >
-                          {bar.wo.project_name}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+ return (
+ <div key={ri} className="relative">
+ <div className="grid grid-cols-7 divide-x divide-neutral-100">
+ {row.map((date, ci) => {
+ if (!date) {
+ return <div key={ci} className="min-h-[90px] bg-white/50"/>;
+ }
+ const isToday = isSameDay(date, today);
+ return (
+ <div
+ key={ci}
+ className={`min-h-[90px] p-1.5 ${isToday ?"bg-blue-50/60":""}`}
+ >
+ <span
+ className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+ isToday
+ ?"bg-blue-600 text-white":"text-neutral-700"}`}
+ >
+ {date.getDate()}
+ </span>
+ </div>
+ );
+ })}
+ </div>
+ {/* Spanning project bars */}
+ {bars.map((bar) => {
+ const leftPct = (bar.startCol / 7) * 100;
+ const widthPct = ((bar.endCol - bar.startCol + 1) / 7) * 100;
+ return (
+ <Link
+ key={bar.wo.id}
+ href={`/portal/work-orders/${bar.wo.id}`}
+ className={`absolute left-0 truncate rounded-md px-2 py-1 text-[11px] font-medium leading-tight transition-opacity hover:opacity-80 ${
+ bar.wo.status ==="signed"?"bg-green-200 text-green-900":"bg-yellow-200 text-yellow-900"}`}
+ style={{
+ left: `calc(${leftPct}% + 6px)`,
+ width: `calc(${widthPct}% - 12px)`,
+ top:"36px",
+ }}
+ >
+ {bar.wo.project_name}
+ </Link>
+ );
+ })}
+ </div>
+ );
+ })}
+ </div>
+ </div>
 
-          {/* Mobile list view */}
-          <div className="md:hidden divide-y divide-zinc-100 dark:divide-zinc-800">
-            {(() => {
-              const monthDates: Date[] = [];
-              for (const row of grid) {
-                for (const date of row) {
-                  if (date) monthDates.push(date);
-                }
-              }
-              const daysWithEvents = monthDates.filter(
-                (date) => getWorkOrdersForDay(date, workOrders).length > 0 || isSameDay(date, today)
-              );
-              if (daysWithEvents.length === 0) {
-                return (
-                  <div className="px-4 py-8 text-center text-sm text-zinc-500">
-                    No events this month.
-                  </div>
-                );
-              }
-              return daysWithEvents.map((date) => {
-                const dayOrders = getWorkOrdersForDay(date, workOrders);
-                const isToday = isSameDay(date, today);
-                return (
-                  <div key={date.toISOString()} className={`px-4 py-3 ${isToday ? "bg-blue-50/60 dark:bg-blue-950/20" : ""}`}>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
-                        isToday ? "bg-blue-600 text-white" : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-                      }`}>
-                        {date.getDate()}
-                      </span>
-                      <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                        {date.toLocaleDateString("en-GB", { weekday: "short", month: "short", day: "numeric" })}
-                      </span>
-                    </div>
-                    {dayOrders.length > 0 ? (
-                      <div className="ml-9 space-y-1">
-                        {dayOrders.map((wo) => (
-                          <Link
-                            key={wo.id}
-                            href={`/portal/work-orders/${wo.id}`}
-                            className={`block rounded-md px-2 py-1.5 text-xs font-medium ${
-                              wo.status === "signed"
-                                ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                                : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
-                            }`}
-                          >
-                            {wo.project_name} — {wo.school}
-                          </Link>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="ml-9 text-xs text-zinc-400">Today</p>
-                    )}
-                  </div>
-                );
-              });
-            })()}
-          </div>
-        </div>
+ {/* Mobile list view */}
+ <div className="md:hidden divide-y divide-neutral-100">
+ {(() => {
+ const monthDates: Date[] = [];
+ for (const row of grid) {
+ for (const date of row) {
+ if (date) monthDates.push(date);
+ }
+ }
+ const daysWithEvents = monthDates.filter(
+ (date) => getWorkOrdersForDay(date, workOrders).length > 0 || isSameDay(date, today)
+ );
+ if (daysWithEvents.length === 0) {
+ return (
+ <div className="px-4 py-8 text-center text-sm text-neutral-500">
+ No events this month.
+ </div>
+ );
+ }
+ return daysWithEvents.map((date) => {
+ const dayOrders = getWorkOrdersForDay(date, workOrders);
+ const isToday = isSameDay(date, today);
+ return (
+ <div key={date.toISOString()} className={`px-4 py-3 ${isToday ?"bg-blue-50/60":""}`}>
+ <div className="flex items-center gap-2 mb-1">
+ <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
+ isToday ?"bg-blue-600 text-white":"bg-neutral-100 text-neutral-700"}`}>
+ {date.getDate()}
+ </span>
+ <span className="text-sm font-medium text-neutral-600">
+ {date.toLocaleDateString("en-GB", { weekday:"short", month:"short", day:"numeric"})}
+ </span>
+ </div>
+ {dayOrders.length > 0 ? (
+ <div className="ml-9 space-y-1">
+ {dayOrders.map((wo) => (
+ <Link
+ key={wo.id}
+ href={`/portal/work-orders/${wo.id}`}
+ className={`block rounded-md px-2 py-1.5 text-xs font-medium ${
+ wo.status ==="signed"?"bg-green-100 text-green-800":"bg-yellow-100 text-yellow-800"}`}
+ >
+ {wo.project_name} — {wo.school}
+ </Link>
+ ))}
+ </div>
+ ) : (
+ <p className="ml-9 text-xs text-neutral-400">Today</p>
+ )}
+ </div>
+ );
+ });
+ })()}
+ </div>
+ </div>
 
-        {/* Sidebar */}
-        <div className="w-full lg:w-[280px] shrink-0 space-y-6">
-          {/* Upcoming */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-            <h4 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-50">Upcoming</h4>
-            {upcoming.length === 0 ? (
-              <p className="text-sm text-zinc-500">No upcoming work orders.</p>
-            ) : (
-              <div className="space-y-3">
-                {upcoming.map((wo) => (
-                  <Link
-                    key={wo.id}
-                    href={`/portal/work-orders/${wo.id}`}
-                    className="block rounded-lg border border-zinc-100 p-3 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-800/50"
-                  >
-                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{wo.project_name}</p>
-                    <p className="mt-0.5 text-xs text-zinc-500">{wo.school}</p>
-                    <div className="mt-1.5 flex items-center justify-between">
-                      <span className="text-xs text-zinc-400">
-                        {formatDateShort(wo.start_date)} — {formatDateShort(wo.end_date)}
-                      </span>
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                          wo.status === "signed"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-yellow-100 text-yellow-700"
-                        }`}
-                      >
-                        {wo.status === "signed" ? "Signed" : "Unsigned"}
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+ {/* Sidebar */}
+ <div className="w-full lg:w-[280px] shrink-0 space-y-6">
+ {/* Upcoming */}
+ <div className="rounded-sm border border-neutral-200 bg-white p-4">
+ <h4 className="mb-3 text-sm font-semibold text-neutral-900">Upcoming</h4>
+ {upcoming.length === 0 ? (
+ <p className="text-sm text-neutral-500">No upcoming work orders.</p>
+ ) : (
+ <div className="space-y-3">
+ {upcoming.map((wo) => (
+ <Link
+ key={wo.id}
+ href={`/portal/work-orders/${wo.id}`}
+ className="block rounded-lg border border-neutral-100 p-3 transition-colors hover:bg-white">
+ <p className="text-sm font-medium text-neutral-900">{wo.project_name}</p>
+ <p className="mt-0.5 text-xs text-neutral-500">{wo.school}</p>
+ <div className="mt-1.5 flex items-center justify-between">
+ <span className="text-xs text-neutral-400">
+ {formatDateShort(wo.start_date)} — {formatDateShort(wo.end_date)}
+ </span>
+ <span
+ className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
+ wo.status ==="signed"?"bg-green-100 text-green-700":"bg-yellow-100 text-yellow-700"}`}
+ >
+ {wo.status ==="signed"?"Signed":"Unsigned"}
+ </span>
+ </div>
+ </Link>
+ ))}
+ </div>
+ )}
+ </div>
 
-          {/* Team Meetings placeholder */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-            <h4 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-50">Team Meetings</h4>
-            <p className="text-sm text-zinc-500">No upcoming meetings.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+ {/* Team Meetings placeholder */}
+ <div className="rounded-sm border border-neutral-200 bg-white p-4">
+ <h4 className="mb-3 text-sm font-semibold text-neutral-900">Team Meetings</h4>
+ <p className="text-sm text-neutral-500">No upcoming meetings.</p>
+ </div>
+ </div>
+ </div>
+ </div>
+ );
 }

@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { InvoiceCalculator } from "@/components/portal/invoice-calculator";
+import { PageHeader } from "@/components/ui";
 
 export default async function NewInvoicePage({
   params,
@@ -47,9 +48,7 @@ export default async function NewInvoicePage({
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-        Create Invoice
-      </h2>
+      <PageHeader title="Create Invoice" />
       <InvoiceCalculator
         workOrder={workOrder}
         profile={profile}
