@@ -312,33 +312,9 @@ async function checkAuthEndpoints(): Promise<CheckResult> {
       }
     }
 
-    // Test SQL injection on webhook (should not crash)
-    try {
-      const sqlRes = await fetch(`${appUrl}/api/webhooks/squarespace`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: "'; DROP TABLE profiles; --", orderNumber: "1 OR 1=1" }),
-        signal: AbortSignal.timeout(5000),
-      });
-      // Should handle gracefully (400 or idempotency skip), not 500
-      if (sqlRes.status === 500) {
-        failures.push("SQL injection test caused 500 on squarespace webhook");
-      }
-    } catch {}
-
-    // Test XSS payload in lead form
-    try {
-      const xssRes = await fetch(`${appUrl}/api/lead-form`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ first_name: "<script>alert('xss')</script>", last_name: "Test", email: "xss@test.com" }),
-        signal: AbortSignal.timeout(5000),
-      });
-      // Should either sanitize or reject, not 500
-      if (xssRes.status === 500) {
-        failures.push("XSS payload caused 500 on lead form");
-      }
-    } catch {}
+    // NOTE: Destructive pen tests (SQL injection, XSS) removed.
+    // These were creating real leads/orders every hour.
+    // Pen tests that submit data should only run manually, never on cron.
 
     // Test storage bucket is private
     try {
