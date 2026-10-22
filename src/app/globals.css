@@ -28,18 +28,18 @@ body {
 .input {
   display: block;
   width: 100%;
-  border-radius: 0.5rem;
-  border: 1px solid #d4d4d8;
+  border-radius: 0.125rem;
+  border: 1px solid #d4d4d4;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   line-height: 1.25rem;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  box-shadow: none;
 }
 
 .input:focus {
   outline: none;
-  border-color: #71717a;
-  box-shadow: 0 0 0 1px #71717a;
+  border-color: #171717;
+  box-shadow: none;
 }
 
 /* Info pack form inputs */
@@ -68,10 +68,25 @@ body {
 
 @media (prefers-color-scheme: dark) {
   .input {
-    border-color: #3f3f46;
-    background-color: #27272a;
-    color: #f4f4f5;
+    border-color: #404040;
+    background-color: #262626;
+    color: #f5f5f5;
   }
+}
+
+/* Design system utilities */
+.ds-divider {
+  border-top: 1px solid #e5e5e5;
+}
+
+.ds-section {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.ds-section:last-child {
+  border-bottom: none;
 }
 
 /* Onboarding slide animations */

@@ -15,11 +15,13 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex h-screen bg-zinc-50 dark:bg-zinc-950">
+    <div className="flex h-screen bg-white">
       <AdminSidebar isSuperAdmin={!!profile.is_super_admin} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <AdminHeader email={profile.email} />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto px-8 py-8 max-w-6xl">
+          {children}
+        </main>
       </div>
     </div>
   );
