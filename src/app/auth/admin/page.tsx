@@ -42,24 +42,24 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950">
+    <div className="flex min-h-screen items-center justify-center bg-neutral-950">
       <div className="w-full max-w-sm space-y-8">
-        <div className="rounded-2xl bg-zinc-900 p-8 shadow-lg border border-zinc-800">
+        <div className="rounded-sm bg-neutral-900 p-8 border border-neutral-800">
           <div className="text-center mb-8">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white">
-              <span className="text-sm font-bold text-zinc-900">iA</span>
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-sm bg-white">
+              <span className="text-sm font-bold text-neutral-900">iA</span>
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-zinc-50">
+            <h1 className="text-xl font-bold tracking-tight text-neutral-50">
               InterACT Admin
             </h1>
-            <p className="mt-1 text-sm text-zinc-400">
+            <p className="mt-1 text-sm text-neutral-400">
               Management dashboard
             </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label htmlFor="email" className="mb-1.5 block text-[13px] font-medium text-zinc-400">
+              <label htmlFor="email" className="mb-1.5 block text-[13px] font-medium text-neutral-400">
                 Email
               </label>
               <input
@@ -68,13 +68,13 @@ export default function AdminLoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="block w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+                className="block w-full rounded-sm border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-sm text-neutral-100 placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
                 placeholder="admin@interactenglish.de"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="mb-1.5 block text-[13px] font-medium text-zinc-400">
+              <label htmlFor="password" className="mb-1.5 block text-[13px] font-medium text-neutral-400">
                 Password
               </label>
               <input
@@ -83,7 +83,7 @@ export default function AdminLoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="block w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+                className="block w-full rounded-sm border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-sm text-neutral-100 placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
                 placeholder="Your password"
               />
             </div>
@@ -95,15 +95,15 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-100 disabled:opacity-50"
+              className="w-full rounded-sm bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-100 disabled:opacity-50"
             >
               {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
         </div>
 
-        <p className="text-center text-xs text-zinc-600">
-          Teaching Artist? <Link href="/auth/login" className="text-zinc-400 hover:text-zinc-200">Sign in here</Link>
+        <p className="text-center text-xs text-neutral-600">
+          Teaching Artist? <Link href="/auth/login" className="text-neutral-400 hover:text-neutral-200">Sign in here</Link>
         </p>
       </div>
     </div>

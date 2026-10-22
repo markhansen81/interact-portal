@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ChatThread } from "@/components/shared/chat-thread";
+import { PageHeader, Card } from "@/components/ui";
 
 export default async function TAMessagesPage() {
   const profile = await requireAuth(["ta"]);
@@ -20,10 +21,12 @@ export default async function TAMessagesPage() {
   if (!admin) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Messages</h1>
-        <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-12 text-center dark:border-zinc-700 dark:bg-zinc-900">
-          <p className="text-zinc-500">No admin available to message.</p>
-        </div>
+        <PageHeader title="Messages" />
+        <Card>
+          <div className="border border-dashed border-neutral-300 rounded-sm p-12 text-center">
+            <p className="text-neutral-500">No admin available to message.</p>
+          </div>
+        </Card>
       </div>
     );
   }

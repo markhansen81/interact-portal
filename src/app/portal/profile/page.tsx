@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileEditor } from "@/components/portal/profile-editor";
+import { PageHeader } from "@/components/ui";
 
 export default async function ProfilePage() {
   const profile = await requireAuth(["ta"]);
@@ -21,7 +22,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">My Profile</h2>
+      <PageHeader title="My Profile" />
       <ProfileEditor
         profile={profile}
         documents={documents || []}

@@ -26,9 +26,9 @@ export default async function FeedbackPage({
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
         <div className="mx-auto max-w-lg">
-          <div className="mb-6 flex h-16 w-16 mx-auto items-center justify-center rounded-full bg-zinc-100">
+          <div className="mb-6 flex h-16 w-16 mx-auto items-center justify-center rounded-full bg-neutral-100">
             <svg
-              className="h-8 w-8 text-zinc-400"
+              className="h-8 w-8 text-neutral-400"
               fill="none"
               stroke="currentColor"
               strokeWidth={2}
@@ -41,10 +41,10 @@ export default async function FeedbackPage({
               />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-zinc-900">
+          <h1 className="text-2xl font-bold text-neutral-900">
             Feedback noch nicht verfügbar
           </h1>
-          <p className="mt-3 text-zinc-500">
+          <p className="mt-3 text-neutral-500">
             Das Feedbackformular wird nach Projektbeginn freigeschaltet.
           </p>
           <a
