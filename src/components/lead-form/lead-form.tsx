@@ -126,7 +126,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
         {/* Progress */}
         <div className="mb-6 sm:mb-8 flex gap-1">
           {[1, 2, 3, 4, 5, 6].map((s) => (
-            <div key={s} className={`h-1 flex-1 rounded-full transition-all ${s <= step ? "bg-[#FF0080]" : "bg-zinc-600"}`} />
+            <div key={s} className={`h-1 flex-1 rounded-full transition-all ${s <= step ? "bg-[#FF0080]" : "bg-neutral-600"}`} />
           ))}
         </div>
 
@@ -168,7 +168,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                   className={`rounded-full border px-4 py-2 text-sm transition-all ${
                     data.roles.includes(role.value)
                       ? "border-[#FF0080] bg-[#FF0080]/20 text-[#FF0080] font-medium"
-                      : "border-zinc-600 text-[#CCCCCC] hover:border-zinc-400"
+                      : "border-neutral-600 text-[#CCCCCC] hover:border-neutral-400"
                   }`}
                 >
                   {role.label}
@@ -203,7 +203,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                     className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
                       data.school_type === st
                         ? "border-[#FF0080] bg-[#FF0080]/20 text-[#FF0080] font-medium"
-                        : "border-zinc-600 text-[#CCCCCC] hover:border-zinc-400"
+                        : "border-neutral-600 text-[#CCCCCC] hover:border-neutral-400"
                     }`}
                   >
                     {st}
@@ -212,7 +212,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                 <select
                   value={data.school_type}
                   onChange={(e) => set("school_type", e.target.value)}
-                  className="rounded-full border border-zinc-600 bg-transparent px-3 py-1.5 text-xs text-[#CCCCCC]"
+                  className="rounded-full border border-neutral-600 bg-transparent px-3 py-1.5 text-xs text-[#CCCCCC]"
                 >
                   <option value="">Mehr...</option>
                   {l.school_types.slice(8).map((st) => (
@@ -235,8 +235,8 @@ export function LeadForm({ locale }: { locale: Locale }) {
               <button
                 type="button"
                 onClick={() => set("has_dates", true)}
-                className={`rounded-lg border p-4 text-left transition-all ${
-                  data.has_dates === true ? "border-[#FF0080] bg-[#FF0080]/10" : "border-zinc-600 hover:border-zinc-400"
+                className={`rounded-sm border p-4 text-left transition-all ${
+                  data.has_dates === true ? "border-[#FF0080] bg-[#FF0080]/10" : "border-neutral-600 hover:border-neutral-400"
                 }`}
               >
                 <span className="font-medium text-[#CCCCCC]">{l.has_dates_yes}</span>
@@ -244,8 +244,8 @@ export function LeadForm({ locale }: { locale: Locale }) {
               <button
                 type="button"
                 onClick={() => set("has_dates", false)}
-                className={`rounded-lg border p-4 text-left transition-all ${
-                  data.has_dates === false ? "border-[#FF0080] bg-[#FF0080]/10" : "border-zinc-600 hover:border-zinc-400"
+                className={`rounded-sm border p-4 text-left transition-all ${
+                  data.has_dates === false ? "border-[#FF0080] bg-[#FF0080]/10" : "border-neutral-600 hover:border-neutral-400"
                 }`}
               >
                 <span className="font-medium text-[#CCCCCC]">{l.has_dates_no}</span>
@@ -269,7 +269,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                         set("num_days", start.toISOString().split("T")[0]);
                       }
                     }}
-                    className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white focus:border-[#FF0080] focus:outline-none transition-colors"
+                    className="w-full rounded-none border-0 border-b-2 border-neutral-500 bg-transparent px-0 py-3 text-base text-white focus:border-[#FF0080] focus:outline-none transition-colors"
                   />
                 </div>
                 <div>
@@ -281,7 +281,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                     value={data.num_days}
                     min={data.preferred_dates || undefined}
                     onChange={(e) => set("num_days", e.target.value)}
-                    className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white focus:border-[#FF0080] focus:outline-none transition-colors"
+                    className="w-full rounded-none border-0 border-b-2 border-neutral-500 bg-transparent px-0 py-3 text-base text-white focus:border-[#FF0080] focus:outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -308,10 +308,10 @@ export function LeadForm({ locale }: { locale: Locale }) {
                   key={prog.value}
                   type="button"
                   onClick={() => toggleArray("programs", prog.value)}
-                  className={`w-full rounded-lg border p-3 text-left transition-all ${
+                  className={`w-full rounded-sm border p-3 text-left transition-all ${
                     data.programs.includes(prog.value)
                       ? "border-[#FF0080] bg-[#FF0080]/10"
-                      : "border-zinc-600 hover:border-zinc-400"
+                      : "border-neutral-600 hover:border-neutral-400"
                   }`}
                 >
                   <span className="text-sm font-medium text-white">{prog.value}</span>
@@ -331,7 +331,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                     className={`h-9 w-9 rounded-full border text-xs font-medium transition-all ${
                       data.grades.includes(`Grade ${g}`)
                         ? "border-[#FF0080] bg-[#FF0080] text-[#CCCCCC]"
-                        : "border-zinc-600 text-[#CCCCCC] hover:border-zinc-400"
+                        : "border-neutral-600 text-[#CCCCCC] hover:border-neutral-400"
                     }`}
                   >
                     {g}
@@ -359,7 +359,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
             <Select label={l.lead_source} value={data.lead_source} onChange={(v) => set("lead_source", v)} options={l.lead_sources} />
 
             {/* Newsletter */}
-            <div className="rounded-lg border border-zinc-600 p-5">
+            <div className="rounded-sm border border-neutral-600 p-5">
               <h3 className="text-base font-bold text-[#CCCCCC]">{l.newsletter_title}</h3>
               <p className="mt-1 text-sm text-[#999999]">
                 {l.newsletter_desc}{" "}
@@ -372,14 +372,14 @@ export function LeadForm({ locale }: { locale: Locale }) {
                   type="checkbox"
                   checked={data.newsletter}
                   onChange={(e) => set("newsletter", e.target.checked)}
-                  className="h-4 w-4 rounded border-zinc-500 bg-transparent text-[#FF0080] focus:ring-[#FF0080]"
+                  className="h-4 w-4 rounded border-neutral-500 bg-transparent text-[#FF0080] focus:ring-[#FF0080]"
                 />
                 <span className="text-sm text-[#CCCCCC]">{l.newsletter_label}</span>
               </label>
             </div>
 
             {/* Privacy */}
-            <div className="rounded-lg border border-zinc-600 p-5">
+            <div className="rounded-sm border border-neutral-600 p-5">
               <h3 className="text-base font-bold text-[#CCCCCC]">
                 {l.privacy_title} <span className="text-[#FF0080]">*</span>
               </h3>
@@ -389,7 +389,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
                   type="checkbox"
                   checked={data.privacy}
                   onChange={(e) => set("privacy", e.target.checked)}
-                  className="h-4 w-4 rounded border-zinc-500 bg-transparent text-[#FF0080] focus:ring-[#FF0080]"
+                  className="h-4 w-4 rounded border-neutral-500 bg-transparent text-[#FF0080] focus:ring-[#FF0080]"
                 />
                 <span className="text-xs font-semibold text-[#999999] uppercase tracking-wider">{l.privacy}</span>
               </label>
@@ -403,7 +403,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
             <button
               type="button"
               onClick={() => setStep(step - 1)}
-              className="rounded-lg px-6 py-2.5 text-sm font-medium text-[#999999] hover:text-[#CCCCCC]"
+              className="rounded-sm px-6 py-2.5 text-sm font-medium text-[#999999] hover:text-[#CCCCCC]"
             >
               {l.back}
             </button>
@@ -414,7 +414,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
               type="button"
               onClick={() => canNext() && setStep(step + 1)}
               disabled={!canNext()}
-              className="rounded-lg bg-[#FF0080] px-8 py-2.5 text-sm font-bold text-[#CCCCCC] uppercase hover:bg-[#FF0080]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              className="rounded-sm bg-[#FF0080] px-8 py-2.5 text-sm font-bold text-[#CCCCCC] uppercase hover:bg-[#FF0080]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               {l.next}
             </button>
@@ -423,7 +423,7 @@ export function LeadForm({ locale }: { locale: Locale }) {
               type="button"
               onClick={handleSubmit}
               disabled={!canNext() || submitting}
-              className="rounded-lg bg-[#FF0080] px-8 py-2.5 text-sm font-bold text-[#CCCCCC] uppercase hover:bg-[#FF0080]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              className="rounded-sm bg-[#FF0080] px-8 py-2.5 text-sm font-bold text-[#CCCCCC] uppercase hover:bg-[#FF0080]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               {submitting ? "..." : l.submit}
             </button>
@@ -450,7 +450,7 @@ function Input({ label, value, onChange, type = "text", required, placeholder }:
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white placeholder-zinc-500 focus:border-[#FF0080] focus:outline-none transition-colors"
+        className="w-full rounded-none border-0 border-b-2 border-neutral-500 bg-transparent px-0 py-3 text-base text-white placeholder-neutral-500 focus:border-[#FF0080] focus:outline-none transition-colors"
       />
     </div>
   );
@@ -468,7 +468,7 @@ function Select({ label, value, onChange, options, required }: {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-[#CCCCCC] focus:border-[#FF0080] focus:outline-none transition-colors"
+        className="w-full rounded-none border-0 border-b-2 border-neutral-500 bg-transparent px-0 py-3 text-base text-[#CCCCCC] focus:border-[#FF0080] focus:outline-none transition-colors"
       >
         <option value="">—</option>
         {options.map((o) => <option key={o} value={o}>{o}</option>)}
@@ -487,7 +487,7 @@ function Textarea({ label, value, onChange }: {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
-        className="w-full rounded-none border-0 border-b-2 border-zinc-500 bg-transparent px-0 py-3 text-base text-white placeholder-zinc-500 focus:border-[#FF0080] focus:outline-none transition-colors resize-none"
+        className="w-full rounded-none border-0 border-b-2 border-neutral-500 bg-transparent px-0 py-3 text-base text-white placeholder-neutral-500 focus:border-[#FF0080] focus:outline-none transition-colors resize-none"
       />
     </div>
   );

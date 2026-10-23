@@ -341,7 +341,7 @@ export function AdminUploadForm() {
  ];
 
  const inputClass =
-"w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500";
+"w-full rounded-sm border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500";
  const labelClass =
 "mb-1.5 block text-sm font-medium text-neutral-700";
 
@@ -389,7 +389,7 @@ export function AdminUploadForm() {
  onDragLeave={handleDragLeave}
  onDrop={handleDrop}
  onClick={() => fileInputRef.current?.click()}
- className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 transition-colors ${
+ className={`flex cursor-pointer flex-col items-center justify-center rounded-sm border-2 border-dashed p-12 transition-colors ${
  dragging
  ?"border-neutral-500 bg-neutral-50"
  :"border-neutral-300 bg-neutral-50 hover:border-neutral-400 hover:bg-neutral-50"
@@ -422,7 +422,7 @@ export function AdminUploadForm() {
 
  {/* Step 2: Extracting spinner */}
  {extracting && (
- <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-neutral-300 bg-neutral-50 p-12">
+ <div className="flex flex-col items-center justify-center rounded-sm border-2 border-dashed border-neutral-300 bg-neutral-50 p-12">
  <Spinner className="h-8 w-8 text-neutral-500"/>
  <p className="mt-4 text-sm font-medium text-neutral-600">
  Reading invoice...
@@ -438,7 +438,7 @@ export function AdminUploadForm() {
  <form onSubmit={handleSubmit}>
  <div className="space-y-5">
  {/* File indicator */}
- <div className="flex items-center justify-between rounded-lg bg-neutral-50 px-4 py-3">
+ <div className="flex items-center justify-between rounded-sm bg-neutral-50 px-4 py-3">
  <div className="flex items-center gap-3">
  <svg
  className="h-5 w-5 text-neutral-500"
@@ -580,7 +580,7 @@ export function AdminUploadForm() {
  {/* Message */}
  {message && (
  <div
- className={`rounded-lg px-4 py-3 text-sm ${
+ className={`rounded-sm px-4 py-3 text-sm ${
  message.type ==="success"
  ?"bg-green-50 text-green-800"
  :"bg-red-50 text-red-800"
@@ -596,7 +596,7 @@ export function AdminUploadForm() {
  disabled={
  !file || !supplier.trim() || !amount || uploading
  }
- className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-700 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
+ className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-neutral-700 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
  >
  {uploading ? (
  <>
@@ -625,7 +625,7 @@ export function AdminUploadForm() {
  {/* Message shown on drop zone screen (e.g. after successful send) */}
  {!extracted && !extracting && message && (
  <div
- className={`rounded-lg px-4 py-3 text-sm ${
+ className={`rounded-sm px-4 py-3 text-sm ${
  message.type ==="success"
  ?"bg-green-50 text-green-800"
  :"bg-red-50 text-red-800"
@@ -650,7 +650,7 @@ export function AdminUploadForm() {
  key={tab.key}
  type="button"
  onClick={() => setActiveFilter(tab.key)}
- className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+ className={`rounded-sm px-3 py-1.5 text-xs font-medium transition-colors ${
  activeFilter === tab.key
  ?"bg-neutral-700 text-white"
  :"text-neutral-600 hover:bg-neutral-100"

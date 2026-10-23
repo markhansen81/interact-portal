@@ -84,18 +84,18 @@ export function DatevSettingsPanel({
  <div className="space-y-6">
  {/* Status messages */}
  {success && (
- <div className="rounded-md bg-green-50 p-4 text-sm text-green-800">
+ <div className="rounded-sm bg-green-50 p-4 text-sm text-green-800">
  Successfully connected to DATEV.
  </div>
  )}
  {error && (
- <div className="rounded-md bg-red-50 p-4 text-sm text-red-800">
+ <div className="rounded-sm bg-red-50 p-4 text-sm text-red-800">
  Error: {error}
  </div>
  )}
 
  {/* Connection status card */}
- <div className="rounded-lg border border-neutral-200 bg-white p-6">
+ <div className="rounded-sm border border-neutral-200 bg-white p-6">
  <h2 className="text-lg font-semibold text-neutral-900">
  Connection Status
  </h2>
@@ -135,7 +135,7 @@ export function DatevSettingsPanel({
  <div className="mt-6">
  <a
  href="/api/auth/datev"
- className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+ className="inline-flex items-center rounded-sm bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
  >
  {connected ?"Reconnect to DATEV":"Connect to DATEV"}
  </a>
@@ -144,7 +144,7 @@ export function DatevSettingsPanel({
 
  {/* Client selection — only shown when connected */}
  {connected && (
- <div className="rounded-lg border border-neutral-200 bg-white p-6">
+ <div className="rounded-sm border border-neutral-200 bg-white p-6">
  <h2 className="text-lg font-semibold text-neutral-900">
  DATEV Client
  </h2>
@@ -167,7 +167,7 @@ export function DatevSettingsPanel({
  id="datev-client"
  value={selectedClient}
  onChange={(e) => setSelectedClient(e.target.value)}
- className="mt-1 block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+ className="mt-1 block w-full rounded-sm border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
  >
  <option value="">Select a client...</option>
  {clients.map((c) => (
@@ -180,7 +180,7 @@ export function DatevSettingsPanel({
  <button
  onClick={handleSaveClient}
  disabled={!selectedClient || saving}
- className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+ className="rounded-sm bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
  >
  {saving ?"Saving...":"Save"}
  </button>

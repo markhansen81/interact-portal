@@ -106,8 +106,8 @@ export function ProgramFormEditor({ initialContent }: { initialContent: FormCont
         {Object.entries(PROGRAMS).map(([group, items]) => (
           <div key={group}>
             <div className="flex items-center gap-2 mb-2">
-              <span className={`h-2 w-2 rounded-full ${GROUP_COLORS[group] || "bg-zinc-400"}`} />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">{group}</h3>
+              <span className={`h-2 w-2 rounded-full ${GROUP_COLORS[group] || "bg-neutral-400"}`} />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400">{group}</h3>
             </div>
             <div className="space-y-1">
               {items.map((prog) => {
@@ -116,10 +116,10 @@ export function ProgramFormEditor({ initialContent }: { initialContent: FormCont
                   <button
                     key={prog.id}
                     onClick={() => setActiveProgram(prog.id)}
-                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-all ${
+                    className={`flex w-full items-center justify-between rounded-sm px-3 py-2 text-left text-sm transition-all ${
                       activeProgram === prog.id
-                        ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                        : "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                        ? "bg-neutral-900 text-white"
+                        : "text-neutral-700 hover:bg-neutral-100"
                     }`}
                   >
                     <span className="truncate">{getValue(prog.id, "name", prog.name)}</span>
@@ -145,8 +145,8 @@ export function ProgramFormEditor({ initialContent }: { initialContent: FormCont
             saving={saving}
           />
         ) : (
-          <div className="flex h-64 items-center justify-center rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-800">
-            <p className="text-sm text-zinc-400">Select a program to edit</p>
+          <div className="flex h-64 items-center justify-center rounded-sm border-2 border-dashed border-neutral-200">
+            <p className="text-sm text-neutral-400">Select a program to edit</p>
           </div>
         )}
       </div>
@@ -185,9 +185,9 @@ function ProgramEditPanel({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="overflow-hidden rounded-sm border border-neutral-200/80 bg-white">
       {/* Preview header */}
-      <div className="border-b border-zinc-100 bg-zinc-50/50 px-6 py-3 dark:border-zinc-800 dark:bg-zinc-800/30">
+      <div className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className={`h-2 w-2 rounded-full ${
@@ -195,9 +195,9 @@ function ProgramEditPanel({
               program.group.includes("Kultur") ? "bg-purple-500" :
               program.group.includes("Camp") ? "bg-green-500" : "bg-amber-500"
             }`} />
-            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">{program.group}</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">{program.group}</span>
           </div>
-          <span className="text-[10px] text-zinc-400">
+          <span className="text-[10px] text-neutral-400">
             {saving?.startsWith(program.id) ? "Saving..." : "Auto-saves on blur"}
           </span>
         </div>
@@ -206,24 +206,24 @@ function ProgramEditPanel({
       <div className="p-6 space-y-6">
         {/* Name */}
         <div>
-          <label className="mb-1.5 block text-[13px] font-medium text-zinc-600 dark:text-zinc-400">Program Name</label>
+          <label className="mb-1.5 block text-[13px] font-medium text-neutral-600">Program Name</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             onBlur={() => { if (name !== program.name) saveField(program.id, "name", name); }}
-            className="block w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-2.5 text-lg font-semibold text-zinc-900 focus:border-zinc-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-100"
+            className="block w-full rounded-sm border border-neutral-200 bg-neutral-50/50 px-4 py-2.5 text-lg font-semibold text-neutral-900 focus:border-black focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-400"
           />
         </div>
 
         {/* Image */}
         <div>
-          <label className="mb-1.5 block text-[13px] font-medium text-zinc-600 dark:text-zinc-400">Program Image</label>
+          <label className="mb-1.5 block text-[13px] font-medium text-neutral-600">Program Image</label>
           {imageUrl ? (
             <div className="relative group">
-              <img src={imageUrl} alt={name} className="w-full h-48 object-cover rounded-xl" />
+              <img src={imageUrl} alt={name} className="w-full h-48 object-cover rounded-sm" />
               <button
                 onClick={() => fileRef.current?.click()}
-                className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute inset-0 flex items-center justify-center rounded-sm bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <span className="text-sm font-medium text-white">Replace image</span>
               </button>
@@ -232,16 +232,16 @@ function ProgramEditPanel({
             <button
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className="flex h-48 w-full items-center justify-center rounded-xl border-2 border-dashed border-zinc-300 hover:border-zinc-400 transition-colors dark:border-zinc-700"
+              className="flex h-48 w-full items-center justify-center rounded-sm border-2 border-dashed border-neutral-300 hover:border-neutral-400 transition-colors"
             >
               {uploading ? (
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900" />
               ) : (
                 <div className="text-center">
-                  <svg className="mx-auto h-8 w-8 text-zinc-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <svg className="mx-auto h-8 w-8 text-neutral-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91M3.75 21h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v13.5A1.5 1.5 0 003.75 21z" />
                   </svg>
-                  <p className="mt-2 text-xs text-zinc-400">Click to upload image</p>
+                  <p className="mt-2 text-xs text-neutral-400">Click to upload image</p>
                 </div>
               )}
             </button>
@@ -252,25 +252,25 @@ function ProgramEditPanel({
 
         {/* Description */}
         <div>
-          <label className="mb-1.5 block text-[13px] font-medium text-zinc-600 dark:text-zinc-400">Description</label>
+          <label className="mb-1.5 block text-[13px] font-medium text-neutral-600">Description</label>
           <textarea
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
             onBlur={() => { if (desc !== program.desc) saveField(program.id, "description", desc); }}
             rows={8}
-            className="block w-full resize-none rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-3 text-sm leading-relaxed text-zinc-700 focus:border-zinc-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300"
+            className="block w-full resize-none rounded-sm border border-neutral-200 bg-neutral-50/50 px-4 py-3 text-sm leading-relaxed text-neutral-700 focus:border-black focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-400"
           />
-          <p className="mt-1 text-[11px] text-zinc-400">{desc.length} characters</p>
+          <p className="mt-1 text-[11px] text-neutral-400">{desc.length} characters</p>
         </div>
 
         {/* Preview */}
-        <div className="border-t border-zinc-100 pt-6 dark:border-zinc-800">
-          <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">TA Preview</p>
-          <div className="rounded-xl bg-zinc-50 p-5 dark:bg-zinc-800/50">
-            <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">{name}</h3>
-            <p className="mt-3 text-sm leading-relaxed text-zinc-500">{desc}</p>
+        <div className="border-t border-neutral-100 pt-6">
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">TA Preview</p>
+          <div className="rounded-sm bg-neutral-50 p-5">
+            <h3 className="text-xl font-bold text-neutral-900">{name}</h3>
+            <p className="mt-3 text-sm leading-relaxed text-neutral-500">{desc}</p>
             {imageUrl && (
-              <img src={imageUrl} alt={name} className="mt-4 w-full h-32 object-cover rounded-lg" />
+              <img src={imageUrl} alt={name} className="mt-4 w-full h-32 object-cover rounded-sm" />
             )}
           </div>
         </div>

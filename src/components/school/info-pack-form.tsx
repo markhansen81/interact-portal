@@ -368,7 +368,7 @@ export function InfoPackForm({ project, token }: InfoPackFormProps) {
  </p>
  <a
  href={`/school/project/${token}`}
- className="mt-6 inline-flex items-center rounded-lg bg-teal-600 px-6 py-3 text-sm font-medium text-white hover:bg-teal-700 transition-colors">
+ className="mt-6 inline-flex items-center rounded-sm bg-teal-600 px-6 py-3 text-sm font-medium text-white hover:bg-teal-700 transition-colors">
  Zurück zum Projekt
  </a>
  </div>
@@ -473,7 +473,7 @@ export function InfoPackForm({ project, token }: InfoPackFormProps) {
 
  {/* Validation errors */}
  {validationErrors.length > 0 && (
- <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4">
+ <div className="mt-4 rounded-sm border border-red-200 bg-red-50 p-4">
  {validationErrors.map((err, i) => (
  <p key={i} className="text-sm text-red-600">
  {err}
@@ -484,7 +484,7 @@ export function InfoPackForm({ project, token }: InfoPackFormProps) {
 
  {/* Submit error */}
  {error && (
- <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4">
+ <div className="mt-4 rounded-sm border border-red-200 bg-red-50 p-4">
  <p className="text-sm text-red-600">{error}</p>
  </div>
  )}
@@ -677,7 +677,7 @@ function StepStudents({
  <button
  key={level}
  type="button"onClick={() => updateField("language_level", level)}
- className={`rounded-lg border-2 px-5 py-2.5 text-sm font-medium transition-colors ${
+ className={`rounded-sm border-2 px-5 py-2.5 text-sm font-medium transition-colors ${
  formData.language_level === level
  ?"border-teal-500 bg-teal-50 text-teal-700":"border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:bg-white"}`}
  >

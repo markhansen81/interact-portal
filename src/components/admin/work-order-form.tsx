@@ -200,7 +200,7 @@ export function WorkOrderForm({
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-zinc-400">
+          <p className="mt-1 text-xs text-neutral-400">
             Selecting a project auto-fills details below. You can still edit them.
           </p>
         </div>
@@ -340,7 +340,7 @@ export function WorkOrderForm({
             />
           </div>
           <div>
-            <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+            <label className="flex items-center gap-2 text-sm text-neutral-700">
               <input
                 type="checkbox"
                 checked={form.co_taught}
@@ -355,25 +355,25 @@ export function WorkOrderForm({
 
       {/* Rate Calculation */}
       <Section title="Remuneration">
-        <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
+        <div className="rounded-sm bg-neutral-50 p-4">
           {selectedTA && calculatedRate !== null ? (
             <div className="space-y-2">
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-neutral-500">
                 {selectedTA.first_name} {selectedTA.last_name} —{" "}
                 {iscamp ? `Camp Level ${selectedTA.camp_level}` : `Level ${selectedTA.pay_level}`}
               </p>
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-neutral-500">
                 {form.program_type} — {form.days} day{form.days > 1 ? "s" : ""}
               </p>
-              <p className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+              <p className="text-2xl font-bold text-neutral-900">
                 {calculatedRate != null ? `€${calculatedRate.toFixed(2)}` : "Rate TBD for this level"}
               </p>
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-neutral-400">
                 Auto-calculated from 2025 pay scale. Additional wages (Theatre/Film Week, travel stipend, etc.) handled in invoice.
               </p>
             </div>
           ) : (
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-neutral-400">
               Select a TA and program type to calculate rate.
             </p>
           )}
@@ -393,7 +393,7 @@ export function WorkOrderForm({
             />
           </div>
           <div className="flex items-end">
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-neutral-500">
               TA will see this deadline. Reminders sent if unsigned.
             </p>
           </div>
@@ -414,11 +414,11 @@ export function WorkOrderForm({
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       {/* Preview & Submit */}
-      <div className="flex items-center justify-between border-t border-zinc-200 pt-6 dark:border-zinc-800">
+      <div className="flex items-center justify-between border-t border-neutral-200 pt-6">
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded-lg px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+          className="rounded-sm px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-100"
         >
           Cancel
         </button>
@@ -428,7 +428,7 @@ export function WorkOrderForm({
             name="action"
             value="draft"
             disabled={loading}
-            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-300"
+            className="rounded-sm border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
           >
             Save as Draft
           </button>
@@ -437,7 +437,7 @@ export function WorkOrderForm({
             name="action"
             value="send"
             disabled={loading}
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+            className="rounded-sm bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
           >
             {loading ? "Creating..." : "Create & Send to TA"}
           </button>
@@ -455,8 +455,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-      <h3 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+    <div className="rounded-sm border border-neutral-200 bg-white p-6">
+      <h3 className="mb-4 text-lg font-semibold text-neutral-900">
         {title}
       </h3>
       {children}
@@ -466,7 +466,7 @@ function Section({
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+    <label className="block text-sm font-medium text-neutral-700 mb-1">
       {children}
     </label>
   );

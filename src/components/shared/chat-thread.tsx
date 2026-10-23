@@ -91,7 +91,7 @@ export function ChatThread({
  <div className="flex flex-col overflow-hidden rounded-sm border border-neutral-200/80 bg-white"style={{ height:"calc(100vh - 220px)"}}>
  {/* Header */}
  <div className="flex items-center gap-3 border-b border-neutral-100 px-5 py-3.5">
- <Link href={backHref} className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700">
+ <Link href={backHref} className="rounded-sm p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700">
  <svg className="h-5 w-5"fill="none"viewBox="0 0 24 24"strokeWidth={2} stroke="currentColor">
  <path strokeLinecap="round"strokeLinejoin="round"d="M15.75 19.5L8.25 12l7.5-7.5"/>
  </svg>

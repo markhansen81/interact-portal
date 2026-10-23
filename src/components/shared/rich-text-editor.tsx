@@ -37,8 +37,8 @@ function ToolbarButton({
       title={title}
       className={`rounded px-2 py-1 text-sm font-medium transition-colors ${
         active
-          ? "bg-zinc-200 text-zinc-900 dark:bg-zinc-600 dark:text-zinc-100"
-          : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-700"
+          ? "bg-neutral-200 text-neutral-900"
+          : "text-neutral-600 hover:bg-neutral-100"
       }`}
     >
       {children}
@@ -47,7 +47,7 @@ function ToolbarButton({
 }
 
 function Separator() {
-  return <div className="mx-1 h-6 w-px bg-zinc-200 dark:bg-zinc-700" />;
+  return <div className="mx-1 h-6 w-px bg-neutral-200" />;
 }
 
 export function RichTextEditor({ content, onChange, editable = true }: RichTextEditorProps) {
@@ -74,7 +74,7 @@ export function RichTextEditor({ content, onChange, editable = true }: RichTextE
     },
     editorProps: {
       attributes: {
-        class: "tiptap-editor-content prose prose-zinc dark:prose-invert max-w-none focus:outline-none min-h-[200px] px-4 py-3",
+        class: "tiptap-editor-content prose prose-neutral dark:prose-invert max-w-none focus:outline-none min-h-[200px] px-4 py-3",
       },
     },
   });
@@ -89,16 +89,16 @@ export function RichTextEditor({ content, onChange, editable = true }: RichTextE
 
   if (!editable) {
     return (
-      <div className="tiptap-editor-content prose prose-zinc dark:prose-invert max-w-none px-4 py-3">
+      <div className="tiptap-editor-content prose prose-neutral dark:prose-invert max-w-none px-4 py-3">
         <EditorContent editor={editor} />
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-zinc-300 dark:border-zinc-700 overflow-hidden">
+    <div className="rounded-sm border border-neutral-300 overflow-hidden">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-0.5 border-b border-zinc-200 bg-zinc-50 px-2 py-1.5 dark:border-zinc-700 dark:bg-zinc-800">
+      <div className="flex flex-wrap items-center gap-0.5 border-b border-neutral-200 bg-neutral-50 px-2 py-1.5">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           active={editor.isActive("bold")}

@@ -143,7 +143,7 @@ export function LanesPlanePanel({ tas: initialTAs }: { tas: TA[] }) {
  <button
  onClick={handleSync}
  disabled={syncing}
- className="inline-flex items-center gap-2 rounded-lg bg-neutral-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
+ className="inline-flex items-center gap-2 rounded-sm bg-neutral-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
  >
  {syncing && (
  <svg
@@ -183,7 +183,7 @@ export function LanesPlanePanel({ tas: initialTAs }: { tas: TA[] }) {
  </div>
 
  {/* Filter tabs */}
- <div className="flex gap-1 rounded-lg bg-neutral-100 p-1">
+ <div className="flex gap-1 rounded-sm bg-neutral-100 p-1">
  {tabs.map((tab) => (
  <button
  key={tab.key}
@@ -200,7 +200,7 @@ export function LanesPlanePanel({ tas: initialTAs }: { tas: TA[] }) {
  </div>
 
  {/* TA table */}
- <div className="overflow-hidden rounded-lg border border-neutral-200">
+ <div className="overflow-hidden rounded-sm border border-neutral-200">
  <table className="min-w-full divide-y divide-neutral-200">
  <thead className="bg-neutral-50">
  <tr>
@@ -311,7 +311,7 @@ function SummaryCard({
  :"text-neutral-900";
 
  return (
- <div className="rounded-lg border border-neutral-200 bg-white p-4">
+ <div className="rounded-sm border border-neutral-200 bg-white p-4">
  <p className="text-xs font-medium uppercase tracking-wider text-neutral-500">
  {label}
  </p>
