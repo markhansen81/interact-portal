@@ -115,35 +115,35 @@ export default async function AdminDashboard() {
   const reviewCount = reviewsWithDocs.length;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       <PageHeader
         title="Dashboard"
         description="Overview of your teaching artist operations."
       />
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 divide-x divide-neutral-200 lg:grid-cols-5 border-b border-neutral-200 pb-10">
         <Link href="/admin/teaching-artists">
           <StatCard label="Total TAs" value={totalTAs ?? 0} />
         </Link>
-        <Link href="/admin/teaching-artists">
+        <Link href="/admin/teaching-artists" className="pl-6 block">
           <StatCard
             label="Onboarding"
             value={pendingOnboarding ?? 0}
             change={pendingOnboarding ? `${pendingOnboarding} pending` : undefined}
           />
         </Link>
-        <Link href="/admin/teaching-artists">
+        <Link href="/admin/teaching-artists" className="pl-6 block">
           <StatCard label="Ready to Work" value={readyTAs ?? 0} />
         </Link>
-        <Link href="#reviews">
+        <Link href="#reviews" className="pl-6 block">
           <StatCard
             label="Docs to Review"
             value={pendingDocs ?? 0}
             change={pendingDocs ? `${pendingDocs} awaiting review` : undefined}
           />
         </Link>
-        <Link href="/admin/work-orders">
+        <Link href="/admin/work-orders" className="pl-6 block">
           <StatCard label="Active Work Orders" value={activeWOs ?? 0} />
         </Link>
       </div>
@@ -162,7 +162,7 @@ export default async function AdminDashboard() {
       <div id="reviews">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold text-neutral-900">
+            <h2 className="text-base font-medium text-neutral-900">
               Review Queue
             </h2>
             {reviewCount > 0 && (
@@ -175,7 +175,7 @@ export default async function AdminDashboard() {
 
       {/* Quick links */}
       <div>
-        <h2 className="text-sm font-semibold text-neutral-900 mb-3">Quick Actions</h2>
+        <h2 className="text-base font-medium text-neutral-900 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <QuickAction href="/admin/teaching-artists" label="Manage TAs" desc="View and invite teaching artists" />
           <QuickAction href="/admin/availability" label="TA Availability" desc="See who's available when" />
@@ -288,7 +288,7 @@ function AlertsPanel({
 
   return (
     <div className="space-y-3">
-      <h2 className="text-xl font-semibold text-neutral-900">Alerts</h2>
+      <h2 className="text-base font-medium text-neutral-900">Alerts</h2>
       <div className="space-y-2">
         {urgent.map((item) => (
           <Link
