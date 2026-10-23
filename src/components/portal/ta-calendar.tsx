@@ -124,7 +124,7 @@ export function TACalendar({ workOrders }: { workOrders: WorkOrder[] }) {
  <div className="flex items-center justify-between">
  <h2 className="text-2xl font-bold text-neutral-900">Calendar</h2>
  <a
- href="/api/portal/calendar/export"download="interact-calendar.ics"className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-white">
+ href="/api/portal/calendar/export"download="interact-calendar.ics"className="inline-flex items-center gap-2 rounded-sm border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-white">
  <svg className="h-4 w-4"fill="none"stroke="currentColor"strokeWidth={2} viewBox="0 0 24 24">
  <path strokeLinecap="round"strokeLinejoin="round"d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
  </svg>
@@ -140,14 +140,14 @@ export function TACalendar({ workOrders }: { workOrders: WorkOrder[] }) {
  <div className="flex items-center gap-3">
  <button
  onClick={prevMonth}
- className="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-300 text-neutral-600 hover:bg-white">
+ className="flex h-8 w-8 items-center justify-center rounded-sm border border-neutral-300 text-neutral-600 hover:bg-white">
  <svg className="h-4 w-4"fill="none"stroke="currentColor"strokeWidth={2} viewBox="0 0 24 24">
  <path d="M15 19l-7-7 7-7"/>
  </svg>
  </button>
  <button
  onClick={nextMonth}
- className="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-300 text-neutral-600 hover:bg-white">
+ className="flex h-8 w-8 items-center justify-center rounded-sm border border-neutral-300 text-neutral-600 hover:bg-white">
  <svg className="h-4 w-4"fill="none"stroke="currentColor"strokeWidth={2} viewBox="0 0 24 24">
  <path d="M9 5l7 7-7 7"/>
  </svg>
@@ -158,7 +158,7 @@ export function TACalendar({ workOrders }: { workOrders: WorkOrder[] }) {
  </div>
  <button
  onClick={goToday}
- className="rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-white">
+ className="rounded-sm border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-white">
  Today
  </button>
  </div>
@@ -316,7 +316,7 @@ export function TACalendar({ workOrders }: { workOrders: WorkOrder[] }) {
  <Link
  key={wo.id}
  href={`/portal/work-orders/${wo.id}`}
- className="block rounded-lg border border-neutral-100 p-3 transition-colors hover:bg-white">
+ className="block rounded-sm border border-neutral-100 p-3 transition-colors hover:bg-white">
  <p className="text-sm font-medium text-neutral-900">{wo.project_name}</p>
  <p className="mt-0.5 text-xs text-neutral-500">{wo.school}</p>
  <div className="mt-1.5 flex items-center justify-between">

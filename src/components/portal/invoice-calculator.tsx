@@ -517,7 +517,7 @@ export function InvoiceCalculator({
  return (
  <div
  key={service.id}
- className={`flex items-center justify-between rounded-lg border p-3 ${
+ className={`flex items-center justify-between rounded-sm border p-3 ${
  isSelected
  ?"border-neutral-400 bg-white":"border-neutral-200"}`}
  >
@@ -652,13 +652,13 @@ export function InvoiceCalculator({
  <button
  onClick={handleDownloadPDF}
  disabled={downloading}
- className="flex-1 rounded-lg border border-white/30 px-4 py-3 text-sm font-medium text-white hover:bg-white/10 disabled:opacity-50">
+ className="flex-1 rounded-sm border border-white/30 px-4 py-3 text-sm font-medium text-white hover:bg-white/10 disabled:opacity-50">
  {downloading ?"Generating...":"Download PDF"}
  </button>
  <button
  onClick={handleSubmit}
  disabled={loading}
- className="flex-1 rounded-lg bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-100 disabled:opacity-50">
+ className="flex-1 rounded-sm bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-100 disabled:opacity-50">
  {loading ?"Submitting...":"Submit Invoice"}
  </button>
  </div>

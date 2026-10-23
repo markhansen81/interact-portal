@@ -239,7 +239,7 @@ function DietaryField({ options, other, onChangeOptions, onChangeOther }: {
  <input
  type="text"value={other}
  onChange={(e) => onChangeOther(e.target.value)}
- placeholder="Other (please specify)"className="block w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"/>
+ placeholder="Other (please specify)"className="block w-full rounded-sm border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"/>
  </div>
  );
 }
@@ -280,7 +280,7 @@ function PhotoUpload({ label, subtitle, url, profileId, folder, onUploaded }: {
  <button
  onClick={() => fileRef.current?.click()}
  disabled={uploading}
- className="rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-white disabled:opacity-50">
+ className="rounded-sm border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-white disabled:opacity-50">
  {uploading ?"Uploading...": url ?"Change photo":"Upload photo"}
  </button>
  <p className="mt-1 text-[10px] text-neutral-400">JPG or PNG, max 5MB</p>
@@ -299,7 +299,7 @@ function Section({ title, children, onSave, saving }: {
  <div className="flex items-center justify-between border-b border-neutral-100 px-7 py-5">
  <h3 className="text-base font-semibold text-neutral-900">{title}</h3>
  <button onClick={onSave} disabled={saving}
- className="rounded-lg bg-neutral-900 px-5 py-2 text-[13px] font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50">
+ className="rounded-sm bg-neutral-900 px-5 py-2 text-[13px] font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50">
  {saving ?"Saving...":"Save changes"}
  </button>
  </div>
@@ -412,7 +412,7 @@ export function ProfileEditor({
  <button
  key={t.id}
  onClick={() => setTab(t.id)}
- className={`whitespace-nowrap rounded-lg px-5 py-2.5 text-[13px] font-medium transition-all ${
+ className={`whitespace-nowrap rounded-sm px-5 py-2.5 text-[13px] font-medium transition-all ${
  tab === t.id
  ?"bg-white text-neutral-900":"text-neutral-500 hover:text-neutral-700"}`}
  >
@@ -556,13 +556,13 @@ export function ProfileEditor({
  <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-neutral-400">{group}</h4>
  <div className="space-y-1">
  {items.map((prog) => (
- <div key={prog} className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-white">
+ <div key={prog} className="flex items-center justify-between rounded-sm px-3 py-2 hover:bg-white">
  <span className="text-sm text-neutral-700">{prog}</span>
  <div className="flex gap-1">
  {(["no","yes","pro"] as const).map((opt) => (
  <button key={opt}
  onClick={() => setPrefs((prev) => ({ ...prev, [prog]: prev[prog] === opt ?"": opt }))}
- className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+ className={`rounded-sm px-3 py-1.5 text-xs font-semibold transition-all ${
  prefs[prog] === opt
  ? opt ==="pro"?"bg-green-600 text-white": opt ==="yes"?"bg-blue-600 text-white":"bg-neutral-600 text-white":"text-neutral-400 hover:bg-neutral-100"}`}>
  {opt ==="pro"?"Pro": opt ==="yes"?"Can do":"No"}

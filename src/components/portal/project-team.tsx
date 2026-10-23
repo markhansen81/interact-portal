@@ -40,7 +40,7 @@ export function ProjectTeam({ members }: { members: TeamMember[] }) {
  return (
  <div
  key={m.id}
- className="flex items-center gap-3 rounded-lg border border-neutral-100 p-4"
+ className="flex items-center gap-3 rounded-sm border border-neutral-100 p-4"
  >
  {m.profile.photo_url ? (
  <img

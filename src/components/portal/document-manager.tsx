@@ -102,12 +102,12 @@ export function DocumentManager({ profileId, documents }: { profileId: string; d
  <div className="flex items-center gap-2">
  <a
  href={preview}
- target="_blank"rel="noopener noreferrer"className="rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-white">
+ target="_blank"rel="noopener noreferrer"className="rounded-sm border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-white">
  Open in new tab
  </a>
  <button
  onClick={() => setPreview(null)}
- className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700">
+ className="rounded-sm p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700">
  <svg className="h-5 w-5"fill="none"viewBox="0 0 24 24"strokeWidth={2} stroke="currentColor">
  <path strokeLinecap="round"strokeLinejoin="round"d="M6 18L18 6M6 6l12 12"/>
  </svg>
@@ -116,9 +116,9 @@ export function DocumentManager({ profileId, documents }: { profileId: string; d
  </div>
  <div className="p-2">
  {preview.match(/\.pdf/i) ? (
- <iframe src={preview} className="h-[70vh] w-full rounded-lg"/>
+ <iframe src={preview} className="h-[70vh] w-full rounded-sm"/>
  ) : (
- <img src={preview} alt="Document"className="max-h-[70vh] w-full rounded-lg object-contain"/>
+ <img src={preview} alt="Document"className="max-h-[70vh] w-full rounded-sm object-contain"/>
  )}
  </div>
  </div>
@@ -410,14 +410,14 @@ function DocCard({
  {hasFile && (
  <button
  onClick={() => onPreview(doc!.file_url!)}
- className="rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-white">
+ className="rounded-sm border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-white">
  Preview
  </button>
  )}
  <button
  onClick={() => fileRef.current?.click()}
  disabled={uploading}
- className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+ className={`rounded-sm px-3 py-1.5 text-xs font-medium transition-colors ${
  hasFile
  ?"border border-neutral-200 text-neutral-700 hover:bg-white":"bg-neutral-900 text-white hover:bg-neutral-800"}`}
  >

@@ -255,7 +255,7 @@ export function AttendanceRoll({
  <button
  key={g.id}
  onClick={() => setActiveGroupId(g.id)}
- className={`shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+ className={`shrink-0 rounded-sm px-4 py-2 text-sm font-medium transition-colors ${
  activeGroupId === g.id
  ? "bg-neutral-900 text-white"
  : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
@@ -267,7 +267,7 @@ export function AttendanceRoll({
  ))}
  <button
  onClick={() => setShowAddGroup(!showAddGroup)}
- className="shrink-0 rounded-lg border border-dashed border-neutral-300 px-3 py-2 text-sm text-neutral-500 hover:border-neutral-400 hover:text-neutral-700"
+ className="shrink-0 rounded-sm border border-dashed border-neutral-300 px-3 py-2 text-sm text-neutral-500 hover:border-neutral-400 hover:text-neutral-700"
  >
  + Add Group
  </button>
@@ -275,7 +275,7 @@ export function AttendanceRoll({
 
  {/* Add group form */}
  {showAddGroup && (
- <form onSubmit={addGroup} className="rounded-lg border border-neutral-200 p-4">
+ <form onSubmit={addGroup} className="rounded-sm border border-neutral-200 p-4">
  <div className="grid grid-cols-3 gap-3">
  <div>
  <label className="mb-1 block text-xs font-medium text-neutral-500">Group Name *</label>
@@ -285,7 +285,7 @@ export function AttendanceRoll({
  value={newGroup.name}
  onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
  placeholder="e.g. Group A"
- className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  />
  </div>
  <div>
@@ -295,7 +295,7 @@ export function AttendanceRoll({
  value={newGroup.grade}
  onChange={(e) => setNewGroup({ ...newGroup, grade: e.target.value })}
  placeholder="e.g. 9th"
- className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  />
  </div>
  <div>
@@ -305,7 +305,7 @@ export function AttendanceRoll({
  value={newGroup.english_level}
  onChange={(e) => setNewGroup({ ...newGroup, english_level: e.target.value })}
  placeholder="e.g. B1"
- className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  />
  </div>
  </div>
@@ -313,14 +313,14 @@ export function AttendanceRoll({
  <button
  type="submit"
  disabled={addingGroup}
- className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+ className="rounded-sm bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
  >
  {addingGroup ? "Adding..." : "Add Group"}
  </button>
  <button
  type="button"
  onClick={() => setShowAddGroup(false)}
- className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-white"
+ className="rounded-sm border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-white"
  >
  Cancel
  </button>
@@ -330,7 +330,7 @@ export function AttendanceRoll({
 
  {/* Attendance grid */}
  {activeGroup && (
- <div className="overflow-x-auto rounded-lg border border-neutral-200">
+ <div className="overflow-x-auto rounded-sm border border-neutral-200">
  <table className="w-full text-sm">
  <thead>
  <tr className="border-b border-neutral-200 bg-white">

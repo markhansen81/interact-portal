@@ -197,7 +197,7 @@ export function TAWorkOrderView({
  {wo.status ==="sent"&& !showSign && (
  <div className="space-y-4">
  {wo.sign_by && (
- <div className={`rounded-lg p-3 ${
+ <div className={`rounded-sm p-3 ${
  new Date(wo.sign_by) < new Date()
  ?"bg-red-50":"bg-yellow-50"}`}>
  <p className={`text-sm font-medium ${
@@ -215,12 +215,12 @@ export function TAWorkOrderView({
  <div className="flex gap-3">
  <button
  onClick={() => { setShowSign(true); setShowDecline(false); }}
- className="rounded-lg bg-green-600 px-6 py-3 text-sm font-medium text-white hover:bg-green-700">
+ className="rounded-sm bg-green-600 px-6 py-3 text-sm font-medium text-white hover:bg-green-700">
  Accept & Sign
  </button>
  <button
  onClick={() => { setShowDecline(true); setShowSign(false); }}
- className="rounded-lg border border-red-300 px-6 py-3 text-sm text-red-600 hover:bg-red-50">
+ className="rounded-sm border border-red-300 px-6 py-3 text-sm text-red-600 hover:bg-red-50">
  Decline
  </button>
  </div>
@@ -251,7 +251,7 @@ export function TAWorkOrderView({
  Please select a reason for declining. We may have other projects available for you.
  </p>
  <div className="mt-6 space-y-3">
- <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors ${declineReason ==="not_available"?"border-red-400 bg-red-50":"border-neutral-200 hover:border-neutral-400"}`}>
+ <label className={`flex cursor-pointer items-start gap-3 rounded-sm border p-4 transition-colors ${declineReason ==="not_available"?"border-red-400 bg-red-50":"border-neutral-200 hover:border-neutral-400"}`}>
  <input
  type="radio"name="decline_reason"value="not_available"checked={declineReason ==="not_available"}
  onChange={() => setDeclineReason("not_available")}
@@ -261,7 +261,7 @@ export function TAWorkOrderView({
  <p className="text-xs text-neutral-500">Your availability will be automatically updated to unavailable for {wo.start_date} — {wo.end_date}</p>
  </div>
  </label>
- <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors ${declineReason ==="prefer_not"?"border-red-400 bg-red-50":"border-neutral-200 hover:border-neutral-400"}`}>
+ <label className={`flex cursor-pointer items-start gap-3 rounded-sm border p-4 transition-colors ${declineReason ==="prefer_not"?"border-red-400 bg-red-50":"border-neutral-200 hover:border-neutral-400"}`}>
  <input
  type="radio"name="decline_reason"value="prefer_not"checked={declineReason ==="prefer_not"}
  onChange={() => setDeclineReason("prefer_not")}
@@ -277,7 +277,7 @@ export function TAWorkOrderView({
  <textarea
  value={declineDetails}
  onChange={(e) => setDeclineDetails(e.target.value)}
- placeholder="Add a comment (optional)..."className="w-full rounded-lg border border-neutral-300 p-3 text-sm"rows={3}
+ placeholder="Add a comment (optional)..."className="w-full rounded-sm border border-neutral-300 p-3 text-sm"rows={3}
  />
  </div>
  )}
@@ -285,12 +285,12 @@ export function TAWorkOrderView({
  <button
  onClick={handleDecline}
  disabled={declining || !declineReason}
- className="rounded-lg bg-red-600 px-6 py-3 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed">
+ className="rounded-sm bg-red-600 px-6 py-3 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed">
  {declining ?"Declining...":"Confirm Decline"}
  </button>
  <button
  onClick={() => { setShowDecline(false); setDeclineReason(""); setDeclineDetails(""); }}
- className="rounded-lg border border-neutral-300 px-6 py-3 text-sm text-neutral-600 hover:bg-white">
+ className="rounded-sm border border-neutral-300 px-6 py-3 text-sm text-neutral-600 hover:bg-white">
  Cancel
  </button>
  </div>
@@ -299,7 +299,7 @@ export function TAWorkOrderView({
  )}
 
  {wo.status ==="signed"&& (
- <div className="rounded-lg bg-green-50 p-4">
+ <div className="rounded-sm bg-green-50 p-4">
  <div className="flex items-center justify-between">
  <p className="text-sm font-medium text-green-700">
  This work order has been signed.
@@ -307,7 +307,7 @@ export function TAWorkOrderView({
  {wo.pdf_url && (
  <a
  href={wo.pdf_url}
- target="_blank"className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700">
+ target="_blank"className="rounded-sm bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700">
  Download Signed PDF
  </a>
  )}
@@ -316,7 +316,7 @@ export function TAWorkOrderView({
  )}
 
  {wo.status ==="declined"&& (
- <div className="rounded-lg bg-red-50 p-4">
+ <div className="rounded-sm bg-red-50 p-4">
  <p className="text-sm font-medium text-red-700">
  This work order was declined.
  </p>

@@ -24,7 +24,7 @@ export function ServicesTable({ services }: { services: Service[] }) {
       <div className="flex justify-end">
         <button
           onClick={() => setShowAdd(true)}
-          className="rounded-xl bg-zinc-900 px-5 py-2 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900"
+          className="rounded-sm bg-neutral-900 px-5 py-2 text-xs font-medium text-white hover:bg-neutral-800"
         >
           Add Service
         </button>
@@ -39,31 +39,31 @@ export function ServicesTable({ services }: { services: Service[] }) {
         />
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="overflow-hidden rounded-sm border border-neutral-200/80 bg-white">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-zinc-100 dark:border-zinc-800">
-              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+            <tr className="border-b border-neutral-100">
+              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
                 Service
               </th>
-              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
                 Fee
               </th>
-              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
                 Type
               </th>
-              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
                 Trigger
               </th>
-              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
                 Status
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-zinc-500">
+              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-neutral-500">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-50 dark:divide-zinc-800/50">
+          <tbody className="divide-y divide-neutral-50">
             {services.map((service) =>
               editingId === service.id ? (
                 <ServiceEditRow
@@ -75,25 +75,25 @@ export function ServicesTable({ services }: { services: Service[] }) {
                   }}
                 />
               ) : (
-                <tr key={service.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                  <td className="px-6 py-4 text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                <tr key={service.id} className="hover:bg-neutral-50">
+                  <td className="px-6 py-4 text-sm font-medium text-neutral-900">
                     {service.name}
                   </td>
-                  <td className="px-6 py-4 text-sm text-zinc-500">
+                  <td className="px-6 py-4 text-sm text-neutral-500">
                     {service.fee != null ? `€${Number(service.fee).toFixed(2)}` : "TBD"}
                   </td>
-                  <td className="px-6 py-4 text-sm text-zinc-500">
+                  <td className="px-6 py-4 text-sm text-neutral-500">
                     {service.fee_type.replace("_", " ")}
                   </td>
-                  <td className="px-6 py-4 text-sm text-zinc-500">
+                  <td className="px-6 py-4 text-sm text-neutral-500">
                     {service.trigger_type}
                   </td>
                   <td className="px-6 py-4">
                     <span
                       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                         service.active
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                          : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-neutral-100 text-neutral-500"
                       }`}
                     >
                       {service.active ? "Active" : "Inactive"}
@@ -102,7 +102,7 @@ export function ServicesTable({ services }: { services: Service[] }) {
                   <td className="px-6 py-4 text-right">
                     <button
                       onClick={() => setEditingId(service.id)}
-                      className="text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                      className="text-sm text-neutral-500 hover:text-neutral-700"
                     >
                       Edit
                     </button>
@@ -148,12 +148,12 @@ function ServiceEditRow({
   }
 
   return (
-    <tr className="bg-zinc-50 dark:bg-zinc-800/50">
+    <tr className="bg-neutral-50">
       <td className="px-6 py-3">
         <input
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
-          className="w-full rounded border border-zinc-300 px-2 py-1 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+          className="w-full rounded border border-neutral-300 px-2 py-1 text-sm"
         />
       </td>
       <td className="px-6 py-3">
@@ -161,14 +161,14 @@ function ServiceEditRow({
           value={form.fee}
           onChange={(e) => setForm({ ...form, fee: e.target.value })}
           placeholder="TBD"
-          className="w-24 rounded border border-zinc-300 px-2 py-1 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+          className="w-24 rounded border border-neutral-300 px-2 py-1 text-sm"
         />
       </td>
       <td className="px-6 py-3">
         <select
           value={form.fee_type}
           onChange={(e) => setForm({ ...form, fee_type: e.target.value })}
-          className="rounded border border-zinc-300 px-2 py-1 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+          className="rounded border border-neutral-300 px-2 py-1 text-sm"
         >
           <option value="fixed">Fixed</option>
           <option value="per_hour">Per hour</option>
@@ -180,7 +180,7 @@ function ServiceEditRow({
         <select
           value={form.trigger_type}
           onChange={(e) => setForm({ ...form, trigger_type: e.target.value })}
-          className="rounded border border-zinc-300 px-2 py-1 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+          className="rounded border border-neutral-300 px-2 py-1 text-sm"
         >
           <option value="manual">Manual</option>
           <option value="auto">Auto</option>
@@ -200,14 +200,14 @@ function ServiceEditRow({
       <td className="px-6 py-3 text-right space-x-2">
         <button
           onClick={onClose}
-          className="text-sm text-zinc-500 hover:text-zinc-700"
+          className="text-sm text-neutral-500 hover:text-neutral-700"
         >
           Cancel
         </button>
         <button
           onClick={handleSave}
           disabled={loading}
-          className="text-sm font-medium text-zinc-900 hover:text-zinc-700 dark:text-zinc-50"
+          className="text-sm font-medium text-neutral-900 hover:text-neutral-700"
         >
           {loading ? "..." : "Save"}
         </button>
@@ -241,41 +241,41 @@ function ServiceForm({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-      <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+    <div className="rounded-sm border border-neutral-200 bg-white p-6">
+      <h3 className="text-lg font-semibold text-neutral-900">
         Add New Service
       </h3>
       <form onSubmit={handleCreate} className="mt-4 grid grid-cols-4 gap-4">
         <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <label className="block text-sm font-medium text-neutral-700">
             Name
           </label>
           <input
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             required
-            className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            className="mt-1 w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <label className="block text-sm font-medium text-neutral-700">
             Fee (€)
           </label>
           <input
             value={form.fee}
             onChange={(e) => setForm({ ...form, fee: e.target.value })}
             placeholder="TBD"
-            className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            className="mt-1 w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <label className="block text-sm font-medium text-neutral-700">
             Fee type
           </label>
           <select
             value={form.fee_type}
             onChange={(e) => setForm({ ...form, fee_type: e.target.value })}
-            className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            className="mt-1 w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
           >
             <option value="fixed">Fixed</option>
             <option value="per_hour">Per hour</option>
@@ -287,14 +287,14 @@ function ServiceForm({ onClose }: { onClose: () => void }) {
           <button
             type="submit"
             disabled={loading}
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+            className="rounded-sm bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
           >
             {loading ? "..." : "Add"}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg px-4 py-2 text-sm text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            className="rounded-sm px-4 py-2 text-sm text-neutral-500 hover:bg-neutral-100"
           >
             Cancel
           </button>
