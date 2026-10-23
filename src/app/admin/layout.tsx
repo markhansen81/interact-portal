@@ -19,7 +19,7 @@ export default async function AdminLayout({
       <AdminSidebar isSuperAdmin={!!profile.is_super_admin} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <AdminHeader email={profile.email} />
-        <main className="flex-1 overflow-y-auto px-8 py-8 max-w-6xl">
+        <main className="flex-1 overflow-y-auto px-12 py-10 max-w-6xl">
           {children}
         </main>
       </div>

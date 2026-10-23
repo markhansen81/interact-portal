@@ -146,29 +146,33 @@ export function InsuranceOrdersTable({ orders: initialOrders }: { orders: Insura
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Summary cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-        <StatCard label="Total Orders" value={orders.length} />
-        <StatCard label="Total Revenue" value={`\u20AC${totalRevenue.toFixed(2)}`} />
-        <StatCard label="Emails Sent" value={orders.filter((o) => o.email_sent_at).length} />
-        <StatCard
-          label="Failed"
-          value={failedCount}
-          change={failedCount > 0 ? `${failedCount} need attention` : "All clear"}
-        />
-        <StatCard
-          label="Last Order"
-          value={
-            lastOrder
-              ? new Date(lastOrder.created_at).toLocaleDateString("de-DE", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })
-              : "-"
-          }
-        />
+      <div className="grid grid-cols-2 divide-x divide-neutral-200 lg:grid-cols-5 border-b border-neutral-200 pb-8">
+        <div><StatCard label="Total Orders" value={orders.length} /></div>
+        <div className="pl-6"><StatCard label="Total Revenue" value={`\u20AC${totalRevenue.toFixed(2)}`} /></div>
+        <div className="pl-6"><StatCard label="Emails Sent" value={orders.filter((o) => o.email_sent_at).length} /></div>
+        <div className="pl-6">
+          <StatCard
+            label="Failed"
+            value={failedCount}
+            change={failedCount > 0 ? `${failedCount} need attention` : "All clear"}
+          />
+        </div>
+        <div className="pl-6">
+          <StatCard
+            label="Last Order"
+            value={
+              lastOrder
+                ? new Date(lastOrder.created_at).toLocaleDateString("de-DE", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })
+                : "-"
+            }
+          />
+        </div>
       </div>
 
       {/* Search */}
@@ -183,44 +187,44 @@ export function InsuranceOrdersTable({ orders: initialOrders }: { orders: Insura
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto border border-neutral-200 bg-white rounded-sm">
+      <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-neutral-200">
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
+              <th className="pb-3 pr-6 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">
                 Order #
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
+              <th className="pb-3 pr-6 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">
                 Date
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
+              <th className="pb-3 pr-6 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">
                 Customer
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
+              <th className="pb-3 pr-6 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">
                 Insured Person
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
+              <th className="pb-3 pr-6 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">
                 School
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
+              <th className="pb-3 pr-6 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">
                 Project Date
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
+              <th className="pb-3 pr-6 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">
                 Days
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
+              <th className="pb-3 pr-6 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">
                 Fee
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
+              <th className="pb-3 pr-6 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">
                 Total
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
+              <th className="pb-3 pr-6 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">
                 PDF
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
+              <th className="pb-3 pr-6 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">
                 Delivery
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
+              <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">
                 Actions
               </th>
             </tr>
@@ -230,7 +234,7 @@ export function InsuranceOrdersTable({ orders: initialOrders }: { orders: Insura
               <tr>
                 <td
                   colSpan={12}
-                  className="px-4 py-8 text-center text-neutral-400"
+                  className="py-12 text-center text-neutral-400"
                 >
                   {search ? "No matching orders" : "No insurance orders yet"}
                 </td>
@@ -243,13 +247,13 @@ export function InsuranceOrdersTable({ orders: initialOrders }: { orders: Insura
                     key={order.id}
                     className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors"
                   >
-                    <td className="px-4 py-3 font-medium text-neutral-900">
+                    <td className="py-4 pr-6 font-medium text-neutral-900">
                       {order.order_number || "-"}
                     </td>
-                    <td className="px-4 py-3 text-neutral-600">
+                    <td className="py-4 pr-6 text-neutral-600">
                       {new Date(order.created_at).toLocaleDateString("de-DE")}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="py-4 pr-6">
                       <div className="text-neutral-900">
                         {[order.customer_first_name, order.customer_last_name]
                           .filter(Boolean)
@@ -259,29 +263,29 @@ export function InsuranceOrdersTable({ orders: initialOrders }: { orders: Insura
                         {order.customer_email}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-neutral-900">
+                    <td className="py-4 pr-6 text-neutral-900">
                       {[order.insured_first_name, order.insured_last_name]
                         .filter(Boolean)
                         .join(" ") || "-"}
                     </td>
-                    <td className="px-4 py-3 text-neutral-600">
+                    <td className="py-4 pr-6 text-neutral-600">
                       {order.school_name || "-"}
                     </td>
-                    <td className="px-4 py-3 text-neutral-600">
+                    <td className="py-4 pr-6 text-neutral-600">
                       {order.project_date || "-"}
                     </td>
-                    <td className="px-4 py-3 text-neutral-600">
+                    <td className="py-4 pr-6 text-neutral-600">
                       {order.num_project_days ?? "-"}
                     </td>
-                    <td className="px-4 py-3 text-neutral-600">
+                    <td className="py-4 pr-6 text-neutral-600">
                       {order.participation_fee != null
                         ? `\u20AC${Number(order.participation_fee).toFixed(2)}`
                         : "-"}
                     </td>
-                    <td className="px-4 py-3 font-medium text-neutral-900">
+                    <td className="py-4 pr-6 font-medium text-neutral-900">
                       &euro;{Number(order.total).toFixed(2)}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="py-4 pr-6">
                       {order.invoice_pdf_url ? (
                         <a
                           href={order.invoice_pdf_url}
@@ -297,10 +301,10 @@ export function InsuranceOrdersTable({ orders: initialOrders }: { orders: Insura
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="py-4 pr-6">
                       <DeliveryBadge status={status} />
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="py-4">
                       <ResendButton
                         orderId={order.id}
                         onSuccess={() => markDelivered(order.id)}
