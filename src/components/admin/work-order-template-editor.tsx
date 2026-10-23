@@ -198,12 +198,12 @@ export function WorkOrderTemplateEditor({ template }: { template: Template | nul
  <div className="flex items-center justify-end gap-2">
  {saved && <span className="text-xs text-green-600">Saved!</span>}
  <button onClick={() => setShowPreview(!showPreview)}
- className={`rounded-lg px-3 py-1.5 text-xs font-medium ${showPreview ?"bg-blue-600 text-white":"bg-neutral-100 text-neutral-600"}`}>
+ className={`rounded-sm px-3 py-1.5 text-xs font-medium ${showPreview ?"bg-blue-600 text-white":"bg-neutral-100 text-neutral-600"}`}>
  {showPreview ?"Back to Editor":"Preview"}
  </button>
  {template && <span className="text-[10px] text-neutral-400">v{template.version}</span>}
  <button onClick={handleSave} disabled={saving}
- className="rounded-lg bg-neutral-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-neutral-800 disabled:opacity-50">
+ className="rounded-sm bg-neutral-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-neutral-800 disabled:opacity-50">
  {saving ?"...":"Save Template"}
  </button>
  </div>
@@ -375,7 +375,7 @@ function SignatureAreaPreview({ taName, date, stampUrl, footerLogoUrl, onUpload 
 function SignatureAreaInfo() {
  return (
  <div className="lg:col-span-4 lg:col-start-2 mx-auto"style={{ width: 794 }}>
- <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-700">
+ <div className="rounded-sm border border-blue-200 bg-blue-50 p-4 text-sm text-blue-700">
  <strong>Signature area</strong> is fixed below your template content. When a TA receives the work order, they will see a signature pad (draw or type) in place of the dashed box above. Place and date fields are filled automatically.
  </div>
  </div>

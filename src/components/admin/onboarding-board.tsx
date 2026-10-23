@@ -164,10 +164,10 @@ export function OnboardingBoard({
             { id: "all" as Filter, label: `All (${tas.length})`, color: "zinc" },
           ]).map((f) => (
             <button key={f.id} onClick={() => setFilter(f.id)}
-              className={`rounded-xl px-4 py-2 text-[13px] font-medium transition-all ${
+              className={`rounded-sm px-4 py-2 text-[13px] font-medium transition-all ${
                 filter === f.id
-                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  : "border border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400"
+                  ? "bg-neutral-900 text-white"
+                  : "border border-neutral-200 text-neutral-600 hover:bg-neutral-50"
               }`}>
               {f.label}
             </button>
@@ -178,7 +178,7 @@ export function OnboardingBoard({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search TAs..."
-          className="rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-2 text-sm focus:border-zinc-400 focus:bg-white focus:outline-none dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-100"
+          className="rounded-sm border border-neutral-200 bg-neutral-50/50 px-4 py-2 text-sm focus:border-neutral-400 focus:bg-white focus:outline-none"
         />
       </div>
 
@@ -190,10 +190,10 @@ export function OnboardingBoard({
           const isComplete = missing.length === 0;
 
           return (
-            <div key={ta.id} className={`overflow-hidden rounded-2xl border shadow-sm ${
+            <div key={ta.id} className={`overflow-hidden rounded-sm border ${
               isComplete
-                ? "border-green-200/80 bg-green-50/30 dark:border-green-800/50 dark:bg-green-900/5"
-                : "border-zinc-200/80 bg-white dark:border-zinc-800 dark:bg-zinc-900"
+                ? "border-green-200/80 bg-green-50/30"
+                : "border-neutral-200/80 bg-white"
             }`}>
               {/* TA header */}
               <div className="flex items-center gap-4 px-6 py-4">
@@ -201,18 +201,18 @@ export function OnboardingBoard({
                   {ta.photo_url ? (
                     <img src={ta.photo_url} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
                   ) : (
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-sm font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-sm font-semibold text-neutral-500">
                       {initials}
                     </div>
                   )}
                   <div>
-                    <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">{name}</p>
-                    <p className="text-[11px] text-zinc-400">Level {ta.pay_level} · {ta.email}</p>
+                    <p className="text-sm font-semibold text-neutral-900">{name}</p>
+                    <p className="text-[11px] text-neutral-400">Level {ta.pay_level} · {ta.email}</p>
                   </div>
                 </Link>
 
                 {isComplete ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-[11px] font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-[11px] font-medium text-green-700">
                     <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                     </svg>
@@ -223,7 +223,7 @@ export function OnboardingBoard({
                     <span className="text-xs font-medium text-amber-600">{missing.length} missing</span>
                     <button
                       onClick={() => nudgeAll(ta.id, missing)}
-                      className="rounded-lg border border-zinc-200 px-3 py-1.5 text-[11px] font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
+                      className="rounded-sm border border-neutral-200 px-3 py-1.5 text-[11px] font-medium text-neutral-700 hover:bg-neutral-50"
                     >
                       Nudge all
                     </button>
@@ -233,7 +233,7 @@ export function OnboardingBoard({
 
               {/* Missing items */}
               {missing.length > 0 && (
-                <div className="border-t border-zinc-100 dark:border-zinc-800">
+                <div className="border-t border-neutral-100">
                   <div className="flex flex-wrap gap-2 px-6 py-3">
                     {missing.map((item) => {
                       const key = `${ta.id}:${item.id}`;
@@ -241,20 +241,20 @@ export function OnboardingBoard({
                       const isLoading = sendingNudge === key;
 
                       return (
-                        <div key={item.id} className="flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 py-1 pl-3 pr-1 dark:border-zinc-700 dark:bg-zinc-800">
+                        <div key={item.id} className="flex items-center gap-1.5 rounded-full border border-neutral-200 bg-neutral-50 py-1 pl-3 pr-1">
                           <span className={`h-1.5 w-1.5 rounded-full ${
                             item.category === "document" ? "bg-blue-500" :
                             item.category === "training" ? "bg-purple-500" :
-                            item.category === "availability" ? "bg-amber-500" : "bg-zinc-400"
+                            item.category === "availability" ? "bg-amber-500" : "bg-neutral-400"
                           }`} />
-                          <span className="text-[11px] font-medium text-zinc-600 dark:text-zinc-400">{item.label}</span>
+                          <span className="text-[11px] font-medium text-neutral-600">{item.label}</span>
                           {isSent ? (
-                            <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">Sent</span>
+                            <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700">Sent</span>
                           ) : (
                             <button
                               onClick={() => sendNudge(ta.id, item)}
                               disabled={isLoading}
-                              className="rounded-full bg-zinc-900 px-2 py-0.5 text-[10px] font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-600"
+                              className="rounded-full bg-neutral-900 px-2 py-0.5 text-[10px] font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
                             >
                               {isLoading ? "..." : "Nudge"}
                             </button>
@@ -270,8 +270,8 @@ export function OnboardingBoard({
         })}
 
         {filtered.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-700">
-            <p className="text-sm text-zinc-500">No TAs match this filter</p>
+          <div className="rounded-sm border border-dashed border-neutral-300 p-12 text-center">
+            <p className="text-sm text-neutral-500">No TAs match this filter</p>
           </div>
         )}
       </div>

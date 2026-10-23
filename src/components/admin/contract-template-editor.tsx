@@ -257,7 +257,7 @@ function TemplateEditorFull({ type, typeLabel, template, onClose }: {
  {/* Top bar */}
  <div className="flex items-center justify-between mb-5">
  <div className="flex items-center gap-3">
- <button onClick={onClose} className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700">
+ <button onClick={onClose} className="rounded-sm p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700">
  <svg className="h-5 w-5"fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
  <path strokeLinecap="round"strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
  </svg>
@@ -309,7 +309,7 @@ function TemplateEditorFull({ type, typeLabel, template, onClose }: {
  <div className="rounded-sm border border-neutral-200 bg-white p-4">
  <label className="mb-1.5 block text-xs font-semibold text-neutral-900">Template Title</label>
  <input value={title} onChange={(e) => setTitle(e.target.value)}
- className="block w-full rounded-lg border border-neutral-200 bg-neutral-50/50 px-3 py-2 text-sm focus:border-neutral-400 focus:outline-none"/>
+ className="block w-full rounded-sm border border-neutral-200 bg-neutral-50/50 px-3 py-2 text-sm focus:border-neutral-400 focus:outline-none"/>
  </div>
  </div>
 

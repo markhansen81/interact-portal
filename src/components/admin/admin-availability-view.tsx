@@ -160,23 +160,23 @@ export function AdminAvailabilityView({
       <div className="mb-5 flex flex-wrap items-end gap-3">
         {/* Search */}
         <div className="flex-1 min-w-[200px]">
-          <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Search</label>
+          <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Search</label>
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name..."
-            className="block w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-2 text-sm text-zinc-900 focus:border-zinc-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-100"
+            className="block w-full rounded-sm border border-neutral-200 bg-neutral-50/50 px-4 py-2 text-sm text-neutral-900 focus:border-neutral-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-400"
           />
         </div>
 
         {/* Filter by week */}
         <div>
-          <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Available in week</label>
+          <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Available in week</label>
           <select
             value={filterWeek ?? ""}
             onChange={(e) => setFilterWeek(e.target.value ? Number(e.target.value) : null)}
-            className="block rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-2 text-sm text-zinc-900 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-100"
+            className="block rounded-sm border border-neutral-200 bg-neutral-50/50 px-4 py-2 text-sm text-neutral-900 focus:border-neutral-400 focus:outline-none"
           >
             <option value="">All weeks</option>
             {nextWeeks.map((w) => (
@@ -190,11 +190,11 @@ export function AdminAvailabilityView({
         {/* Min days in week */}
         {filterWeek !== null && (
           <div>
-            <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Min days</label>
+            <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Min days</label>
             <select
               value={minDays}
               onChange={(e) => setMinDays(Number(e.target.value))}
-              className="block rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-2 text-sm text-zinc-900 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-100"
+              className="block rounded-sm border border-neutral-200 bg-neutral-50/50 px-4 py-2 text-sm text-neutral-900 focus:border-neutral-400 focus:outline-none"
             >
               {[1, 2, 3, 4, 5].map((n) => (
                 <option key={n} value={n}>{n}+ days</option>
@@ -205,32 +205,32 @@ export function AdminAvailabilityView({
 
         {/* Filter by specific date */}
         <div>
-          <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Available on date</label>
+          <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Available on date</label>
           <input
             type="date"
             value={filterDay || ""}
             onChange={(e) => setFilterDay(e.target.value || null)}
             min={formatDate(today)}
-            className="block rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-2 text-sm text-zinc-900 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-100"
+            className="block rounded-sm border border-neutral-200 bg-neutral-50/50 px-4 py-2 text-sm text-neutral-900 focus:border-neutral-400 focus:outline-none"
           />
         </div>
 
         {/* Toggle: only with availability */}
-        <label className="flex items-center gap-2 cursor-pointer rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-2 text-sm dark:border-zinc-700">
+        <label className="flex items-center gap-2 cursor-pointer rounded-sm border border-neutral-200 bg-neutral-50/50 px-4 py-2 text-sm">
           <input
             type="checkbox"
             checked={showOnlyAvailable}
             onChange={(e) => setShowOnlyAvailable(e.target.checked)}
-            className="h-4 w-4 rounded border-zinc-300"
+            className="h-4 w-4 rounded border-neutral-300"
           />
-          <span className="text-sm text-zinc-700 dark:text-zinc-300">Has availability</span>
+          <span className="text-sm text-neutral-700">Has availability</span>
         </label>
 
         {/* Clear */}
         {(search || filterWeek !== null || filterDay || showOnlyAvailable) && (
           <button
             onClick={() => { setSearch(""); setFilterWeek(null); setFilterDay(null); setMinDays(0); setShowOnlyAvailable(false); }}
-            className="rounded-xl border border-zinc-200 px-4 py-2 text-sm text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700"
+            className="rounded-sm border border-neutral-200 px-4 py-2 text-sm text-neutral-500 hover:bg-neutral-50"
           >
             Clear filters
           </button>
@@ -239,18 +239,18 @@ export function AdminAvailabilityView({
 
       {/* Results count */}
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-neutral-400">
           {filteredTAs.length} of {tas.length} TAs
           {filterDay && ` available on ${new Date(filterDay).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}`}
           {filterWeek !== null && ` available in week ${filterWeek}`}
         </p>
-        <div className="flex items-center gap-5 text-xs text-zinc-500">
+        <div className="flex items-center gap-5 text-xs text-neutral-500">
           <div className="flex items-center gap-1.5">
             <span className="h-3 w-3 rounded bg-green-400" />
             Available
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded bg-zinc-200 dark:bg-zinc-700" />
+            <span className="h-3 w-3 rounded bg-neutral-200" />
             Unavailable
           </div>
           <div className="flex items-center gap-1.5">
@@ -261,12 +261,12 @@ export function AdminAvailabilityView({
       </div>
 
       {/* Grid */}
-      <div className="overflow-x-auto rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="overflow-x-auto rounded-sm border border-neutral-200/80 bg-white">
         <table className="border-collapse">
           <thead>
-            <tr className="border-b border-zinc-100 dark:border-zinc-800">
-              <th className="sticky left-0 z-20 bg-white dark:bg-zinc-900 w-60 min-w-[240px]" rowSpan={2}>
-                <div className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+            <tr className="border-b border-neutral-100">
+              <th className="sticky left-0 z-20 bg-white w-60 min-w-[240px]" rowSpan={2}>
+                <div className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
                   Teaching Artist
                 </div>
               </th>
@@ -274,26 +274,26 @@ export function AdminAvailabilityView({
                 <th
                   key={i}
                   colSpan={span.colSpan}
-                  className="border-l border-zinc-100 px-2 pt-3 pb-1 text-center text-xs font-semibold text-zinc-700 dark:border-zinc-800 dark:text-zinc-300"
+                  className="border-l border-neutral-100 px-2 pt-3 pb-1 text-center text-xs font-semibold text-neutral-700"
                 >
                   {span.label}
                 </th>
               ))}
             </tr>
-            <tr className="border-b border-zinc-200 dark:border-zinc-700">
+            <tr className="border-b border-neutral-200">
               {weeks.map((week) => {
                 const isFiltered = filterWeek === week.weekNum;
                 return (
                   <th
                     key={week.weekNum + "-" + week.dates[0].getTime()}
                     className={`px-1 pb-2 pt-1 text-center min-w-[72px] cursor-pointer transition-colors ${
-                      week.isFirstOfMonth ? "border-l border-zinc-100 dark:border-zinc-800" : ""
-                    } ${isFiltered ? "bg-blue-50 dark:bg-blue-900/20" : "hover:bg-zinc-50 dark:hover:bg-zinc-800/50"}`}
+                      week.isFirstOfMonth ? "border-l border-neutral-100" : ""
+                    } ${isFiltered ? "bg-blue-50" : "hover:bg-neutral-50"}`}
                     onClick={() => setFilterWeek(isFiltered ? null : week.weekNum)}
                     title={`Click to filter by week ${week.weekNum}`}
                   >
-                    <div className={`text-[10px] font-medium ${isFiltered ? "text-blue-600" : "text-zinc-500"}`}>W{week.weekNum}</div>
-                    <div className="text-[9px] text-zinc-400">
+                    <div className={`text-[10px] font-medium ${isFiltered ? "text-blue-600" : "text-neutral-500"}`}>W{week.weekNum}</div>
+                    <div className="text-[9px] text-neutral-400">
                       {week.dates[0].getDate()}–{week.dates[4].getDate()}
                     </div>
                   </th>
@@ -313,18 +313,18 @@ export function AdminAvailabilityView({
               const isStale = daysSince !== null && daysSince > 60;
 
               return (
-                <tr key={ta.id} className="border-b border-zinc-50 last:border-0 dark:border-zinc-800/50 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20">
-                  <td className="sticky left-0 z-10 bg-white px-5 py-3 dark:bg-zinc-900">
+                <tr key={ta.id} className="border-b border-neutral-50 last:border-0 hover:bg-neutral-50/50">
+                  <td className="sticky left-0 z-10 bg-white px-5 py-3">
                     <Link href={`/admin/teaching-artists/${ta.id}`} className="flex items-center gap-3">
                       {ta.photo_url ? (
                         <img src={ta.photo_url} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
                       ) : (
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-[10px] font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-[10px] font-semibold text-neutral-500">
                           {initials}
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">{name}</p>
+                        <p className="truncate text-sm font-medium text-neutral-900">{name}</p>
                         <p className={`text-[11px] font-medium ${
                           daysSince === null ? "text-red-500" : isStale ? "text-amber-600" : "text-green-600 dark:text-green-400"
                         }`}>
@@ -346,18 +346,18 @@ export function AdminAvailabilityView({
                     return (
                       <td
                         key={week.weekNum + "-" + week.dates[0].getTime()}
-                        className={`px-1 py-2 text-center ${week.isFirstOfMonth ? "border-l border-zinc-100 dark:border-zinc-800" : ""} ${isFilteredWeek ? "bg-blue-50/50 dark:bg-blue-900/10" : ""}`}
+                        className={`px-1 py-2 text-center ${week.isFirstOfMonth ? "border-l border-neutral-100" : ""} ${isFilteredWeek ? "bg-blue-50/50" : ""}`}
                       >
                         {noneAvailable ? (
-                          <div className="mx-auto flex h-8 w-14 items-center justify-center rounded-md bg-zinc-50 dark:bg-zinc-800/50">
-                            <span className="text-[10px] text-zinc-300 dark:text-zinc-600">—</span>
+                          <div className="mx-auto flex h-8 w-14 items-center justify-center rounded-sm bg-neutral-50">
+                            <span className="text-[10px] text-neutral-300">—</span>
                           </div>
                         ) : allAvailable ? (
-                          <div className="mx-auto flex h-8 w-14 items-center justify-center rounded-md bg-green-100 dark:bg-green-900/30">
-                            <span className="text-[10px] font-bold text-green-700 dark:text-green-400">5/5</span>
+                          <div className="mx-auto flex h-8 w-14 items-center justify-center rounded-sm bg-green-100">
+                            <span className="text-[10px] font-bold text-green-700">5/5</span>
                           </div>
                         ) : (
-                          <div className="mx-auto flex h-8 w-14 items-center justify-center gap-0.5 rounded-md bg-zinc-50 dark:bg-zinc-800/30">
+                          <div className="mx-auto flex h-8 w-14 items-center justify-center gap-0.5 rounded-sm bg-neutral-50">
                             {week.dates.map((d) => {
                               const dateStr = formatDate(d);
                               const avl = isAvailable(ta.id, dateStr);
@@ -368,7 +368,7 @@ export function AdminAvailabilityView({
                                   className={`h-5 w-1.5 rounded-sm ${
                                     avl
                                       ? isFilteredDay ? "bg-blue-500" : "bg-green-400"
-                                      : isFilteredDay ? "bg-red-300" : "bg-zinc-200 dark:bg-zinc-700"
+                                      : isFilteredDay ? "bg-red-300" : "bg-neutral-200"
                                   }`}
                                   title={`${["Mon", "Tue", "Wed", "Thu", "Fri"][d.getDay() - 1]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]} — ${avl ? "Available" : "Unavailable"}`}
                                 />
@@ -384,7 +384,7 @@ export function AdminAvailabilityView({
             })}
             {filteredTAs.length === 0 && (
               <tr>
-                <td colSpan={weeks.length + 1} className="px-5 py-12 text-center text-sm text-zinc-500">
+                <td colSpan={weeks.length + 1} className="px-5 py-12 text-center text-sm text-neutral-500">
                   No TAs match your filters
                 </td>
               </tr>

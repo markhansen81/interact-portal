@@ -49,7 +49,7 @@ export default async function FeedbackPage({
           </p>
           <a
             href={`/school/project/${token}`}
-            className="mt-6 inline-flex items-center rounded-lg bg-teal-600 px-6 py-3 text-sm font-medium text-white hover:bg-teal-700 transition-colors"
+            className="mt-6 inline-flex items-center rounded-sm bg-teal-600 px-6 py-3 text-sm font-medium text-white hover:bg-teal-700 transition-colors"
           >
             Zurück zum Projekt
           </a>

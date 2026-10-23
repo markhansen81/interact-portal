@@ -268,7 +268,7 @@ export function SystemHealthPanel({
  <div className="border-b border-neutral-100 p-5">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
- <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+ <div className={`flex h-10 w-10 items-center justify-center rounded-sm ${
  reportContent
  ?"bg-emerald-100 text-emerald-600"
  :"bg-red-100 text-red-600"
@@ -348,7 +348,7 @@ export function SystemHealthPanel({
  </button>
 
  {reportExpanded && (
- <div className="mt-3 rounded-lg border border-neutral-200 bg-neutral-50 p-4 max-h-[600px] overflow-y-auto">
+ <div className="mt-3 rounded-sm border border-neutral-200 bg-neutral-50 p-4 max-h-[600px] overflow-y-auto">
  {renderMarkdown(reportContent)}
  </div>
  )}

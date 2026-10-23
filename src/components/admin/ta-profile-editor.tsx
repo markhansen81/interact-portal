@@ -61,7 +61,7 @@ export function TAProfileEditor({ ta }: { ta: TAProfile }) {
  </h3>
  <button
  onClick={() => setEditing(true)}
- className="rounded-lg px-3 py-1.5 text-sm text-neutral-600 hover:bg-neutral-100"
+ className="rounded-sm px-3 py-1.5 text-sm text-neutral-600 hover:bg-neutral-100"
  >
  Edit
  </button>
@@ -123,7 +123,7 @@ export function TAProfileEditor({ ta }: { ta: TAProfile }) {
  onChange={(e) =>
  setForm({ ...form, pay_level: parseInt(e.target.value) })
  }
- className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="mt-1 block w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  >
  {[1, 2, 3, 4, 5, 6].map((l) => (
  <option key={l} value={l}>
@@ -141,7 +141,7 @@ export function TAProfileEditor({ ta }: { ta: TAProfile }) {
  onChange={(e) =>
  setForm({ ...form, onboarding_status: e.target.value })
  }
- className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="mt-1 block w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  >
  <option value="pending">Pending</option>
  <option value="in_progress">In Progress</option>
@@ -188,14 +188,14 @@ export function TAProfileEditor({ ta }: { ta: TAProfile }) {
  <div className="mt-6 flex justify-end gap-3">
  <button
  onClick={() => setEditing(false)}
- className="rounded-lg px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-100"
+ className="rounded-sm px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-100"
  >
  Cancel
  </button>
  <button
  onClick={handleSave}
  disabled={loading}
- className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+ className="rounded-sm bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
  >
  {loading ?"Saving...":"Save Changes"}
  </button>
@@ -233,7 +233,7 @@ function Input({
  type="text"
  value={value}
  onChange={(e) => onChange(e.target.value)}
- className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="mt-1 block w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  />
  </div>
  );

@@ -157,7 +157,7 @@ export function ChurchView({ groups, availableTAs }: ChurchViewProps) {
  <>
  <div className="space-y-3">
  {Object.entries(groups).map(([kwLabel, items]) => (
- <div key={kwLabel} className="rounded-lg border border-neutral-200 bg-white overflow-hidden">
+ <div key={kwLabel} className="rounded-sm border border-neutral-200 bg-white overflow-hidden">
  {/* KW Header */}
  <button
  onClick={() => toggleGroup(kwLabel)}

@@ -92,9 +92,9 @@ export function TAProfileCard({
  <img
  src={profile.photo_url}
  alt={displayName}
- className="h-40 w-40 rounded-lg object-cover"/>
+ className="h-40 w-40 rounded-sm object-cover"/>
  ) : (
- <div className="flex h-40 w-40 items-center justify-center rounded-lg bg-neutral-300 text-3xl font-bold text-neutral-500">
+ <div className="flex h-40 w-40 items-center justify-center rounded-sm bg-neutral-300 text-3xl font-bold text-neutral-500">
  {getInitials(profile.first_name, profile.last_name)}
  </div>
  )}

@@ -74,20 +74,20 @@ export function SignaturePad({ onSign, signerName, loading }: SignaturePadProps)
       <div className="flex gap-2">
         <button
           onClick={() => setMode("draw")}
-          className={`rounded-lg px-4 py-2 text-sm font-medium ${
+          className={`rounded-sm px-4 py-2 text-sm font-medium ${
             mode === "draw"
-              ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-              : "border border-zinc-300 text-zinc-600 dark:border-zinc-700 dark:text-zinc-400"
+              ? "bg-neutral-900 text-white"
+              : "border border-neutral-300 text-neutral-600"
           }`}
         >
           Draw Signature
         </button>
         <button
           onClick={() => setMode("type")}
-          className={`rounded-lg px-4 py-2 text-sm font-medium ${
+          className={`rounded-sm px-4 py-2 text-sm font-medium ${
             mode === "type"
-              ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-              : "border border-zinc-300 text-zinc-600 dark:border-zinc-700 dark:text-zinc-400"
+              ? "bg-neutral-900 text-white"
+              : "border border-neutral-300 text-neutral-600"
           }`}
         >
           Type Signature
@@ -97,17 +97,17 @@ export function SignaturePad({ onSign, signerName, loading }: SignaturePadProps)
       {/* Signature Area */}
       {mode === "draw" ? (
         <div className="space-y-2">
-          <div className="relative overflow-hidden rounded-lg border-2 border-dashed border-zinc-300 bg-white dark:border-zinc-700">
+          <div className="relative overflow-hidden rounded-sm border-2 border-dashed border-neutral-300 bg-white">
             <canvas
               ref={canvasRef}
               className="h-40 w-full cursor-crosshair"
               style={{ touchAction: "none" }}
             />
-            <div className="absolute bottom-2 left-4 right-4 border-t border-zinc-300" />
+            <div className="absolute bottom-2 left-4 right-4 border-t border-neutral-300" />
           </div>
           <button
             onClick={handleClear}
-            className="text-sm text-zinc-500 hover:text-zinc-700"
+            className="text-sm text-neutral-500 hover:text-neutral-700"
           >
             Clear
           </button>
@@ -120,9 +120,9 @@ export function SignaturePad({ onSign, signerName, loading }: SignaturePadProps)
             placeholder="Type your full name"
             className="input"
           />
-          <div className="flex h-40 items-center justify-center rounded-lg border-2 border-dashed border-zinc-300 bg-white dark:border-zinc-700">
+          <div className="flex h-40 items-center justify-center rounded-sm border-2 border-dashed border-neutral-300 bg-white">
             <p
-              className="text-4xl italic text-zinc-900"
+              className="text-4xl italic text-neutral-900"
               style={{ fontFamily: "Georgia, serif" }}
             >
               {typedName || "Your signature"}
@@ -132,7 +132,7 @@ export function SignaturePad({ onSign, signerName, loading }: SignaturePadProps)
       )}
 
       {/* Legal Text */}
-      <p className="text-xs text-zinc-400">
+      <p className="text-xs text-neutral-400">
         By signing, you agree to the terms of this document. Your signature,
         timestamp, and IP address will be recorded.
       </p>
@@ -141,7 +141,7 @@ export function SignaturePad({ onSign, signerName, loading }: SignaturePadProps)
       <button
         onClick={handleSign}
         disabled={loading}
-        className="w-full rounded-lg bg-green-600 px-4 py-3 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full rounded-sm bg-green-600 px-4 py-3 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? "Signing & Generating PDF..." : "Sign Document"}
       </button>

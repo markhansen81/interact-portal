@@ -52,7 +52,7 @@ export function InviteTAButton() {
  return (
  <button
  onClick={() => setOpen(true)}
- className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+ className="rounded-sm bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
  >
  Invite TA
  </button>
@@ -69,7 +69,7 @@ export function InviteTAButton() {
  {success ? (
  <div className="mt-4 space-y-3">
  <p className="text-sm text-green-600">Account created!</p>
- <div className="rounded-lg bg-neutral-50 p-4">
+ <div className="rounded-sm bg-neutral-50 p-4">
  <p className="text-xs text-neutral-500">Credentials (share with TA):</p>
  <p className="mt-1 text-sm font-mono text-neutral-900">
  Email: {email}
@@ -81,7 +81,7 @@ export function InviteTAButton() {
  <p className="text-xs text-neutral-400">TA should change password on first login.</p>
  <button
  onClick={handleClose}
- className="w-full rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+ className="w-full rounded-sm bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
  >
  Done
  </button>
@@ -97,7 +97,7 @@ export function InviteTAButton() {
  value={email}
  onChange={(e) => setEmail(e.target.value)}
  required
- className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="mt-1 block w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  placeholder="ta@interactenglish.de"
  />
  </div>
@@ -110,7 +110,7 @@ export function InviteTAButton() {
  type="text"
  value={firstName}
  onChange={(e) => setFirstName(e.target.value)}
- className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="mt-1 block w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  />
  </div>
  <div>
@@ -121,7 +121,7 @@ export function InviteTAButton() {
  type="text"
  value={lastName}
  onChange={(e) => setLastName(e.target.value)}
- className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="mt-1 block w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  />
  </div>
  </div>
@@ -134,14 +134,14 @@ export function InviteTAButton() {
  <button
  type="button"
  onClick={() => setOpen(false)}
- className="rounded-lg px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-100"
+ className="rounded-sm px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-100"
  >
  Cancel
  </button>
  <button
  type="submit"
  disabled={loading}
- className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+ className="rounded-sm bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
  >
  {loading ?"Inviting...":"Send Invite"}
  </button>

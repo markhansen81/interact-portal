@@ -743,7 +743,7 @@ export function SchoolProjectView({
  {/* Contact card */}
  <div className="rounded-sm border border-teal-200 bg-teal-50 p-5">
  <div className="flex items-start gap-4">
- <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-teal-100">
+ <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-sm bg-teal-100">
  <svg className="h-5 w-5 text-teal-600"fill="none"stroke="currentColor"strokeWidth={2} viewBox="0 0 24 24">
  <path strokeLinecap="round"strokeLinejoin="round"d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
  </svg>
@@ -804,7 +804,7 @@ export function SchoolProjectView({
  </div>
  {/* Content */}
  <div
- className={`min-w-0 flex-1 rounded-lg px-3 py-1.5 ${
+ className={`min-w-0 flex-1 rounded-sm px-3 py-1.5 ${
  stage.status ==="current"?"bg-teal-50":""}`}
  >
  <div className="flex items-center gap-2">
@@ -838,7 +838,7 @@ export function SchoolProjectView({
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-4">
  <div
- className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+ className={`flex h-10 w-10 items-center justify-center rounded-sm ${
  scheduleConfirmedAt ?"bg-green-100":"bg-teal-100"}`}
  >
  {scheduleConfirmedAt ? (
@@ -865,7 +865,7 @@ export function SchoolProjectView({
  <button
  onClick={confirmSchedule}
  disabled={confirmingSchedule}
- className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50">
+ className="rounded-sm bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50">
  {confirmingSchedule ?"Wird bestaetigt...":"Stundenplan bestaetigen"}
  </button>
  ) : (
@@ -885,7 +885,7 @@ export function SchoolProjectView({
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-4">
  <div
- className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+ className={`flex h-10 w-10 items-center justify-center rounded-sm ${
  project.info_pack_submitted_at
  ?"bg-green-100":"bg-teal-100"}`}
  >
@@ -917,7 +917,7 @@ export function SchoolProjectView({
  </div>
  <a
  href={`/school/project/${token}/info-form`}
- className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+ className={`rounded-sm px-4 py-2 text-sm font-medium transition-colors ${
  project.info_pack_submitted_at
  ?"border border-neutral-200 text-neutral-600 hover:bg-white":"bg-teal-600 text-white hover:bg-teal-700"}`}
  >
@@ -933,7 +933,7 @@ export function SchoolProjectView({
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-4">
  <div
- className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+ className={`flex h-10 w-10 items-center justify-center rounded-sm ${
  project.feedback_submitted_at
  ?"bg-green-100":"bg-teal-100"}`}
  >
@@ -965,7 +965,7 @@ export function SchoolProjectView({
  </div>
  <a
  href={`/school/project/${token}/feedback`}
- className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+ className={`rounded-sm px-4 py-2 text-sm font-medium transition-colors ${
  project.feedback_submitted_at
  ?"border border-neutral-200 text-neutral-600 hover:bg-white":"bg-teal-600 text-white hover:bg-teal-700"}`}
  >
@@ -1072,7 +1072,7 @@ export function SchoolProjectView({
  {tasks.map((task) => (
  <li
  key={task.id}
- className={`flex items-start gap-3 rounded-lg border p-3 transition-colors ${
+ className={`flex items-start gap-3 rounded-sm border p-3 transition-colors ${
  task.completed
  ?"border-green-100 bg-green-50":"border-neutral-100 bg-white"}`}
  >
@@ -1116,7 +1116,7 @@ export function SchoolProjectView({
  </h2>
  <button
  onClick={() => setShowAddGroup(true)}
- className="rounded-lg bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-neutral-800">
+ className="rounded-sm bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-neutral-800">
  Gruppe hinzufügen
  </button>
  </div>
@@ -1125,7 +1125,7 @@ export function SchoolProjectView({
  {showAddGroup && (
  <form
  onSubmit={addGroup}
- className="mb-6 rounded-lg border border-neutral-200 p-4">
+ className="mb-6 rounded-sm border border-neutral-200 p-4">
  <h3 className="mb-3 text-sm font-semibold text-neutral-900">
  Neue Gruppe
  </h3>
@@ -1140,7 +1140,7 @@ export function SchoolProjectView({
  onChange={(e) =>
  setNewGroup({ ...newGroup, name: e.target.value })
  }
- placeholder="z.B. Klasse 7a"className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"/>
+ placeholder="z.B. Klasse 7a"className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"/>
  </div>
  <div>
  <label className="mb-1 block text-xs font-medium text-neutral-500">
@@ -1151,7 +1151,7 @@ export function SchoolProjectView({
  onChange={(e) =>
  setNewGroup({ ...newGroup, grade: e.target.value })
  }
- placeholder="z.B. 7"className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"/>
+ placeholder="z.B. 7"className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"/>
  </div>
  <div>
  <label className="mb-1 block text-xs font-medium text-neutral-500">
@@ -1162,18 +1162,18 @@ export function SchoolProjectView({
  onChange={(e) =>
  setNewGroup({ ...newGroup, english_level: e.target.value })
  }
- placeholder="z.B. B1"className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"/>
+ placeholder="z.B. B1"className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"/>
  </div>
  </div>
  <div className="mt-4 flex gap-2">
  <button
  type="submit"disabled={addingGroup}
- className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50">
+ className="rounded-sm bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50">
  {addingGroup ?"Wird hinzugefügt...":"Gruppe hinzufügen"}
  </button>
  <button
  type="button"onClick={() => setShowAddGroup(false)}
- className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-white">
+ className="rounded-sm border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-white">
  Abbrechen
  </button>
  </div>
@@ -1181,7 +1181,7 @@ export function SchoolProjectView({
  )}
 
  {groups.length === 0 ? (
- <div className="rounded-lg border border-dashed border-neutral-300 p-8 text-center">
+ <div className="rounded-sm border border-dashed border-neutral-300 p-8 text-center">
  <p className="text-sm text-neutral-500">
  Noch keine Gruppen vorhanden. Klicken Sie auf &quot;Gruppe hinzufügen&quot;, um Ihre erste Klasse anzulegen.
  </p>
@@ -1191,7 +1191,7 @@ export function SchoolProjectView({
  {groups.map((group) => (
  <div
  key={group.id}
- className="rounded-lg border border-neutral-200 p-4">
+ className="rounded-sm border border-neutral-200 p-4">
  <div className="mb-3 flex items-center justify-between">
  <div>
  <h3 className="text-sm font-semibold text-neutral-900">
@@ -1337,7 +1337,7 @@ export function SchoolProjectView({
  </button>
  </div>
  ) : (
- <div className="rounded-lg border border-neutral-200 bg-white p-4">
+ <div className="rounded-sm border border-neutral-200 bg-white p-4">
  <div className="mb-3 flex items-center justify-between">
  <h4 className="text-sm font-medium text-neutral-900">
  {bulkImportMode[group.id] ==="paste"?"Schülernamen einfügen":"CSV-Datei hochladen"}
@@ -1365,7 +1365,7 @@ export function SchoolProjectView({
  }
  rows={6}
  placeholder={"Schülernamen einfügen, ein Name pro Zeile:\nMax Mustermann\nAnna Schmidt\nLukas Weber"}
- className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:border-neutral-400 focus:outline-none"/>
+ className="w-full rounded-sm border border-neutral-200 bg-white px-3 py-2 text-sm focus:border-neutral-400 focus:outline-none"/>
  <button
  onClick={() => parsePastedNames(group.id)}
  disabled={!(pasteText[group.id] ||"").trim()}
@@ -1377,7 +1377,7 @@ export function SchoolProjectView({
 
  {bulkImportMode[group.id] ==="csv"&& (
  <div>
- <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-neutral-300 bg-white p-4 text-center hover:bg-white">
+ <label className="flex cursor-pointer items-center gap-2 rounded-sm border border-dashed border-neutral-300 bg-white p-4 text-center hover:bg-white">
  <svg className="h-5 w-5 text-neutral-400"fill="none"stroke="currentColor"strokeWidth={2} viewBox="0 0 24 24">
  <path d="M12 4v16m8-8H4"/>
  </svg>
@@ -1632,7 +1632,7 @@ export function SchoolProjectView({
  }))
  }
  rows={3}
- placeholder="Anmerkungen zur Gruppendynamik, Freundschaften, Konflikte usw."className="mt-2 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-neutral-400 focus:outline-none"/>
+ placeholder="Anmerkungen zur Gruppendynamik, Freundschaften, Konflikte usw."className="mt-2 w-full rounded-sm border border-neutral-200 px-3 py-2 text-sm focus:border-neutral-400 focus:outline-none"/>
  </div>
 
  {/* Save group notes button */}
@@ -1642,7 +1642,7 @@ export function SchoolProjectView({
  <div className="mt-3 flex items-center gap-3">
  <button
  onClick={() => saveGroupNotes(group.id)}
- className="rounded-lg bg-neutral-900 px-4 py-2 text-xs font-medium text-white hover:bg-neutral-800">
+ className="rounded-sm bg-neutral-900 px-4 py-2 text-xs font-medium text-white hover:bg-neutral-800">
  Gruppennotizen speichern
  </button>
  {notesSavedToast === group.id && (
@@ -1666,7 +1666,7 @@ export function SchoolProjectView({
  {documents.map((doc) => (
  <li
  key={doc.id}
- className="flex items-center justify-between rounded-lg border border-neutral-100 p-3">
+ className="flex items-center justify-between rounded-sm border border-neutral-100 p-3">
  <div>
  <p className="text-sm font-medium text-neutral-900">
  {doc.name}
@@ -1679,7 +1679,7 @@ export function SchoolProjectView({
  {doc.doc_type ==="file"&& doc.file_url ? (
  <a
  href={doc.file_url}
- target="_blank"rel="noopener noreferrer"className="rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-white">
+ target="_blank"rel="noopener noreferrer"className="rounded-sm border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-white">
  Herunterladen
  </a>
  ) : doc.doc_type ==="native"&& doc.content ? (
@@ -1687,7 +1687,7 @@ export function SchoolProjectView({
  onClick={() =>
  setViewingDoc(viewingDoc?.id === doc.id ? null : doc)
  }
- className="rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-white">
+ className="rounded-sm border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-white">
  {viewingDoc?.id === doc.id ?"Schließen":"Lesen"}
  </button>
  ) : null}
@@ -1698,7 +1698,7 @@ export function SchoolProjectView({
 
  {/* Inline document viewer */}
  {viewingDoc && viewingDoc.content && (
- <div className="mt-4 rounded-lg border border-neutral-200 p-6">
+ <div className="mt-4 rounded-sm border border-neutral-200 p-6">
  <div className="mb-3 flex items-center justify-between">
  <h3 className="text-sm font-semibold text-neutral-900">
  {viewingDoc.name}
@@ -1726,12 +1726,12 @@ export function SchoolProjectView({
  <div className="mt-6 flex justify-end gap-3">
  <button
  onClick={() => setDeleteConfirm(null)}
- className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-white">
+ className="rounded-sm border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-white">
  Abbrechen
  </button>
  <button
  onClick={executeDeleteStudent}
- className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
+ className="rounded-sm bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
  Entfernen
  </button>
  </div>
@@ -1745,7 +1745,7 @@ export function SchoolProjectView({
  <h2 className="mb-4 text-lg font-semibold text-neutral-900">Rechnung</h2>
  <div className="space-y-4">
  {schoolInvoices.map((inv) => (
- <div key={inv.id} className="rounded-lg border border-neutral-100 p-4">
+ <div key={inv.id} className="rounded-sm border border-neutral-100 p-4">
  <div className="flex items-start justify-between">
  <div>
  <p className="text-sm font-semibold text-neutral-900">
@@ -1760,7 +1760,7 @@ export function SchoolProjectView({
  {inv.pdf_url && (
  <a
  href={inv.pdf_url}
- target="_blank"rel="noopener noreferrer"className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800">
+ target="_blank"rel="noopener noreferrer"className="rounded-sm bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800">
  Rechnung als PDF
  </a>
  )}
@@ -1775,12 +1775,12 @@ export function SchoolProjectView({
  <input
  type="email"value={invoiceForwardEmail}
  onChange={(e) => setInvoiceForwardEmail(e.target.value)}
- placeholder="finance@school.de"className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"/>
+ placeholder="finance@school.de"className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"/>
  </div>
  <button
  onClick={() => forwardInvoice(inv.id)}
  disabled={forwardingInvoice === inv.id || !invoiceForwardEmail.trim()}
- className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+ className="rounded-sm bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
  {forwardingInvoice === inv.id ?"Wird gesendet...":"Senden"}
  </button>
  </div>
