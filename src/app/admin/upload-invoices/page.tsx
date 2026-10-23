@@ -9,10 +9,10 @@ export default async function UploadInvoicesPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
           Accounts Payable / DATEV Upload
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-sm text-neutral-500">
           Upload invoices and track payment status
         </p>
       </div>

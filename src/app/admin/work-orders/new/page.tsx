@@ -25,7 +25,7 @@ export default async function NewWorkOrderPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+      <h2 className="text-2xl font-bold text-neutral-900">
         Create Work Order
       </h2>
       <WorkOrderForm tas={tas || []} payScales={payScales || []} projects={projects || []} />

@@ -28,11 +28,11 @@ export function SyncJobsButton() {
 
   return (
     <div className="flex items-center gap-2">
-      {result && <span className="text-sm text-zinc-500">{result}</span>}
+      {result && <span className="text-sm text-neutral-500">{result}</span>}
       <button
         onClick={handleSync}
         disabled={loading}
-        className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+        className="rounded-sm bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
       >
         {loading ? "Syncing..." : "Sync from Monday"}
       </button>

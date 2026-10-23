@@ -177,13 +177,13 @@ export function InvoiceUploader({
  </label>
  <input
  type="file"accept=".pdf"onChange={(e) => setFile(e.target.files?.[0] || null)}
- className="block w-full text-sm text-neutral-500 file:mr-4 file:rounded-lg file:border-0 file:bg-neutral-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-neutral-700 hover:file:bg-neutral-200"/>
+ className="block w-full text-sm text-neutral-500 file:mr-4 file:rounded-sm file:border-0 file:bg-neutral-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-neutral-700 hover:file:bg-neutral-200"/>
 
  {file && !uploadedUrl && (
  <button
  onClick={handleUpload}
  disabled={uploading}
- className="mt-4 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50">
+ className="mt-4 rounded-sm bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50">
  {uploading ?"Uploading...":"Upload & Check"}
  </button>
  )}
@@ -241,7 +241,7 @@ export function InvoiceUploader({
  <button
  onClick={handleSubmit}
  disabled={submitting}
- className="rounded-lg bg-neutral-900 px-6 py-3 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50">
+ className="rounded-sm bg-neutral-900 px-6 py-3 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50">
  {submitting
  ?"Submitting...": checkResult.passed
  ?"Submit Invoice":"Submit Anyway"}

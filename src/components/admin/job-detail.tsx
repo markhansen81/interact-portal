@@ -124,9 +124,9 @@ export function JobDetail({
       {/* Left — Job Details */}
       <div className="lg:col-span-2 space-y-6">
         {/* Job Info Card */}
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="rounded-sm border border-neutral-200 bg-white p-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+            <h3 className="text-lg font-semibold text-neutral-900">
               Job Details
             </h3>
             {job.monday_item_id && (
@@ -150,20 +150,20 @@ export function JobDetail({
             <Field label="Co-taught" value={job.co_taught ? "Yes" : "No"} />
             {job.special_conditions && (
               <div className="col-span-2">
-                <dt className="text-sm text-zinc-500">Special Conditions</dt>
-                <dd className="mt-1 text-sm italic text-zinc-900 dark:text-zinc-50">{job.special_conditions}</dd>
+                <dt className="text-sm text-neutral-500">Special Conditions</dt>
+                <dd className="mt-1 text-sm italic text-neutral-900">{job.special_conditions}</dd>
               </div>
             )}
           </dl>
         </div>
 
         {/* Assigned TAs / Work Orders */}
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+        <div className="rounded-sm border border-neutral-200 bg-white p-6">
+          <h3 className="text-lg font-semibold text-neutral-900">
             Assigned TAs ({assignedCount}/{job.tas_needed})
           </h3>
           {workOrders.length === 0 ? (
-            <p className="mt-4 text-sm text-zinc-500">
+            <p className="mt-4 text-sm text-neutral-500">
               No TAs assigned yet. Use the recommendations below.
             </p>
           ) : (
@@ -173,13 +173,13 @@ export function JobDetail({
                 return (
                   <div
                     key={wo.id}
-                    className="flex items-center justify-between rounded-lg border border-zinc-100 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-800/50"
+                    className="flex items-center justify-between rounded-sm border border-neutral-100 bg-neutral-50 p-3"
                   >
                     <div>
-                      <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                      <p className="text-sm font-medium text-neutral-900">
                         {ta.first_name} {ta.last_name}
                       </p>
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-xs text-neutral-500">
                         Level {ta.pay_level} — {wo.total ? `€${Number(wo.total).toFixed(2)}` : "Rate TBD"}
                       </p>
                     </div>
@@ -191,7 +191,7 @@ export function JobDetail({
                             ? "bg-blue-100 text-blue-700"
                             : wo.status === "declined"
                               ? "bg-red-100 text-red-700"
-                              : "bg-zinc-100 text-zinc-600"
+                              : "bg-neutral-100 text-neutral-600"
                       }`}
                     >
                       {wo.status}
@@ -205,26 +205,26 @@ export function JobDetail({
 
         {/* TA Recommendations */}
         {remaining > 0 && (
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="rounded-sm border border-neutral-200 bg-white p-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+              <h3 className="text-lg font-semibold text-neutral-900">
                 Recommended TAs
               </h3>
-              <span className="text-sm text-zinc-500">
+              <span className="text-sm text-neutral-500">
                 {remaining} more TA{remaining > 1 ? "s" : ""} needed
               </span>
             </div>
 
             {loadingRecs ? (
-              <p className="mt-4 text-sm text-zinc-500">Loading recommendations...</p>
+              <p className="mt-4 text-sm text-neutral-500">Loading recommendations...</p>
             ) : recommendations.length === 0 ? (
-              <p className="mt-4 text-sm text-zinc-500">No recommendations available.</p>
+              <p className="mt-4 text-sm text-neutral-500">No recommendations available.</p>
             ) : (
               <div className="mt-4 space-y-2">
                 {recommendations.slice(0, 15).map((rec) => (
                   <div
                     key={rec.ta.id}
-                    className="flex items-center justify-between rounded-lg border border-zinc-100 p-3 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-800/50"
+                    className="flex items-center justify-between rounded-sm border border-neutral-100 p-3 hover:bg-neutral-50"
                   >
                     <div className="flex items-center gap-3">
                       <div
@@ -233,16 +233,16 @@ export function JobDetail({
                             ? "bg-green-100 text-green-700"
                             : rec.score >= 40
                               ? "bg-yellow-100 text-yellow-700"
-                              : "bg-zinc-100 text-zinc-500"
+                              : "bg-neutral-100 text-neutral-500"
                         }`}
                       >
                         {rec.score}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                        <p className="text-sm font-medium text-neutral-900">
                           {rec.ta.first_name} {rec.ta.last_name || rec.ta.email}
                         </p>
-                        <p className="text-xs text-zinc-500">
+                        <p className="text-xs text-neutral-500">
                           Level {rec.ta.pay_level} —{" "}
                           {rec.reasons.slice(0, 3).join(" · ")}
                         </p>
@@ -251,7 +251,7 @@ export function JobDetail({
                     <button
                       onClick={() => createAndSendWorkOrder(rec.ta.id)}
                       disabled={creatingWO === rec.ta.id}
-                      className="rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+                      className="rounded-sm bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
                     >
                       {creatingWO === rec.ta.id ? "Sending..." : "Send Work Order"}
                     </button>
@@ -265,17 +265,17 @@ export function JobDetail({
 
       {/* Right — Summary */}
       <div className="space-y-6">
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h3 className="text-sm font-medium text-zinc-500">Staffing Status</h3>
-          <p className="mt-2 text-3xl font-bold text-zinc-900 dark:text-zinc-50">
+        <div className="rounded-sm border border-neutral-200 bg-white p-6">
+          <h3 className="text-sm font-medium text-neutral-500">Staffing Status</h3>
+          <p className="mt-2 text-3xl font-bold text-neutral-900">
             {assignedCount} / {job.tas_needed}
           </p>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-neutral-500">
             {remaining > 0
               ? `${remaining} more TA${remaining > 1 ? "s" : ""} needed`
               : "Fully staffed"}
           </p>
-          <div className="mt-3 h-2 w-full rounded-full bg-zinc-100 dark:bg-zinc-800">
+          <div className="mt-3 h-2 w-full rounded-full bg-neutral-100">
             <div
               className="h-2 rounded-full bg-green-500"
               style={{
@@ -285,17 +285,17 @@ export function JobDetail({
           </div>
         </div>
 
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h3 className="text-sm font-medium text-zinc-500">Job Status</h3>
-          <p className="mt-2 text-lg font-semibold capitalize text-zinc-900 dark:text-zinc-50">
+        <div className="rounded-sm border border-neutral-200 bg-white p-6">
+          <h3 className="text-sm font-medium text-neutral-500">Job Status</h3>
+          <p className="mt-2 text-lg font-semibold capitalize text-neutral-900">
             {job.status.replace("_", " ")}
           </p>
         </div>
 
         {job.monday_item_id && (
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-            <h3 className="text-sm font-medium text-zinc-500">Monday.com</h3>
-            <p className="mt-2 text-sm text-zinc-900 dark:text-zinc-50">
+          <div className="rounded-sm border border-neutral-200 bg-white p-6">
+            <h3 className="text-sm font-medium text-neutral-500">Monday.com</h3>
+            <p className="mt-2 text-sm text-neutral-900">
               Item #{job.monday_item_id}
             </p>
             <a
@@ -315,8 +315,8 @@ export function JobDetail({
 function Field({ label, value }: { label: string; value: string | null }) {
   return (
     <div>
-      <dt className="text-sm text-zinc-500">{label}</dt>
-      <dd className="mt-1 text-sm text-zinc-900 dark:text-zinc-50">
+      <dt className="text-sm text-neutral-500">{label}</dt>
+      <dd className="mt-1 text-sm text-neutral-900">
         {value || "—"}
       </dd>
     </div>

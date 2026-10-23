@@ -190,7 +190,7 @@ export function TAProjectView({
  </div>
 
  {/* Tab navigation */}
- <div className="flex gap-1 overflow-x-auto rounded-lg bg-neutral-100 p-1">
+ <div className="flex gap-1 overflow-x-auto rounded-sm bg-neutral-100 p-1">
  {tabs.map((tab) => (
  <button
  key={tab.id}
@@ -301,7 +301,7 @@ export function TAProjectView({
  {tasks.map((task) => (
  <li
  key={task.id}
- className="flex items-start gap-3 rounded-lg border border-neutral-100 p-3">
+ className="flex items-start gap-3 rounded-sm border border-neutral-100 p-3">
  <button
  onClick={() => toggleTask(task.id, task.completed)}
  disabled={loading === task.id}
@@ -358,7 +358,7 @@ export function TAProjectView({
  ) : (
  <ul className="space-y-2">
  {taDocs.map((doc) => (
- <li key={doc.id} className="rounded-lg border border-neutral-100">
+ <li key={doc.id} className="rounded-sm border border-neutral-100">
  <div className="flex items-center justify-between p-3">
  <div>
  <p className="text-sm font-medium text-neutral-900">{doc.name}</p>
@@ -367,13 +367,13 @@ export function TAProjectView({
  {doc.doc_type ==="native"? (
  <button
  onClick={() => setExpandedDoc(expandedDoc === doc.id ? null : doc.id)}
- className="rounded-lg border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-white">
+ className="rounded-sm border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-white">
  {expandedDoc === doc.id ?"Close":"Read"}
  </button>
  ) : doc.file_url ? (
  <a
  href={doc.file_url}
- target="_blank"rel="noopener noreferrer"className="rounded-lg border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-white">
+ target="_blank"rel="noopener noreferrer"className="rounded-sm border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-white">
  Download
  </a>
  ) : null}
@@ -413,7 +413,7 @@ export function TAProjectView({
  <h2 className="mb-4 text-lg font-semibold text-neutral-900">Travel</h2>
 
  <a
- href="https://www.lanesandplanes.com"target="_blank"rel="noopener noreferrer"className="inline-flex items-center gap-2 rounded-lg bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800">
+ href="https://www.lanesandplanes.com"target="_blank"rel="noopener noreferrer"className="inline-flex items-center gap-2 rounded-sm bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800">
  <svg className="h-4 w-4"fill="none"stroke="currentColor"strokeWidth={2} viewBox="0 0 24 24">
  <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
  </svg>
@@ -425,12 +425,12 @@ export function TAProjectView({
  <h3 className="mb-3 text-sm font-semibold text-neutral-700">Travel Documents</h3>
  <ul className="space-y-2">
  {travelDocs.map((doc) => (
- <li key={doc.id} className="flex items-center justify-between rounded-lg border border-neutral-100 p-3">
+ <li key={doc.id} className="flex items-center justify-between rounded-sm border border-neutral-100 p-3">
  <p className="text-sm font-medium text-neutral-900">{doc.name}</p>
  {doc.file_url && (
  <a
  href={doc.file_url}
- target="_blank"rel="noopener noreferrer"className="rounded-lg border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-white">
+ target="_blank"rel="noopener noreferrer"className="rounded-sm border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-white">
  Download
  </a>
  )}

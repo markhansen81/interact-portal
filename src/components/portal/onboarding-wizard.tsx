@@ -1145,7 +1145,7 @@ function FormFlow({
  <div className="flex items-center justify-between border-t border-neutral-100 px-6 py-4">
  <button
  onClick={goBack}
- className="flex items-center gap-1 rounded-lg px-4 py-2.5 text-sm text-neutral-500 transition-colors hover:bg-white hover:text-neutral-700">
+ className="flex items-center gap-1 rounded-sm px-4 py-2.5 text-sm text-neutral-500 transition-colors hover:bg-white hover:text-neutral-700">
  <svg className="h-4 w-4"fill="none"viewBox="0 0 24 24"strokeWidth={2} stroke="currentColor">
  <path strokeLinecap="round"strokeLinejoin="round"d="M15.75 19.5L8.25 12l7.5-7.5"/>
  </svg>
@@ -1159,7 +1159,7 @@ function FormFlow({
  )}
  <button
  onClick={goNext}
- className="flex items-center gap-1 rounded-lg bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-neutral-800">
+ className="flex items-center gap-1 rounded-sm bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-neutral-800">
  {isLast ?"Complete":"Continue"}
  <svg className="h-4 w-4"fill="none"viewBox="0 0 24 24"strokeWidth={2} stroke="currentColor">
  <path strokeLinecap="round"strokeLinejoin="round"d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
@@ -1285,7 +1285,7 @@ function UploadFlow({
  <div className="mt-6">
  <button
  onClick={onBack}
- className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-green-700">
+ className="inline-flex items-center gap-2 rounded-sm bg-green-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-green-700">
  Done
  <svg className="h-4 w-4"fill="none"viewBox="0 0 24 24"strokeWidth={2} stroke="currentColor">
  <path strokeLinecap="round"strokeLinejoin="round"d="M4.5 12.75l6 6 9-13.5"/>
@@ -1654,7 +1654,7 @@ function ProgramsStep({ step, prefs, setPrefs, contentMap }: { step: Step; prefs
  <button
  onClick={() => setIdx(Math.max(0, idx - 1))}
  disabled={idx === 0}
- className="flex items-center gap-1 rounded-lg px-4 py-2 text-sm text-neutral-500 hover:bg-neutral-100 disabled:opacity-30">
+ className="flex items-center gap-1 rounded-sm px-4 py-2 text-sm text-neutral-500 hover:bg-neutral-100 disabled:opacity-30">
  <svg className="h-4 w-4"fill="none"viewBox="0 0 24 24"strokeWidth={2} stroke="currentColor">
  <path strokeLinecap="round"strokeLinejoin="round"d="M15.75 19.5L8.25 12l7.5-7.5"/>
  </svg>
@@ -1663,7 +1663,7 @@ function ProgramsStep({ step, prefs, setPrefs, contentMap }: { step: Step; prefs
  <button
  onClick={() => setIdx(Math.min(allPrograms.length - 1, idx + 1))}
  disabled={idx === allPrograms.length - 1}
- className="flex items-center gap-1 rounded-lg bg-neutral-900 px-5 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-30">
+ className="flex items-center gap-1 rounded-sm bg-neutral-900 px-5 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-30">
  Next
  <svg className="h-4 w-4"fill="none"viewBox="0 0 24 24"strokeWidth={2} stroke="currentColor">
  <path strokeLinecap="round"strokeLinejoin="round"d="M8.25 4.5l7.5 7.5-7.5 7.5"/>

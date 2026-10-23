@@ -11,7 +11,7 @@ export function StatCard({ label, value, change, action }: StatCardProps) {
   return (
     <div className="border border-neutral-200 rounded-sm bg-white p-6">
       <p className="text-sm text-neutral-500">{label}</p>
-      <p className="mt-2 text-4xl font-light text-neutral-900">{value}</p>
+      <p className="mt-2 text-5xl font-light tracking-tight text-neutral-900">{value}</p>
       {change && (
         <p className="mt-1 text-sm text-neutral-500">{change}</p>
       )}

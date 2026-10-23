@@ -576,7 +576,7 @@ export function AdminProjectView({
  <select
  value={status}
  onChange={(e) => setStatus(e.target.value)}
- className="rounded-lg border border-neutral-300 px-3 py-1.5 text-sm"
+ className="rounded-sm border border-neutral-300 px-3 py-1.5 text-sm"
  >
  <option value="upcoming">Upcoming</option>
  <option value="active">Active</option>
@@ -679,13 +679,13 @@ export function AdminProjectView({
  value={teacherEmailInput}
  onChange={(e) => setTeacherEmailInput(e.target.value)}
  placeholder="teacher@school.de"
- className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  />
  </div>
  <button
  onClick={inviteTeacher}
  disabled={inviting || !teacherEmailInput.trim()}
- className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+ className="rounded-sm bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
  >
  {inviting ?"Sending...": teacherInvitedAt ?"Resend Invite" :"Invite Teacher"}
  </button>
@@ -739,7 +739,7 @@ export function AdminProjectView({
  </button>
 
  {showInfoPackPreview && (
- <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-700 space-y-3">
+ <div className="rounded-sm border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-700 space-y-3">
  <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">Subject</p>
  <p className="font-medium text-neutral-900">
  InterACT English {project.program_type ||"Englischprojekt"}
@@ -766,7 +766,7 @@ export function AdminProjectView({
  )}
  </ul>
  <p className="text-center">
- <span className="inline-block rounded-lg bg-teal-600 px-6 py-2 text-sm font-semibold text-white">
+ <span className="inline-block rounded-sm bg-teal-600 px-6 py-2 text-sm font-semibold text-white">
  Info Form ausf&uuml;llen
  </span>
  </p>
@@ -780,7 +780,7 @@ export function AdminProjectView({
  <button
  onClick={sendInfoPackEmail}
  disabled={sendingInfoPack || !project.teacher_email || !project.teacher_token}
- className="inline-flex items-center gap-2 rounded-lg bg-neutral-700 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-600 disabled:opacity-50"
+ className="inline-flex items-center gap-2 rounded-sm bg-neutral-700 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-600 disabled:opacity-50"
  >
  <svg className="h-4 w-4"fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
  <path strokeLinecap="round"strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
@@ -842,7 +842,7 @@ export function AdminProjectView({
  {/* Kontaktdaten */}
  <div className="pt-4">
  <h3 className="mb-2 text-sm font-semibold text-neutral-700">Kontaktdaten (Contact)</h3>
- <div className="rounded-lg bg-neutral-50 p-4">
+ <div className="rounded-sm bg-neutral-50 p-4">
  <Row label="Ansprechpartner"value={val("primary_contact")} />
  <Row label="E-Mail"value={val("email")} />
  <Row label="Telefon"value={val("phone")} />
@@ -854,7 +854,7 @@ export function AdminProjectView({
  {/* Schueler */}
  <div>
  <h3 className="mb-2 text-sm font-semibold text-neutral-700">Sch&uuml;ler*innen (Students)</h3>
- <div className="rounded-lg bg-neutral-50 p-4">
+ <div className="rounded-sm bg-neutral-50 p-4">
  <Row label="Jahrgangsstufe"value={val("grade_level")} />
  <Row label="Sprachniveau"value={val("language_level")} />
  <Row label="Anzahl Gruppen"value={val("num_groups")} />
@@ -865,7 +865,7 @@ export function AdminProjectView({
  {/* Stundenplan */}
  <div>
  <h3 className="mb-2 text-sm font-semibold text-neutral-700">Stundenplan (Schedule)</h3>
- <div className="rounded-lg bg-neutral-50 p-4">
+ <div className="rounded-sm bg-neutral-50 p-4">
  {[1, 2, 3, 4, 5, 6, 7].map((n) => (
  <Row key={n} label={`Stunde ${n}`} value={val(`lesson_${n}`)} />
  ))}
@@ -877,7 +877,7 @@ export function AdminProjectView({
  {(val("modules") || val("module_choice") || val("analog_digital")) && (
  <div>
  <h3 className="mb-2 text-sm font-semibold text-neutral-700">Module</h3>
- <div className="rounded-lg bg-neutral-50 p-4">
+ <div className="rounded-sm bg-neutral-50 p-4">
  <Row label="Module"value={val("modules") || val("module_choice")} />
  <Row label="Analog / Digital"value={val("analog_digital")} />
  </div>
@@ -888,7 +888,7 @@ export function AdminProjectView({
  {(val("presentation") || val("presentation_details")) && (
  <div>
  <h3 className="mb-2 text-sm font-semibold text-neutral-700">Abschlusspr&auml;sentation (Presentation)</h3>
- <div className="rounded-lg bg-neutral-50 p-4">
+ <div className="rounded-sm bg-neutral-50 p-4">
  <Row label="Abschlusspr&auml;sentation"value={val("presentation")} />
  <Row label="Details"value={val("presentation_details")} />
  </div>
@@ -899,7 +899,7 @@ export function AdminProjectView({
  {(val("lunch") || val("certificates") || val("lunch_details") || val("catering")) && (
  <div>
  <h3 className="mb-2 text-sm font-semibold text-neutral-700">Verpflegung &amp; Logistik (Meals &amp; Logistics)</h3>
- <div className="rounded-lg bg-neutral-50 p-4">
+ <div className="rounded-sm bg-neutral-50 p-4">
  <Row label="Mittagessen"value={val("lunch") || val("catering")} />
  <Row label="Details"value={val("lunch_details")} />
  <Row label="Zertifikate"value={val("certificates")} />
@@ -911,7 +911,7 @@ export function AdminProjectView({
  {(val("difficulties") || val("comments") || val("additional_notes")) && (
  <div>
  <h3 className="mb-2 text-sm font-semibold text-neutral-700">Sonstiges (Additional)</h3>
- <div className="rounded-lg bg-neutral-50 p-4">
+ <div className="rounded-sm bg-neutral-50 p-4">
  <Row label="Schwierigkeiten"value={val("difficulties")} />
  <Row label="Kommentare"value={val("comments") || val("additional_notes")} />
  </div>
@@ -935,7 +935,7 @@ export function AdminProjectView({
  return (
  <div>
  <h3 className="mb-2 text-sm font-semibold text-neutral-700">Weitere Angaben (Other)</h3>
- <div className="rounded-lg bg-neutral-50 p-4">
+ <div className="rounded-sm bg-neutral-50 p-4">
  {extras.map(([k, v]) => (
  <Row key={k} label={k.replace(/_/g,"").replace(/\b\w/g, (c) => c.toUpperCase())} value={String(v)} />
  ))}
@@ -1019,7 +1019,7 @@ export function AdminProjectView({
  {overallRating !== undefined && (
  <div className="pt-4">
  <h3 className="mb-2 text-sm font-semibold text-neutral-700">Overall Rating</h3>
- <div className="rounded-lg bg-neutral-50 p-4">
+ <div className="rounded-sm bg-neutral-50 p-4">
  <StarDisplay rating={overallRating} />
  </div>
  </div>
@@ -1029,7 +1029,7 @@ export function AdminProjectView({
  {whatWorked && (
  <div>
  <h3 className="mb-2 text-sm font-semibold text-neutral-700">What Worked Well</h3>
- <div className="rounded-lg bg-green-50 p-4">
+ <div className="rounded-sm bg-green-50 p-4">
  <p className="text-sm text-neutral-800 whitespace-pre-wrap">{whatWorked}</p>
  </div>
  </div>
@@ -1039,7 +1039,7 @@ export function AdminProjectView({
  {whatToImprove && (
  <div>
  <h3 className="mb-2 text-sm font-semibold text-neutral-700">What to Improve</h3>
- <div className="rounded-lg bg-amber-50 p-4">
+ <div className="rounded-sm bg-amber-50 p-4">
  <p className="text-sm text-neutral-800 whitespace-pre-wrap">{whatToImprove}</p>
  </div>
  </div>
@@ -1051,7 +1051,7 @@ export function AdminProjectView({
  <h3 className="mb-2 text-sm font-semibold text-neutral-700">TA Ratings</h3>
  <div className="space-y-3">
  {taRatings.map((ta, i) => (
- <div key={i} className="rounded-lg bg-neutral-50 p-4">
+ <div key={i} className="rounded-sm bg-neutral-50 p-4">
  {ta.name && (
  <p className="mb-1 text-sm font-medium text-neutral-900">{ta.name}</p>
  )}
@@ -1069,7 +1069,7 @@ export function AdminProjectView({
  {studentReactions && (
  <div>
  <h3 className="mb-2 text-sm font-semibold text-neutral-700">Student Reactions</h3>
- <div className="rounded-lg bg-blue-50 p-4">
+ <div className="rounded-sm bg-blue-50 p-4">
  <p className="text-sm text-neutral-800 whitespace-pre-wrap">{studentReactions}</p>
  </div>
  </div>
@@ -1079,7 +1079,7 @@ export function AdminProjectView({
  {(logisticsRating !== undefined || logisticsComment) && (
  <div>
  <h3 className="mb-2 text-sm font-semibold text-neutral-700">Logistics</h3>
- <div className="rounded-lg bg-neutral-50 p-4">
+ <div className="rounded-sm bg-neutral-50 p-4">
  {logisticsRating !== undefined && <StarDisplay rating={logisticsRating} />}
  {logisticsComment && (
  <p className="mt-2 text-sm text-neutral-600 whitespace-pre-wrap">{logisticsComment}</p>
@@ -1092,7 +1092,7 @@ export function AdminProjectView({
  {rebookingInterest !== undefined && (
  <div>
  <h3 className="mb-2 text-sm font-semibold text-neutral-700">Rebooking Interest</h3>
- <div className="rounded-lg bg-neutral-50 p-4">
+ <div className="rounded-sm bg-neutral-50 p-4">
  <p className="text-sm text-neutral-800">
  {typeof rebookingInterest ==="boolean"
  ? rebookingInterest ?"Yes, interested in rebooking":"Not interested in rebooking"
@@ -1116,7 +1116,7 @@ export function AdminProjectView({
  return (
  <div>
  <h3 className="mb-2 text-sm font-semibold text-neutral-700">Additional Feedback</h3>
- <div className="rounded-lg bg-neutral-50 p-4 space-y-2">
+ <div className="rounded-sm bg-neutral-50 p-4 space-y-2">
  {extras.map(([k, v]) => (
  <div key={k} className="flex gap-3 py-1.5">
  <span className="w-48 shrink-0 text-sm text-neutral-500">{k.replace(/_/g,"").replace(/\b\w/g, (c) => c.toUpperCase())}</span>
@@ -1146,7 +1146,7 @@ export function AdminProjectView({
  </div>
  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
  {groupSummaries.map((g) => (
- <div key={g.id} className="rounded-lg border border-neutral-100 p-3">
+ <div key={g.id} className="rounded-sm border border-neutral-100 p-3">
  <p className="text-sm font-medium text-neutral-900">{g.name}</p>
  <p className="text-xs text-neutral-500">{g.student_count} student{g.student_count !== 1 ?"s":""}</p>
  </div>
@@ -1164,7 +1164,7 @@ export function AdminProjectView({
 
  {invoices.length === 0 ? (
  <div className="space-y-4">
- <div className="rounded-lg border border-neutral-100 bg-neutral-50 p-4">
+ <div className="rounded-sm border border-neutral-100 bg-neutral-50 p-4">
  <p className="mb-3 text-sm text-neutral-600">
  Calculated: <strong>{invoiceStudents}</strong> students x <strong>{"\u20AC"}{invoicePricePP.toFixed(2)}</strong> = <strong>{"\u20AC"}{(invoiceStudents * invoicePricePP).toLocaleString("de-DE", { minimumFractionDigits: 2 })}</strong>
  </p>
@@ -1175,7 +1175,7 @@ export function AdminProjectView({
  type="number"
  value={invoiceStudents}
  onChange={(e) => setInvoiceStudents(parseInt(e.target.value) || 0)}
- className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  />
  </div>
  <div>
@@ -1185,7 +1185,7 @@ export function AdminProjectView({
  step="0.01"
  value={invoicePricePP}
  onChange={(e) => setInvoicePricePP(parseFloat(e.target.value) || 0)}
- className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  />
  </div>
  <div>
@@ -1194,7 +1194,7 @@ export function AdminProjectView({
  type="text"
  value={invoiceContactPerson}
  onChange={(e) => setInvoiceContactPerson(e.target.value)}
- className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  />
  </div>
  <div>
@@ -1204,13 +1204,13 @@ export function AdminProjectView({
  value={invoiceFinanceEmail}
  onChange={(e) => setInvoiceFinanceEmail(e.target.value)}
  placeholder="finance@school.de"
- className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  />
  </div>
  </div>
  </div>
  {/* Deposit toggle */}
- <div className="rounded-lg border border-neutral-200 p-4">
+ <div className="rounded-sm border border-neutral-200 p-4">
  <label className="flex items-center gap-3 cursor-pointer">
  <input
  type="checkbox"
@@ -1225,7 +1225,7 @@ export function AdminProjectView({
  <select
  value={depositType}
  onChange={(e) => setDepositType(e.target.value as"percentage"|"fixed")}
- className="rounded-lg border border-neutral-300 px-2 py-1.5 text-sm"
+ className="rounded-sm border border-neutral-300 px-2 py-1.5 text-sm"
  >
  <option value="percentage">Percentage</option>
  <option value="fixed">Fixed amount</option>
@@ -1234,7 +1234,7 @@ export function AdminProjectView({
  type="number"
  value={depositValue}
  onChange={(e) => setDepositValue(parseFloat(e.target.value) || 0)}
- className="w-24 rounded-lg border border-neutral-300 px-3 py-1.5 text-sm"
+ className="w-24 rounded-sm border border-neutral-300 px-3 py-1.5 text-sm"
  />
  <span className="text-sm text-neutral-500">{depositType ==="percentage"?"%" :"EUR"}</span>
  </div>
@@ -1242,7 +1242,7 @@ export function AdminProjectView({
  </div>
 
  {/* Totals summary */}
- <div className="rounded-lg bg-neutral-50 p-4">
+ <div className="rounded-sm bg-neutral-50 p-4">
  <div className="space-y-1 text-sm">
  <div className="flex justify-between">
  <span className="text-neutral-500">Full amount:</span>
@@ -1270,14 +1270,14 @@ export function AdminProjectView({
  <button
  onClick={() => generateInvoice("deposit")}
  disabled={generatingInvoice || !invoiceStudents || !invoicePricePP || hasDeposit}
- className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+ className="rounded-sm bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
  >
  {hasDeposit ?"Deposit Created": generatingInvoice ?"Generating..." :"Generate Deposit Invoice"}
  </button>
  <button
  onClick={() => generateInvoice("final")}
  disabled={generatingInvoice || !invoiceStudents || !invoicePricePP || hasFinal}
- className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+ className="rounded-sm bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
  >
  {hasFinal ?"Final Created": generatingInvoice ?"Generating..." :"Generate Final Invoice"}
  </button>
@@ -1286,7 +1286,7 @@ export function AdminProjectView({
  <button
  onClick={() => generateInvoice("full")}
  disabled={generatingInvoice || !invoiceStudents || !invoicePricePP}
- className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+ className="rounded-sm bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
  >
  {generatingInvoice ?"Generating...":"Generate Invoice"}
  </button>
@@ -1303,7 +1303,7 @@ export function AdminProjectView({
  overdue:"bg-red-100 text-red-700",
  };
  return (
- <div key={inv.id} className="rounded-lg border border-neutral-200 p-4">
+ <div key={inv.id} className="rounded-sm border border-neutral-200 p-4">
  <div className="flex items-center justify-between">
  <div>
  <div className="flex items-center gap-2">
@@ -1339,7 +1339,7 @@ export function AdminProjectView({
  href={inv.pdf_url}
  target="_blank"
  rel="noopener noreferrer"
- className="rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+ className="rounded-sm border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
  >
  Download PDF
  </a>
@@ -1347,7 +1347,7 @@ export function AdminProjectView({
  {inv.status !=="paid"&& (
  <button
  onClick={() => markInvoicePaid(inv.id)}
- className="rounded-lg border border-green-300 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-50"
+ className="rounded-sm border border-green-300 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-50"
  >
  Mark Paid
  </button>
@@ -1364,13 +1364,13 @@ export function AdminProjectView({
  value={invoiceFinanceEmail}
  onChange={(e) => setInvoiceFinanceEmail(e.target.value)}
  placeholder="finance@school.de"
- className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  />
  </div>
  <button
  onClick={() => sendInvoice(inv.id)}
  disabled={sendingInvoice || !invoiceFinanceEmail.trim()}
- className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+ className="rounded-sm bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
  >
  {sendingInvoice ?"Sending...":"Send to School"}
  </button>
@@ -1395,13 +1395,13 @@ export function AdminProjectView({
  <span className="text-sm text-neutral-500">{adminCompleted}/{adminTotal} completed</span>
  <button
  onClick={() => setShowStaffingWizard(true)}
- className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+ className="rounded-sm bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
  >
  Staff Project
  </button>
  <button
  onClick={() => setShowAddAdminTask(!showAddAdminTask)}
- className="rounded-lg bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-neutral-800"
+ className="rounded-sm bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-neutral-800"
  >
  Add Task
  </button>
@@ -1423,7 +1423,7 @@ export function AdminProjectView({
 
  {/* Add admin task form */}
  {showAddAdminTask && (
- <form onSubmit={addAdminTask} className="mb-4 rounded-lg border border-neutral-200 p-4">
+ <form onSubmit={addAdminTask} className="mb-4 rounded-sm border border-neutral-200 p-4">
  <div className="space-y-3">
  <div>
  <label className="mb-1 block text-xs font-medium text-neutral-500">Title</label>
@@ -1432,7 +1432,7 @@ export function AdminProjectView({
  required
  value={newAdminTaskTitle}
  onChange={(e) => setNewAdminTaskTitle(e.target.value)}
- className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  placeholder="Task title..."
  />
  </div>
@@ -1442,7 +1442,7 @@ export function AdminProjectView({
  type="text"
  value={newAdminTaskDesc}
  onChange={(e) => setNewAdminTaskDesc(e.target.value)}
- className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  placeholder="Optional description..."
  />
  </div>
@@ -1450,14 +1450,14 @@ export function AdminProjectView({
  <div className="mt-3 flex gap-2">
  <button
  type="submit"
- className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+ className="rounded-sm bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
  >
  Add
  </button>
  <button
  type="button"
  onClick={() => setShowAddAdminTask(false)}
- className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+ className="rounded-sm border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
  >
  Cancel
  </button>
@@ -1474,7 +1474,7 @@ export function AdminProjectView({
  return (
  <li
  key={task.id}
- className="flex items-center gap-3 rounded-lg border border-neutral-100 p-3"
+ className="flex items-center gap-3 rounded-sm border border-neutral-100 p-3"
  >
  <button
  onClick={() => toggleAdminTask(task.id)}
@@ -1503,7 +1503,7 @@ export function AdminProjectView({
  {isStaffTask && !task.completed && (
  <button
  onClick={() => setShowStaffingWizard(true)}
- className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+ className="rounded-sm bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
  >
  Staff
  </button>
@@ -1537,7 +1537,7 @@ export function AdminProjectView({
  <span className="text-sm text-neutral-500">{completedCount}/{totalCount} completed</span>
  <button
  onClick={() => setShowAddTask(!showAddTask)}
- className="rounded-lg bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-neutral-800"
+ className="rounded-sm bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-neutral-800"
  >
  Add Task
  </button>
@@ -1559,7 +1559,7 @@ export function AdminProjectView({
 
  {/* Add task form */}
  {showAddTask && (
- <form onSubmit={addTask} className="mb-4 rounded-lg border border-neutral-200 p-4">
+ <form onSubmit={addTask} className="mb-4 rounded-sm border border-neutral-200 p-4">
  <div className="grid grid-cols-2 gap-4">
  <div>
  <label className="mb-1 block text-xs font-medium text-neutral-500">Title</label>
@@ -1568,7 +1568,7 @@ export function AdminProjectView({
  required
  value={newTask.title}
  onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
- className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  />
  </div>
  <div>
@@ -1576,7 +1576,7 @@ export function AdminProjectView({
  <select
  value={newTask.type}
  onChange={(e) => setNewTask({ ...newTask, type: e.target.value })}
- className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  >
  <option value="checkbox">Checkbox</option>
  <option value="link">Link</option>
@@ -1588,7 +1588,7 @@ export function AdminProjectView({
  type="text"
  value={newTask.description}
  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
- className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  />
  </div>
  {newTask.type ==="link"&& (
@@ -1598,7 +1598,7 @@ export function AdminProjectView({
  type="url"
  value={newTask.url}
  onChange={(e) => setNewTask({ ...newTask, url: e.target.value })}
- className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  />
  </div>
  )}
@@ -1616,14 +1616,14 @@ export function AdminProjectView({
  <div className="mt-4 flex gap-2">
  <button
  type="submit"
- className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+ className="rounded-sm bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
  >
  Add
  </button>
  <button
  type="button"
  onClick={() => setShowAddTask(false)}
- className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+ className="rounded-sm border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
  >
  Cancel
  </button>
@@ -1638,7 +1638,7 @@ export function AdminProjectView({
  {tasks.map((task) => (
  <li
  key={task.id}
- className="flex items-start gap-3 rounded-lg border border-neutral-100 p-3"
+ className="flex items-start gap-3 rounded-sm border border-neutral-100 p-3"
  >
  <div
  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
@@ -1692,7 +1692,7 @@ export function AdminProjectView({
  <div className="flex items-center gap-2">
  <button
  onClick={() => { setShowCreateDoc(true); setEditingDoc(null); setNativeDocName(""); setNativeDocContent(""); }}
- className="rounded-lg bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-neutral-800"
+ className="rounded-sm bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-neutral-800"
  >
  Create Document
  </button>
@@ -1705,7 +1705,7 @@ export function AdminProjectView({
  <button
  onClick={() => fileInputRef.current?.click()}
  disabled={uploading}
- className="rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
+ className="rounded-sm border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
  >
  {uploading ?"Uploading...":"Upload File"}
  </button>
@@ -1714,7 +1714,7 @@ export function AdminProjectView({
 
  {/* Create / Edit native document form */}
  {(showCreateDoc || editingDoc) && (
- <div className="mb-4 rounded-lg border border-neutral-200 p-4">
+ <div className="mb-4 rounded-sm border border-neutral-200 p-4">
  <h3 className="mb-3 text-sm font-semibold text-neutral-900">
  {editingDoc ?"Edit Document":"Create Document"}
  </h3>
@@ -1725,7 +1725,7 @@ export function AdminProjectView({
  value={nativeDocName}
  onChange={(e) => setNativeDocName(e.target.value)}
  placeholder="Document title..."
- className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  />
  </div>
  <div className="mb-3">
@@ -1740,14 +1740,14 @@ export function AdminProjectView({
  type="button"
  onClick={editingDoc ? updateNativeDocument : createNativeDocument}
  disabled={savingNativeDoc || !nativeDocName.trim()}
- className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+ className="rounded-sm bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
  >
  {savingNativeDoc ?"Saving...": editingDoc ?"Update" :"Save"}
  </button>
  <button
  type="button"
  onClick={() => { setShowCreateDoc(false); setEditingDoc(null); setNativeDocName(""); setNativeDocContent(""); }}
- className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+ className="rounded-sm border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
  >
  Cancel
  </button>
@@ -1758,7 +1758,7 @@ export function AdminProjectView({
  {documents.length === 0 ? (
  <p className="text-sm text-neutral-500">No documents yet.</p>
  ) : (
- <div className="overflow-hidden rounded-lg border border-neutral-200">
+ <div className="overflow-hidden rounded-sm border border-neutral-200">
  <table className="w-full text-sm">
  <thead>
  <tr className="border-b border-neutral-200 bg-neutral-50">
@@ -1814,14 +1814,14 @@ export function AdminProjectView({
  <div className="flex justify-end gap-2">
  <button
  onClick={() => togglePublish(doc.id, doc.published)}
- className="rounded-lg border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+ className="rounded-sm border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
  >
  {doc.published ?"Unpublish":"Publish"}
  </button>
  {doc.doc_type ==="native"? (
  <button
  onClick={() => openEditDoc(doc)}
- className="rounded-lg border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+ className="rounded-sm border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
  >
  Edit
  </button>
@@ -1830,7 +1830,7 @@ export function AdminProjectView({
  href={doc.file_url}
  target="_blank"
  rel="noopener noreferrer"
- className="rounded-lg border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+ className="rounded-sm border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
  >
  Download
  </a>
@@ -1853,14 +1853,14 @@ export function AdminProjectView({
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
  rows={4}
- className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+ className="w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
  placeholder="Add internal notes about this project..."
  />
  <div className="mt-3">
  <button
  onClick={saveNotesAndStatus}
  disabled={saving}
- className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+ className="rounded-sm bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
  >
  {saving ?"Saving...":"Save Changes"}
  </button>

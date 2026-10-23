@@ -36,7 +36,7 @@ export function TrainingToggle({
       onClick={toggle}
       disabled={loading}
       className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-        value ? "bg-green-500" : "bg-zinc-300 dark:bg-zinc-700"
+        value ? "bg-green-500" : "bg-neutral-300"
       } ${loading ? "opacity-50" : ""}`}
     >
       <span

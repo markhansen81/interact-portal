@@ -48,56 +48,56 @@ export function AdminProjectFilters({ projects }: { projects: Project[] }) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">TA Projects</h2>
+      <h2 className="text-2xl font-bold text-neutral-900">TA Projects</h2>
 
-      <div className="flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800">
+      <div className="flex gap-1 rounded-sm bg-neutral-100 p-1">
         {filters.map((f) => (
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
-            className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            className={`rounded-sm px-4 py-2 text-sm font-medium transition-colors ${
               filter === f.key
-                ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-zinc-50"
-                : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400"
+                ? "bg-white text-neutral-900"
+                : "text-neutral-500 hover:text-neutral-700"
             }`}
           >
             {f.label}
-            <span className="ml-1.5 text-xs text-zinc-400">{counts[f.key as keyof typeof counts]}</span>
+            <span className="ml-1.5 text-xs text-neutral-400">{counts[f.key as keyof typeof counts]}</span>
           </button>
         ))}
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-12 text-center dark:border-zinc-700 dark:bg-zinc-900">
-          <p className="text-zinc-500">No projects found.</p>
+        <div className="rounded-sm border border-dashed border-neutral-300 bg-white p-12 text-center">
+          <p className="text-neutral-500">No projects found.</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="overflow-hidden rounded-sm border border-neutral-200 bg-white">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
-                <th className="px-4 py-3 text-left font-medium text-zinc-500">Project Name</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-500">TA</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-500">Program</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-500">School</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-500">Dates</th>
-                <th className="px-4 py-3 text-center font-medium text-zinc-500">Status</th>
-                <th className="px-4 py-3 text-center font-medium text-zinc-500">Tasks</th>
-                <th className="px-4 py-3 text-right font-medium text-zinc-500">Actions</th>
+              <tr className="border-b border-neutral-200 bg-neutral-50">
+                <th className="px-4 py-3 text-left font-medium text-neutral-500">Project Name</th>
+                <th className="px-4 py-3 text-left font-medium text-neutral-500">TA</th>
+                <th className="px-4 py-3 text-left font-medium text-neutral-500">Program</th>
+                <th className="px-4 py-3 text-left font-medium text-neutral-500">School</th>
+                <th className="px-4 py-3 text-left font-medium text-neutral-500">Dates</th>
+                <th className="px-4 py-3 text-center font-medium text-neutral-500">Status</th>
+                <th className="px-4 py-3 text-center font-medium text-neutral-500">Tasks</th>
+                <th className="px-4 py-3 text-right font-medium text-neutral-500">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+            <tbody className="divide-y divide-neutral-100">
               {filtered.map((p) => (
-                <tr key={p.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                <tr key={p.id} className="hover:bg-neutral-50">
                   <td className="px-4 py-3">
-                    <Link href={`/admin/projects/${p.id}`} className="font-medium text-zinc-900 hover:underline dark:text-zinc-50">
+                    <Link href={`/admin/projects/${p.id}`} className="font-medium text-neutral-900 hover:underline">
                       {p.name}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{p.ta_name}</td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{p.program_type || "—"}</td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{p.school || "—"}</td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+                  <td className="px-4 py-3 text-neutral-600">{p.ta_name}</td>
+                  <td className="px-4 py-3 text-neutral-600">{p.program_type || "—"}</td>
+                  <td className="px-4 py-3 text-neutral-600">{p.school || "—"}</td>
+                  <td className="px-4 py-3 text-neutral-600 whitespace-nowrap">
                     {p.start_date && p.end_date ? `${formatDate(p.start_date)} — ${formatDate(p.end_date)}` : "—"}
                   </td>
                   <td className="px-4 py-3 text-center">
@@ -105,13 +105,13 @@ export function AdminProjectFilters({ projects }: { projects: Project[] }) {
                       {p.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-center text-zinc-600 dark:text-zinc-400">
+                  <td className="px-4 py-3 text-center text-neutral-600">
                     {p.completed_tasks}/{p.total_tasks}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
                       href={`/admin/projects/${p.id}`}
-                      className="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      className="rounded-sm border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
                     >
                       View
                     </Link>

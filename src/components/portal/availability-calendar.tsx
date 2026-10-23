@@ -161,7 +161,7 @@ export function AvailabilityCalendar({ initialData }: { initialData: Availabilit
  <button
  onClick={() => toggleDay(dateStr)}
  disabled={isPast}
- className={`flex h-11 w-full items-center justify-center rounded-lg text-xs font-medium transition-all ${
+ className={`flex h-11 w-full items-center justify-center rounded-sm text-xs font-medium transition-all ${
  isPast
  ?"cursor-default text-neutral-300": isToday
  ?"ring-2 ring-neutral-900 ring-offset-1"+ STATUS_STYLES[status]
@@ -177,7 +177,7 @@ export function AvailabilityCalendar({ initialData }: { initialData: Availabilit
  {futureDates.length > 0 && (
  <button
  onClick={() => setWeek(week.dates, allAvailable ?"unavailable":"available")}
- className={`w-full rounded-lg px-2 py-2 text-[11px] font-semibold transition-all ${
+ className={`w-full rounded-sm px-2 py-2 text-[11px] font-semibold transition-all ${
  allAvailable
  ?"bg-green-100 text-green-700 hover:bg-green-200": allUnavailable
  ?"bg-neutral-100 text-neutral-500 hover:bg-neutral-200":"bg-yellow-50 text-yellow-700 hover:bg-yellow-100"}`}

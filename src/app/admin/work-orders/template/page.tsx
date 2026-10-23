@@ -15,10 +15,10 @@ export default async function WorkOrderTemplatePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+        <h2 className="text-2xl font-bold text-neutral-900">
           Work Order Template Editor
         </h2>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-sm text-neutral-500">
           Design your work order template. Use variable tags to insert dynamic data from jobs.
         </p>
       </div>

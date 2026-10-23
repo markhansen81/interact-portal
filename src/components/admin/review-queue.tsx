@@ -43,8 +43,8 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  document_upload: "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
-  profile_complete: "bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400",
+  document_upload: "bg-blue-50 text-blue-600 ",
+  profile_complete: "bg-purple-50 text-purple-600 ",
 };
 
 export function ReviewQueue({ reviews }: { reviews: ReviewTask[] }) {
@@ -69,18 +69,18 @@ export function ReviewQueue({ reviews }: { reviews: ReviewTask[] }) {
 
   if (items.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center dark:border-zinc-800 dark:bg-zinc-900">
-        <svg className="mx-auto h-8 w-8 text-zinc-300 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <div className="rounded-sm border border-dashed border-neutral-200 bg-white p-8 text-center">
+        <svg className="mx-auto h-8 w-8 text-neutral-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <p className="mt-2 text-sm text-zinc-500">No pending reviews</p>
+        <p className="mt-2 text-sm text-neutral-500">No pending reviews</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+    <div className="overflow-hidden rounded-sm border border-neutral-200/80 bg-white">
+      <div className="divide-y divide-neutral-100">
         {items.map((review) => {
           const ta = review.ta;
           const taName = ta.first_name && ta.last_name
@@ -94,7 +94,7 @@ export function ReviewQueue({ reviews }: { reviews: ReviewTask[] }) {
             <div key={review.id} className="px-6 py-4">
               <div className="flex items-start gap-4">
                 {/* Icon */}
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${TYPE_COLORS[review.type] || "bg-zinc-100 text-zinc-500"}`}>
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-sm ${TYPE_COLORS[review.type] || "bg-neutral-100 text-neutral-500"}`}>
                   {TYPE_ICONS[review.type] || TYPE_ICONS.profile_complete}
                 </div>
 
@@ -102,10 +102,10 @@ export function ReviewQueue({ reviews }: { reviews: ReviewTask[] }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">{review.title}</p>
-                      <p className="mt-0.5 text-[13px] text-zinc-500">{review.description}</p>
+                      <p className="text-sm font-semibold text-neutral-900">{review.title}</p>
+                      <p className="mt-0.5 text-[13px] text-neutral-500">{review.description}</p>
                     </div>
-                    <span className="shrink-0 text-[11px] text-zinc-400">{timeAgo}</span>
+                    <span className="shrink-0 text-[11px] text-neutral-400">{timeAgo}</span>
                   </div>
 
                   {/* TA info */}
@@ -114,18 +114,18 @@ export function ReviewQueue({ reviews }: { reviews: ReviewTask[] }) {
                       {ta.photo_url ? (
                         <img src={ta.photo_url} alt="" className="h-6 w-6 rounded-full object-cover" />
                       ) : (
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-100 text-[9px] font-semibold text-zinc-500 dark:bg-zinc-800">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-100 text-[9px] font-semibold text-neutral-500">
                           {initials}
                         </div>
                       )}
-                      <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">{taName}</span>
+                      <span className="text-xs font-medium text-neutral-700">{taName}</span>
                     </Link>
 
                     {/* View doc button */}
                     {review.type === "document_upload" && review.document?.file_url && (
                       <button
                         onClick={() => setExpandedId(expandedId === review.id ? null : review.id)}
-                        className="ml-2 rounded-md bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400"
+                        className="ml-2 rounded-md bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-600 hover:bg-blue-100 "
                       >
                         {expandedId === review.id ? "Hide document" : "View document"}
                       </button>
@@ -134,13 +134,13 @@ export function ReviewQueue({ reviews }: { reviews: ReviewTask[] }) {
 
                   {/* Document preview */}
                   {expandedId === review.id && review.document?.file_url && (
-                    <div className="mt-3 overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700">
+                    <div className="mt-3 overflow-hidden rounded-sm border border-neutral-200">
                       {review.document.file_url.match(/\.pdf/i) ? (
                         <iframe src={review.document.file_url} className="h-[400px] w-full" />
                       ) : (
-                        <img src={review.document.file_url} alt="Document" className="max-h-[400px] w-full object-contain bg-zinc-50 dark:bg-zinc-800" />
+                        <img src={review.document.file_url} alt="Document" className="max-h-[400px] w-full object-contain bg-neutral-50" />
                       )}
-                      <div className="flex items-center gap-4 border-t border-zinc-100 px-4 py-2 text-xs text-zinc-400 dark:border-zinc-800">
+                      <div className="flex items-center gap-4 border-t border-neutral-100 px-4 py-2 text-xs text-neutral-400">
                         {review.document.uploaded_at && <span>Uploaded {new Date(review.document.uploaded_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>}
                         {review.document.issue_date && <span>Issued {review.document.issue_date}</span>}
                         {review.document.expiry_date && <span>Expires {review.document.expiry_date}</span>}
@@ -156,13 +156,13 @@ export function ReviewQueue({ reviews }: { reviews: ReviewTask[] }) {
                     <div className="mt-3 flex items-center gap-2">
                       <button
                         onClick={() => handleAction(review.id, "approved")}
-                        className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700"
+                        className="rounded-sm bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700"
                       >
                         Approve
                       </button>
                       <button
                         onClick={() => setActionId(review.id)}
-                        className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20"
+                        className="rounded-sm border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
                       >
                         Reject
                       </button>
@@ -174,18 +174,18 @@ export function ReviewQueue({ reviews }: { reviews: ReviewTask[] }) {
                         onChange={(e) => setNotes(e.target.value)}
                         placeholder="Reason for rejection (sent to TA)..."
                         rows={2}
-                        className="block w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800"
+                        className="block w-full rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm focus:border-black focus:outline-none"
                       />
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleAction(review.id, "rejected")}
-                          className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
+                          className="rounded-sm bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
                         >
                           Confirm reject
                         </button>
                         <button
                           onClick={() => { setActionId(null); setNotes(""); }}
-                          className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700"
+                          className="rounded-sm border border-neutral-200 px-3 py-1.5 text-xs text-neutral-500 hover:bg-neutral-50"
                         >
                           Cancel
                         </button>

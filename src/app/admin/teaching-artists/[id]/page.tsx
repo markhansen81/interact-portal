@@ -40,11 +40,11 @@ export default async function TAProfilePage({
       <div className="flex items-center gap-4">
         <Link
           href="/admin/teaching-artists"
-          className="text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+          className="text-sm text-neutral-500 hover:text-neutral-700"
         >
           &larr; Back
         </Link>
-        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+        <h2 className="text-2xl font-bold text-neutral-900">
           {ta.first_name && ta.last_name
             ? `${ta.first_name} ${ta.last_name}`
             : ta.email}
@@ -60,12 +60,12 @@ export default async function TAProfilePage({
         {/* Right column - Status & quick info */}
         <div className="space-y-6">
           {/* Pay Level */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-            <h3 className="text-sm font-medium text-zinc-500">Pay Level</h3>
-            <p className="mt-2 text-4xl font-bold text-zinc-900 dark:text-zinc-50">
+          <div className="rounded-sm border border-neutral-200 bg-white p-6">
+            <h3 className="text-sm font-medium text-neutral-500">Pay Level</h3>
+            <p className="mt-2 text-4xl font-bold text-neutral-900">
               Level {ta.pay_level}
             </p>
-            <div className="mt-3 space-y-1 text-sm text-zinc-500">
+            <div className="mt-3 space-y-1 text-sm text-neutral-500">
               <p>Qualifying projects: {ta.qualifying_projects}</p>
               <p>Total projects: {ta.total_projects}</p>
               <p>PD credits: {ta.pd_workshop_credits}</p>
@@ -73,8 +73,8 @@ export default async function TAProfilePage({
           </div>
 
           {/* Training Status */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-            <h3 className="text-sm font-medium text-zinc-500">Training</h3>
+          <div className="rounded-sm border border-neutral-200 bg-white p-6">
+            <h3 className="text-sm font-medium text-neutral-500">Training</h3>
             <div className="mt-3 space-y-3">
               <TrainingRow label="Online Onboarding" done={ta.training_online} />
               <TrainingRow label="Offline Foundation" done={ta.training_offline} />
@@ -82,29 +82,29 @@ export default async function TAProfilePage({
           </div>
 
           {/* Onboarding Status */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-            <h3 className="text-sm font-medium text-zinc-500">Onboarding</h3>
-            <p className="mt-2 text-lg font-semibold capitalize text-zinc-900 dark:text-zinc-50">
+          <div className="rounded-sm border border-neutral-200 bg-white p-6">
+            <h3 className="text-sm font-medium text-neutral-500">Onboarding</h3>
+            <p className="mt-2 text-lg font-semibold capitalize text-neutral-900">
               {ta.onboarding_status?.replace("_", " ")}
             </p>
           </div>
 
           {/* Account Info */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-            <h3 className="text-sm font-medium text-zinc-500">Account</h3>
+          <div className="rounded-sm border border-neutral-200 bg-white p-6">
+            <h3 className="text-sm font-medium text-neutral-500">Account</h3>
             <div className="mt-3 space-y-2 text-sm">
-              <p className="text-zinc-500">
-                Email: <span className="text-zinc-900 dark:text-zinc-50">{ta.email}</span>
+              <p className="text-neutral-500">
+                Email: <span className="text-neutral-900">{ta.email}</span>
               </p>
-              <p className="text-zinc-500">
+              <p className="text-neutral-500">
                 Status:{" "}
                 <span className={ta.is_active ? "text-green-600" : "text-red-600"}>
                   {ta.is_active ? "Active" : "Inactive"}
                 </span>
               </p>
-              <p className="text-zinc-500">
+              <p className="text-neutral-500">
                 Joined:{" "}
-                <span className="text-zinc-900 dark:text-zinc-50">
+                <span className="text-neutral-900">
                   {new Date(ta.created_at).toLocaleDateString()}
                 </span>
               </p>
@@ -119,12 +119,12 @@ export default async function TAProfilePage({
 function TrainingRow({ label, done }: { label: string; done: boolean }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-sm text-zinc-700 dark:text-zinc-300">{label}</span>
+      <span className="text-sm text-neutral-700">{label}</span>
       <span
         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
           done
-            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-            : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500"
+            ? "bg-green-100 text-green-700"
+            : "bg-neutral-100 text-neutral-500"
         }`}
       >
         {done ? "Complete" : "Not complete"}

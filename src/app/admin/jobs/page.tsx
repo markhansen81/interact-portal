@@ -24,7 +24,7 @@ export default async function JobsPage() {
  <Link
  href="https://interactenglish-squad.monday.com/boards/7871804260"
  target="_blank"
- className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+ className="rounded-sm border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
  >
  Monday Board
  </Link>

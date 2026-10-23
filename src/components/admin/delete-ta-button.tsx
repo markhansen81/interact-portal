@@ -44,7 +44,7 @@ export function DeleteTAButton({ id, name }: { id: string; name: string }) {
         </button>
         <button
           onClick={() => setConfirming(false)}
-          className="rounded px-2 py-1 text-xs text-zinc-500 hover:bg-zinc-100"
+          className="rounded px-2 py-1 text-xs text-neutral-500 hover:bg-neutral-100"
         >
           No
         </button>
