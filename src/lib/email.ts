@@ -289,3 +289,69 @@ export function insuranceOrderConfirmationEmail(
     `,
   };
 }
+
+export function offerEmail({
+  contactName,
+  schoolName,
+  offerNumber,
+  numStudents,
+  numGroups,
+  numTas,
+}: {
+  contactName: string;
+  schoolName: string;
+  offerNumber: string;
+  numStudents: number;
+  numGroups: number;
+  numTas: number;
+}) {
+  return {
+    subject: `Angebot ${offerNumber} \u2014 InterACT English`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;">
+        <div style="text-align: right; margin-bottom: 24px;">
+          <strong>InterACT English gGmbH</strong><br/>
+          Planufer 92B, 10967 Berlin<br/>
+          Tel. 030 20339702<br/>
+          www.interactenglish.de<br/>
+          info@interactenglish.de
+        </div>
+
+        <p>Liebe*r ${contactName || 'Schulleitung'},</p>
+
+        <p>vielen Dank f\u00fcr Ihr Interesse an unserer Arbeit.</p>
+
+        <p>Wie gew\u00fcnscht sende ich Ihnen hiermit ein Angebot f\u00fcr Ihr Englisch Projekt mit InterACT English zu.</p>
+
+        <p>Im Anhang finden Sie ein Angebot, basierend auf den folgenden Daten:</p>
+
+        <ul>
+          <li>Zahl der Teilnehmenden: ${numStudents}</li>
+          <li>Gruppen: ${numGroups}*</li>
+          <li>Native Speaker: ${numTas}*</li>
+        </ul>
+
+        <p style="font-size: 13px; color: #666;">*Basierend auf der gesch\u00e4tzten Teilnehmendenanzahl</p>
+
+        <p>Ich freue mich die weiteren Schritte mit Ihnen zu besprechen. Gerne unterst\u00fctzen wir Sie auch in der Pr\u00e4sentation dieses Angebots vor Ihren Kolleg*innen, Eltern, Sch\u00fcler*innen oder der Schulleitung. Lassen Sie uns gerne wissen, inwiefern wir Ihnen behilflich sein k\u00f6nnen.</p>
+
+        <p>Vielen Dank und bis bald,</p>
+
+        <p>
+          The InterACT School Partnerships Team<br/>
+          InterACT English gGmbH<br/>
+          connect@interactenglish.de
+        </p>
+
+        <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 32px 0 16px;" />
+        <p style="font-size: 11px; color: #999;">
+          InterACT English gGmbH | Planufer 92B | 10967 Berlin | Deutschland<br/>
+          Tel: 03020339702 | info@interactenglish.de | www.interactenglish.de<br/>
+          Handelsregister: Amtsgericht Charlottenburg | HR Nr.: HRB 188932 B<br/>
+          Steuernummer: 27/614/02133 | Gesch\u00e4ftsf\u00fchrer: Mark William Hansen & Charles Justin Beard
+        </p>
+      </div>
+    `,
+  };
+}
+

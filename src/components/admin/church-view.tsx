@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from"react";
+import Link from "next/link";
 import { StaffingModal } from"./staffing-modal";
 
 interface TAProfile {
@@ -214,6 +215,7 @@ export function ChurchView({ groups, availableTAs }: ChurchViewProps) {
  <th className="px-0.5 py-1.5 text-center font-medium text-neutral-400"title="Student Feedback">📋</th>
  <th className="px-0.5 py-1.5 text-center font-medium text-neutral-400"title="Feedback to School">📧</th>
  <th className="px-0.5 py-1.5 text-center font-medium text-neutral-400"title="Feedback to TA">📧</th>
+ <th className="px-1 py-1.5 text-center font-medium text-neutral-500">Offer</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-neutral-100">
@@ -311,6 +313,14 @@ export function ChurchView({ groups, availableTAs }: ChurchViewProps) {
  <td className="px-0.5 py-1.5 text-center">{statusBadge(item.student_feedback)}</td>
  <td className="px-0.5 py-1.5 text-center">{statusBadge(item.feedback_school)}</td>
  <td className="px-0.5 py-1.5 text-center">{statusBadge(item.feedback_ta)}</td>
+ <td className="px-1 py-1.5 text-center" onClick={(e) => e.stopPropagation()}>
+ <Link
+ href={`/admin/offers/new?church_item_id=${item.id}`}
+ className="inline-flex items-center justify-center font-medium transition-colors border border-neutral-900 text-neutral-900 bg-transparent hover:bg-neutral-50 text-[10px] px-2 py-0.5 whitespace-nowrap"
+ >
+ Create Offer
+ </Link>
+ </td>
  </tr>
  );
  })}
