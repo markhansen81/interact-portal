@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from"react";
+import { StatCard } from"@/components/ui";
 
 interface TA {
  id: string;
@@ -123,19 +124,17 @@ export function LanesPlanePanel({ tas: initialTAs }: { tas: TA[] }) {
  return (
  <div className="space-y-6">
  {/* Summary cards */}
- <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
- <SummaryCard label="Total TAs"value={totalTAs} />
- <SummaryCard
- label="Synced to L&P"
- value={syncedCount}
- accent="emerald"
- />
- <SummaryCard
- label="Not Synced (Active)"
- value={notSyncedActive}
- accent={notSyncedActive > 0 ?"amber": undefined}
- />
- <SummaryCard label="Last Sync"value={formatDate(lastSync)} small />
+ <div className="grid grid-cols-4 divide-x divide-neutral-200 border-b border-neutral-200 pb-8">
+ <StatCard label="Total TAs" value={totalTAs} />
+ <div className="pl-6">
+ <StatCard label="Synced to L&P" value={syncedCount} />
+ </div>
+ <div className="pl-6">
+ <StatCard label="Not Synced (Active)" value={notSyncedActive} />
+ </div>
+ <div className="pl-6">
+ <StatCard label="Last Sync" value={formatDate(lastSync)} />
+ </div>
  </div>
 
  {/* Sync button + message */}
@@ -292,34 +291,3 @@ export function LanesPlanePanel({ tas: initialTAs }: { tas: TA[] }) {
  );
 }
 
-function SummaryCard({
- label,
- value,
- accent,
- small,
-}: {
- label: string;
- value: string | number;
- accent?:"emerald"|"amber";
- small?: boolean;
-}) {
- const valueColor =
- accent ==="emerald"
- ?"text-emerald-600"
- : accent ==="amber"
- ?"text-amber-600"
- :"text-neutral-900";
-
- return (
- <div className="rounded-sm border border-neutral-200 bg-white p-4">
- <p className="text-xs font-medium uppercase tracking-wider text-neutral-500">
- {label}
- </p>
- <p
- className={`mt-1 font-semibold ${valueColor} ${small ?"text-sm":"text-2xl"}`}
- >
- {value}
- </p>
- </div>
- );
-}

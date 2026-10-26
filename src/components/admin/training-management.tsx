@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { StatCard } from "@/components/ui";
 
 interface TA {
   id: string;
@@ -37,11 +38,19 @@ export function TrainingManagement({ tas }: { tas: TA[] }) {
   return (
     <div className="space-y-6">
       {/* Summary */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Fully Trained" value={complete.length} total={tas.length} color="green" onClick={() => setFilter("complete")} active={filter === "complete"} />
-        <StatCard label="Incomplete" value={incomplete.length} total={tas.length} color="amber" onClick={() => setFilter("incomplete")} active={filter === "incomplete"} />
-        <StatCard label="Online Missing" value={onlineMissing.length} total={tas.length} color="blue" onClick={() => setFilter("online_missing")} active={filter === "online_missing"} />
-        <StatCard label="Offline Missing" value={offlineMissing.length} total={tas.length} color="purple" onClick={() => setFilter("offline_missing")} active={filter === "offline_missing"} />
+      <div className="grid grid-cols-4 divide-x divide-neutral-200 border-b border-neutral-200 pb-8">
+        <button onClick={() => setFilter("complete")} className={`text-left ${filter === "complete" ? "opacity-100" : "opacity-70 hover:opacity-100"}`}>
+          <StatCard label="Fully Trained" value={complete.length} change={`of ${tas.length} TAs`} />
+        </button>
+        <button onClick={() => setFilter("incomplete")} className={`text-left pl-6 ${filter === "incomplete" ? "opacity-100" : "opacity-70 hover:opacity-100"}`}>
+          <StatCard label="Incomplete" value={incomplete.length} change={`of ${tas.length} TAs`} />
+        </button>
+        <button onClick={() => setFilter("online_missing")} className={`text-left pl-6 ${filter === "online_missing" ? "opacity-100" : "opacity-70 hover:opacity-100"}`}>
+          <StatCard label="Online Missing" value={onlineMissing.length} change={`of ${tas.length} TAs`} />
+        </button>
+        <button onClick={() => setFilter("offline_missing")} className={`text-left pl-6 ${filter === "offline_missing" ? "opacity-100" : "opacity-70 hover:opacity-100"}`}>
+          <StatCard label="Offline Missing" value={offlineMissing.length} change={`of ${tas.length} TAs`} />
+        </button>
       </div>
 
       {/* Filter bar */}
@@ -171,30 +180,3 @@ function TrainingToggle({ taId, field, checked, onToggled }: {
   );
 }
 
-function StatCard({ label, value, total, color, onClick, active }: {
-  label: string; value: number; total: number; color: string; onClick: () => void; active: boolean;
-}) {
-  const colors: Record<string, string> = {
-    green: "border-green-200 bg-green-50",
-    amber: "border-amber-200 bg-amber-50",
-    blue: "border-blue-200 bg-blue-50",
-    purple: "border-purple-200 bg-purple-50",
-  };
-  const textColors: Record<string, string> = {
-    green: "text-green-700",
-    amber: "text-amber-700",
-    blue: "text-blue-700",
-    purple: "text-purple-700",
-  };
-
-  return (
-    <button
-      onClick={onClick}
-      className={`rounded-sm border p-5 text-left transition-all ${colors[color]} ${active ? "ring-2 ring-offset-1 ring-neutral-900" : ""}`}
-    >
-      <p className="text-[13px] font-medium text-neutral-500">{label}</p>
-      <p className={`mt-1 text-3xl font-bold tabular-nums ${textColors[color]}`}>{value}</p>
-      <p className="mt-0.5 text-xs text-neutral-400">of {total} TAs</p>
-    </button>
-  );
-}
