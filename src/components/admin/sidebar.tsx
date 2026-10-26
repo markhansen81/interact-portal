@@ -33,6 +33,7 @@ const navSections: NavSection[] = [
       { href: "/admin/jobs", label: "School Projects" },
       { href: "/admin/projects", label: "TA Assignments" },
       { href: "/admin/work-orders", label: "Work Orders" },
+      { href: "/admin/offers", label: "Offers" },
       { href: "/admin/church", label: "CRM Pipeline" },
     ],
   },
