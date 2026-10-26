@@ -120,45 +120,51 @@ export function FinancialDashboard({ invoices, expenses, adminUploads }: { invoi
   return (
     <div className="space-y-6">
       {/* Summary cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-6">
+      <div className="grid grid-cols-2 divide-x divide-neutral-200 lg:grid-cols-6 border-b border-neutral-200 pb-8">
         <button onClick={() => setTab("pending")} className="text-left">
           <StatCard
+            compact
             label="TA Pending"
             value={`\u20AC${totalPending.toLocaleString("de-DE", { minimumFractionDigits: 2 })}`}
             change={`${pending.length} item${pending.length !== 1 ? "s" : ""}`}
           />
         </button>
-        <button onClick={() => setTab("approved")} className="text-left">
+        <button onClick={() => setTab("approved")} className="text-left pl-6">
           <StatCard
+            compact
             label="Approved"
             value={`\u20AC${totalApproved.toLocaleString("de-DE", { minimumFractionDigits: 2 })}`}
             change={`${approved.length} item${approved.length !== 1 ? "s" : ""}`}
           />
         </button>
-        <button onClick={() => setTab("paid")} className="text-left">
+        <button onClick={() => setTab("paid")} className="text-left pl-6">
           <StatCard
+            compact
             label="Paid"
             value={`\u20AC${totalPaid.toLocaleString("de-DE", { minimumFractionDigits: 2 })}`}
             change={`${paid.length} item${paid.length !== 1 ? "s" : ""}`}
           />
         </button>
-        <button onClick={() => { setTab("expenses"); setExpenseFilter("flagged"); }} className="text-left">
+        <button onClick={() => { setTab("expenses"); setExpenseFilter("flagged"); }} className="text-left pl-6">
           <StatCard
-            label="Expenses Flagged"
+            compact
+            label="Flagged"
             value={`\u20AC${totalFlagged.toLocaleString("de-DE", { minimumFractionDigits: 2 })}`}
             change={`${flaggedExpenses.length} item${flaggedExpenses.length !== 1 ? "s" : ""}`}
           />
         </button>
-        <button onClick={() => { setTab("expenses"); setExpenseFilter("all"); }} className="text-left">
+        <button onClick={() => { setTab("expenses"); setExpenseFilter("all"); }} className="text-left pl-6">
           <StatCard
+            compact
             label="DATEV Sent"
             value={`\u20AC${datevSentExpenses.reduce((s, e) => s + Number(e.total), 0).toLocaleString("de-DE", { minimumFractionDigits: 2 })}`}
             change={`${datevSentExpenses.length} item${datevSentExpenses.length !== 1 ? "s" : ""}`}
           />
         </button>
-        <button onClick={() => setTab("admin-uploads")} className="text-left">
+        <button onClick={() => setTab("admin-uploads")} className="text-left pl-6">
           <StatCard
-            label="Eingangsrechnungen"
+            compact
+            label="Eingangsr."
             value={`\u20AC${adminUploadsOutstanding.toLocaleString("de-DE", { minimumFractionDigits: 2 })}`}
             change={`${adminUploads.length} item${adminUploads.length !== 1 ? "s" : ""}`}
           />
