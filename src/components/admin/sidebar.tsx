@@ -90,7 +90,12 @@ export function AdminSidebar({
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-6 pb-6">
         {allSections.map((section, sectionIdx) => (
-          <div key={section.label || `section-${sectionIdx}`} className="mb-5">
+          <div key={section.label || `section-${sectionIdx}`} className="mb-6">
+            {section.label && (
+              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-neutral-300">
+                {section.label}
+              </p>
+            )}
             <div className="space-y-0.5">
               {section.items.map((item) => {
                 const isActive =
