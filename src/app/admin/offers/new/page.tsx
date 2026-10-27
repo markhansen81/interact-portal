@@ -32,14 +32,19 @@ export default async function NewOfferPage({ searchParams }: Props) {
       .single();
 
     if (lead) {
+      const leadPrograms = Array.isArray(lead.programs) ? lead.programs : [];
       prefill = {
         school_name: lead.school_name || lead.name,
-        contact_name: lead.contact_name,
-        contact_email: lead.contact_email,
-        school_address: lead.address,
+        contact_name: [lead.first_name, lead.last_name].filter(Boolean).join(" "),
+        contact_email: lead.email,
+        school_address: lead.street,
         city: lead.city,
         postcode: lead.postcode,
         state: lead.state,
+        programs: leadPrograms,
+        program_type: leadPrograms[0] || "",
+        num_students: lead.num_students ? Number(lead.num_students) : "",
+        num_groups: lead.num_groups ? Number(lead.num_groups) : "",
         lead_id: lead.id,
       };
     }
@@ -53,6 +58,7 @@ export default async function NewOfferPage({ searchParams }: Props) {
       .single();
 
     if (item) {
+      const itemPrograms = item.program_type ? [item.program_type] : [];
       prefill = {
         school_name: item.school_name || item.name,
         contact_name: item.teacher_contact,
@@ -61,6 +67,7 @@ export default async function NewOfferPage({ searchParams }: Props) {
         city: item.city,
         state: item.state,
         program_type: item.program_type,
+        programs: itemPrograms,
         num_students: item.num_students,
         num_groups: item.num_groups,
         num_tas: item.num_tas,

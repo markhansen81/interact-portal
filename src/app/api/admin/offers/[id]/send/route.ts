@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateOfferPDF } from "@/lib/offer-pdf";
+import { getProgramContent } from "@/lib/offer-program-content";
 import { sendEmail, offerEmail } from "@/lib/email";
 
 export async function POST(
@@ -39,6 +40,15 @@ export async function POST(
     .eq("active", true)
     .single();
 
+  // Collect program contents for all selected programs
+  const programs: string[] = Array.isArray(offer.programs) && offer.programs.length > 0
+    ? offer.programs
+    : [offer.program_type].filter(Boolean);
+
+  const allProgramContents = programs
+    .map((p: string) => getProgramContent(p))
+    .filter(Boolean) as import("@/lib/offer-program-content").ProgramContent[];
+
   // Generate PDF
   const pdfBuffer = await generateOfferPDF({
     offerNumber: offer.offer_number,
@@ -62,6 +72,7 @@ export async function POST(
     pricePPTariff1: rate?.tariff_1 || offer.price_pp || 0,
     pricePPTariff2: rate?.tariff_2 || null,
     total: offer.total || 0,
+    allProgramContents,
   });
 
   // Upload PDF to Supabase Storage
