@@ -30,20 +30,28 @@ export async function POST(
   if (!offer.contact_email)
     return NextResponse.json({ error: "No contact email" }, { status: 400 });
 
-  // Get rate for both tariffs
-  const { data: rate } = await supabase
-    .from("offer_rates")
-    .select("tariff_1, tariff_2")
-    .eq("program_type", offer.program_type)
-    .eq("num_days", offer.num_days || 5)
-    .eq("school_year", offer.school_year || "2026/2027")
-    .eq("active", true)
-    .single();
-
-  // Collect program contents for all selected programs
+  // Collect programs
   const programs: string[] = Array.isArray(offer.programs) && offer.programs.length > 0
     ? offer.programs
     : [offer.program_type].filter(Boolean);
+
+  // Get rates for ALL programs
+  const { data: allRates } = await supabase
+    .from("offer_rates")
+    .select("program_type, tariff_1, tariff_2")
+    .in("program_type", programs)
+    .eq("num_days", offer.num_days || 5)
+    .eq("school_year", offer.school_year || "2026/2027")
+    .eq("active", true);
+
+  const programRates = programs.map((p: string) => {
+    const r = allRates?.find((rate) => rate.program_type === p);
+    return {
+      programType: p,
+      tariff1: r?.tariff_1 || offer.price_pp || 0,
+      tariff2: r?.tariff_2 || null,
+    };
+  });
 
   const allProgramContents = programs
     .map((p: string) => getProgramContent(p))
@@ -62,17 +70,18 @@ export async function POST(
       .filter(Boolean)
       .join(", "),
     contactName: offer.contact_name || "",
-    programType: offer.program_type,
+    programType: programs.join(" + "),
     startDate: offer.start_date,
     endDate: offer.end_date,
     numStudents: offer.num_students || 0,
     numGroups: offer.num_groups || 0,
     numTas: offer.num_tas || 0,
     tariff: (offer.tariff || 1) as 1 | 2,
-    pricePPTariff1: rate?.tariff_1 || offer.price_pp || 0,
-    pricePPTariff2: rate?.tariff_2 || null,
+    pricePPTariff1: programRates[0]?.tariff1 || offer.price_pp || 0,
+    pricePPTariff2: programRates[0]?.tariff2 || null,
     total: offer.total || 0,
     allProgramContents,
+    programRates,
   });
 
   // Upload PDF to Supabase Storage

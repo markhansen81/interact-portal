@@ -439,6 +439,8 @@ export async function generateOfferPDF(data: {
   total: number;
   programContent?: ProgramContent;
   allProgramContents?: ProgramContent[];
+  /** Per-program pricing for multi-program offers */
+  programRates?: { programType: string; tariff1: number; tariff2: number | null }[];
 }): Promise<Buffer> {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const pageWidth = 210;
@@ -615,77 +617,101 @@ export async function generateOfferPDF(data: {
   doc.text("Menge (SuS)", colQty, y);
   doc.text("Gesamtpreis", colTotal, y, { align: "right" });
 
-  // --- Tariff 1 row ---
-  y += 10;
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  setColor(doc, BLACK);
-
+  // --- Program line items ---
   const checkboxSize = 3;
   const cbX = colProgram;
   const labelX = colProgram + 5;
 
-  doc.setDrawColor(BLACK[0], BLACK[1], BLACK[2]);
-  doc.setLineWidth(0.3);
-  doc.rect(cbX, y - 2.5, checkboxSize, checkboxSize);
-  if (data.tariff === 1) {
-    doc.setFillColor(BLACK[0], BLACK[1], BLACK[2]);
-    doc.rect(cbX + 0.5, y - 2, checkboxSize - 1, checkboxSize - 1, "F");
+  // Build list of programs with rates
+  const lineItems = (data.programRates && data.programRates.length > 0)
+    ? data.programRates
+    : [{ programType: data.programType, tariff1: data.pricePPTariff1, tariff2: data.pricePPTariff2 }];
+
+  let grandTotal = 0;
+
+  for (let idx = 0; idx < lineItems.length; idx++) {
+    const item = lineItems[idx];
+    const selectedPrice = data.tariff === 1 ? item.tariff1 : (item.tariff2 ?? item.tariff1);
+    const lineTotal = selectedPrice * data.numStudents;
+    grandTotal += lineTotal;
+
+    // Tariff 1 row
+    y += 10;
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    setColor(doc, BLACK);
+
+    doc.setDrawColor(BLACK[0], BLACK[1], BLACK[2]);
+    doc.setLineWidth(0.3);
+    doc.rect(cbX, y - 2.5, checkboxSize, checkboxSize);
+    if (data.tariff === 1) {
+      doc.setFillColor(BLACK[0], BLACK[1], BLACK[2]);
+      doc.rect(cbX + 0.5, y - 2, checkboxSize - 1, checkboxSize - 1, "F");
+    }
+
+    doc.text(`${item.programType} \u2014 Tarif 1`, labelX, y);
+    doc.text(`${formatMoney(item.tariff1)} EUR`, colPrice, y);
+    doc.text(String(data.numStudents), colQty, y);
+    if (data.tariff === 1) {
+      doc.text(`${formatMoney(lineTotal)} EUR`, colTotal, y, { align: "right" });
+    }
+
+    // Tariff 1 description (only on first item to save space)
+    if (idx === 0) {
+      y += 5;
+      doc.setFontSize(7);
+      setColor(doc, GREY);
+      const tariff1Desc = "Preis pro Teilnehmer*in. Reduzierter Preis f\u00fcr Schulen, die \u00dcbernachtungsm\u00f6glichkeiten (Homestays) zur Verf\u00fcgung stellen oder sofern keine \u00dcbernachtung notwendig ist.";
+      const tariff1Lines = doc.splitTextToSize(tariff1Desc, colPrice - labelX - 4);
+      doc.text(tariff1Lines, labelX, y);
+      y += tariff1Lines.length * 3 + 2;
+    }
+
+    // Separator
+    y += 2;
+    doc.setDrawColor(LIGHT_GREY[0], LIGHT_GREY[1], LIGHT_GREY[2]);
+    doc.setLineWidth(0.2);
+    doc.line(tableLeft, y, tableLeft + contentWidth, y);
+
+    // Tariff 2 row
+    y += 6;
+    doc.setFontSize(9);
+    setColor(doc, BLACK);
+
+    doc.setDrawColor(BLACK[0], BLACK[1], BLACK[2]);
+    doc.setLineWidth(0.3);
+    doc.rect(cbX, y - 2.5, checkboxSize, checkboxSize);
+    if (data.tariff === 2) {
+      doc.setFillColor(BLACK[0], BLACK[1], BLACK[2]);
+      doc.rect(cbX + 0.5, y - 2, checkboxSize - 1, checkboxSize - 1, "F");
+    }
+
+    doc.text(`${item.programType} \u2014 Tarif 2`, labelX, y);
+    if (item.tariff2 !== null) {
+      doc.text(`${formatMoney(item.tariff2)} EUR`, colPrice, y);
+    }
+    doc.text(String(data.numStudents), colQty, y);
+    if (data.tariff === 2 && item.tariff2 !== null) {
+      const lineTotalT2 = item.tariff2 * data.numStudents;
+      doc.text(`${formatMoney(lineTotalT2)} EUR`, colTotal, y, { align: "right" });
+    }
+
+    // Tariff 2 description (only on first item)
+    if (idx === 0) {
+      y += 5;
+      doc.setFontSize(7);
+      setColor(doc, GREY);
+      doc.text("Preis pro Teilnehmer*in, inklusive \u00dcbernachtungskosten", labelX, y);
+    }
+
+    // Separator between programs
+    if (idx < lineItems.length - 1) {
+      y += 6;
+      doc.setDrawColor(LIGHT_GREY[0], LIGHT_GREY[1], LIGHT_GREY[2]);
+      doc.setLineWidth(0.3);
+      doc.line(tableLeft, y, tableLeft + contentWidth, y);
+    }
   }
-
-  doc.text(`${data.programType} \u2014 Tarif 1`, labelX, y);
-  doc.text(`${formatMoney(data.pricePPTariff1)} EUR`, colPrice, y);
-  doc.text(String(data.numStudents), colQty, y);
-  if (data.tariff === 1) {
-    doc.text(`${formatMoney(data.total)} EUR`, colTotal, y, {
-      align: "right",
-    });
-  }
-
-  y += 5;
-  doc.setFontSize(7);
-  setColor(doc, GREY);
-  const tariff1Desc =
-    "Preis pro Teilnehmer*in. Reduzierter Preis f\u00fcr Schulen, die \u00dcbernachtungsm\u00f6glichkeiten (Homestays) zur Verf\u00fcgung stellen oder sofern keine \u00dcbernachtung notwendig ist.";
-  const tariff1Lines = doc.splitTextToSize(tariff1Desc, colPrice - labelX - 4);
-  doc.text(tariff1Lines, labelX, y);
-  y += tariff1Lines.length * 3 + 4;
-
-  // Separator
-  doc.setDrawColor(LIGHT_GREY[0], LIGHT_GREY[1], LIGHT_GREY[2]);
-  doc.setLineWidth(0.2);
-  doc.line(tableLeft, y, tableLeft + contentWidth, y);
-
-  // --- Tariff 2 row ---
-  y += 6;
-  doc.setFontSize(9);
-  setColor(doc, BLACK);
-
-  doc.setDrawColor(BLACK[0], BLACK[1], BLACK[2]);
-  doc.setLineWidth(0.3);
-  doc.rect(cbX, y - 2.5, checkboxSize, checkboxSize);
-  if (data.tariff === 2) {
-    doc.setFillColor(BLACK[0], BLACK[1], BLACK[2]);
-    doc.rect(cbX + 0.5, y - 2, checkboxSize - 1, checkboxSize - 1, "F");
-  }
-
-  doc.text(`${data.programType} \u2014 Tarif 2`, labelX, y);
-  if (data.pricePPTariff2 !== null) {
-    doc.text(`${formatMoney(data.pricePPTariff2)} EUR`, colPrice, y);
-  }
-  doc.text(String(data.numStudents), colQty, y);
-  if (data.tariff === 2) {
-    doc.text(`${formatMoney(data.total)} EUR`, colTotal, y, {
-      align: "right",
-    });
-  }
-
-  y += 5;
-  doc.setFontSize(7);
-  setColor(doc, GREY);
-  const tariff2Desc =
-    "Preis pro Teilnehmer*in, inklusive \u00dcbernachtungskosten";
-  doc.text(tariff2Desc, labelX, y);
 
   // Bottom table line
   y += 6;
@@ -694,19 +720,27 @@ export async function generateOfferPDF(data: {
   doc.line(tableLeft, y, tableLeft + contentWidth, y);
 
   // --- Totals ---
+  // Recalculate grand total for correct tariff
+  if (data.tariff === 2) {
+    grandTotal = 0;
+    for (const item of lineItems) {
+      grandTotal += (item.tariff2 ?? item.tariff1) * data.numStudents;
+    }
+  }
+
   y += 8;
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   setColor(doc, BLACK);
   doc.text("Gesamtbetrag Netto", marginLeft, y);
-  doc.text(`${formatMoney(data.total)} EUR`, colTotal, y, { align: "right" });
+  doc.text(`${formatMoney(grandTotal)} EUR`, colTotal, y, { align: "right" });
 
   y += 6;
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
   setColor(doc, BLACK);
   doc.text("Gesamtbetrag", marginLeft, y);
-  doc.text(`${formatMoney(data.total)} EUR`, colTotal, y, { align: "right" });
+  doc.text(`${formatMoney(grandTotal)} EUR`, colTotal, y, { align: "right" });
 
   // --- Rahmenbedingungen ---
   y += 12;
