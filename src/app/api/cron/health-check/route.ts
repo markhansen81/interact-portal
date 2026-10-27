@@ -35,6 +35,32 @@ async function checkApiHealth(): Promise<CheckResult> {
   }
 }
 
+async function checkLeadForm(): Promise<CheckResult> {
+  try {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
+    const res = await fetch(`${appUrl}/lead-form`, { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) {
+      return { name: "lead_form", status: "error", message: `Lead form returned ${res.status}` };
+    }
+
+    // Check iframe headers — lead form MUST be embeddable
+    const xfo = res.headers.get("x-frame-options");
+    if (xfo && xfo.toUpperCase() === "DENY") {
+      return { name: "lead_form", status: "error", message: "Lead form iframe blocked by X-Frame-Options: DENY — schools cannot see the form" };
+    }
+
+    // Check the API endpoint too
+    const apiRes = await fetch(`${appUrl}/api/lead-form`, {
+      method: "OPTIONS",
+      signal: AbortSignal.timeout(5000),
+    }).catch(() => null);
+
+    return { name: "lead_form", status: "ok", message: "Lead form accessible and embeddable" };
+  } catch (err) {
+    return { name: "lead_form", status: "error", message: `Lead form unreachable: ${err}` };
+  }
+}
+
 async function checkSupabaseStorage(adminClient: ReturnType<typeof createAdminClient>): Promise<CheckResult> {
   try {
     const { error } = await adminClient.storage.listBuckets();
@@ -381,6 +407,7 @@ export async function GET(request: Request) {
   const results = await Promise.all([
     checkDatabase(adminClient),
     checkApiHealth(),
+    checkLeadForm(),
     checkSupabaseStorage(adminClient),
     checkDatevToken(adminClient),
     checkRecentErrors(adminClient),
