@@ -6,7 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "npx playwright test",
+    "test:admin": "npx playwright test --grep @admin",
+    "test:ta": "npx playwright test --grep @ta",
+    "test:teacher": "npx playwright test --grep @teacher",
+    "test:offers": "npx playwright test offers-flow",
+    "test:lead": "npx playwright test lead-form-flow",
+    "test:all": "npx playwright test --reporter=html"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.97.1",
