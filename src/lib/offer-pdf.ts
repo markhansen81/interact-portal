@@ -2,6 +2,12 @@ import jsPDF from "jspdf";
 import fs from "fs";
 import path from "path";
 import { ProgramContent, TimetableData } from "./offer-program-content";
+import {
+  drawUeberUnsPage,
+  drawMissionPage,
+  drawNativeSpeakerPage,
+  drawEinflussPage,
+} from "./offer-brochure-pages";
 
 function formatDateDE(dateStr: string): string {
   const [year, month, day] = dateStr.split("-");
@@ -453,7 +459,8 @@ export async function generateOfferPDF(data: {
     programPageCount++; // description page
     if (pc.timetable) programPageCount++; // timetable page
   }
-  const totalPages = 1 + programPageCount;
+  const brochurePageCount = 4; // Über Uns, Mission+Team, Native Speaker, Einfluss
+  const totalPages = 1 + brochurePageCount + programPageCount;
   let currentPage = 1;
 
   // ========================================================
@@ -728,6 +735,34 @@ export async function generateOfferPDF(data: {
   }
 
   drawFooter(doc, pageWidth, pageHeight, marginLeft, marginRight);
+  drawPageNumber(doc, currentPage, totalPages, pageWidth, pageHeight, marginRight);
+
+  // ========================================================
+  // BROCHURE PAGES: Company info (generated)
+  // ========================================================
+
+  // Über Uns
+  doc.addPage();
+  currentPage++;
+  drawUeberUnsPage(doc, data.schoolName, pageWidth, pageHeight, marginLeft, marginRight);
+  drawPageNumber(doc, currentPage, totalPages, pageWidth, pageHeight, marginRight);
+
+  // Unsere Mission + Team
+  doc.addPage();
+  currentPage++;
+  drawMissionPage(doc, data.schoolName, pageWidth, pageHeight, marginLeft, marginRight);
+  drawPageNumber(doc, currentPage, totalPages, pageWidth, pageHeight, marginRight);
+
+  // Native Speaker
+  doc.addPage();
+  currentPage++;
+  drawNativeSpeakerPage(doc, data.schoolName, pageWidth, pageHeight, marginLeft, marginRight);
+  drawPageNumber(doc, currentPage, totalPages, pageWidth, pageHeight, marginRight);
+
+  // Einfluss
+  doc.addPage();
+  currentPage++;
+  drawEinflussPage(doc, data.schoolName, pageWidth, pageHeight, marginLeft, marginRight);
   drawPageNumber(doc, currentPage, totalPages, pageWidth, pageHeight, marginRight);
 
   // ========================================================

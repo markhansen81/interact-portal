@@ -4,7 +4,6 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateOfferPDF } from "@/lib/offer-pdf";
 import { getProgramContent } from "@/lib/offer-program-content";
-import { mergeOfferWithBrochure } from "@/lib/offer-pdf-merge";
 import { sendEmail, offerEmail } from "@/lib/email";
 
 export async function POST(
@@ -76,16 +75,11 @@ export async function POST(
     allProgramContents,
   });
 
-  // Merge with static company brochure (if available)
-  const finalPdf = await mergeOfferWithBrochure(pdfBuffer, {
-    supabaseAdmin: adminClient as never,
-  });
-
   // Upload PDF to Supabase Storage
   const fileName = `offers/${offer.offer_number}.pdf`;
   const { error: uploadError } = await adminClient.storage
     .from("documents")
-    .upload(fileName, finalPdf, {
+    .upload(fileName, pdfBuffer, {
       contentType: "application/pdf",
       upsert: true,
     });
@@ -113,7 +107,7 @@ export async function POST(
     subject: emailContent.subject,
     html: emailContent.html,
     attachments: [
-      { filename: `Angebot_${offer.offer_number}.pdf`, content: finalPdf },
+      { filename: `Angebot_${offer.offer_number}.pdf`, content: pdfBuffer },
     ],
   });
 
