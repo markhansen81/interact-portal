@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader } from "@/components/ui";
+import { PageHeader, Button } from "@/components/ui";
 import { OffersTable } from "@/components/admin/offers-table";
+import { BrochureUpload } from "@/components/admin/brochure-upload";
 import Link from "next/link";
 
 export default async function OffersPage() {
@@ -21,12 +22,12 @@ export default async function OffersPage() {
       <PageHeader
         title="Offers"
         action={
-          <Link
-            href="/admin/offers/new"
-            className="inline-flex items-center justify-center font-medium transition-colors bg-neutral-900 text-white hover:bg-neutral-800 active:bg-black text-sm px-4 py-2"
-          >
-            New Offer
-          </Link>
+          <div className="flex items-center gap-3">
+            <BrochureUpload />
+            <Link href="/admin/offers/new">
+              <Button>New Offer</Button>
+            </Link>
+          </div>
         }
       />
       <OffersTable offers={offers || []} />
