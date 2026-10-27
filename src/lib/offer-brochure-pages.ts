@@ -93,7 +93,8 @@ export function drawUeberUnsPage(
   pageWidth: number,
   pageHeight: number,
   marginLeft: number,
-  marginRight: number
+  marginRight: number,
+  overrides?: { paragraph1?: string; paragraph2?: string; paragraph3?: string; callout?: string }
 ) {
   const contentWidth = pageWidth - marginLeft - marginRight;
 
@@ -112,7 +113,7 @@ export function drawUeberUnsPage(
   doc.setFontSize(11);
   setColor(doc, BLACK);
 
-  const aboutText =
+  const aboutText = overrides?.paragraph1 ||
     "ist eine gemeinnützige Organisation, die sich darauf spezialisiert einzigartige und kreative Lernerlebnisse in der englischen Sprache für Schüler*innen aller Altersgruppen zu schaffen. Durch den kulturellen Austausch mit internationalen Englisch Muttersprachler*innen und dem gemeinschaftlichen Erarbeiten von Projekten zu Themen, die für sie interessant sind und Spaß machen, ermöglichen wir Schüler*innen, wichtige Fähigkeiten wie Innovation, Kollaboration, Kommunikation und praktische Problemlösung in dieser Fremdsprache zu erlernen.";
   const aboutLines = doc.splitTextToSize(aboutText, contentWidth - boldWidth);
   // First line next to bold name
@@ -139,7 +140,7 @@ export function drawUeberUnsPage(
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
   setColor(doc, BLACK);
-  const paragraph2 =
+  const paragraph2 = overrides?.paragraph2 ||
     "Wir sind seit 2010 im deutschen Bildungssystem etabliert und haben Partnerschaften mit rund 200 Schulen, durch die wir jährlich mit ca. 10.000 Schüler*innen zusammenarbeiten. Über 85% unserer Partnerschulen kommen jedes Jahr zu uns zurück. Unserer Meinung nach erreichen wir dieses Ziel dadurch, dass wir kontinuierlich danach bestrebt sind, für Schüler*innen ausgezeichnete Lernmöglichkeiten zu schaffen und ein professioneller und engagierter Kooperationspartner für Schulen zu sein.";
   const p2Lines = doc.splitTextToSize(paragraph2, contentWidth);
   doc.text(p2Lines, marginLeft, y, { lineHeightFactor: 1.6 });
@@ -149,7 +150,7 @@ export function drawUeberUnsPage(
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
   setColor(doc, BLACK);
-  const paragraph3 =
+  const paragraph3 = overrides?.paragraph3 ||
     "Die Stärke von InterACT English liegt darin, Klassen durch einen kreativen Prozess zu leiten und Schüler*innen den Mut, die Motivation und das Selbstvertrauen zu geben, sich in der englischen Sprache auszudrücken und erste Erfolgserlebnisse zu sammeln. Die intensive Zusammenarbeit mit unserem pädagogisch erfahrenen Team aus professionellen Kunstschaffenden aus aller Welt, die diverse Kulturen und Weltanschauungen repräsentieren, vermittelt Ihren Schüler*innen gleichzeitig ein Verständnis für kulturelle Vielfalt.";
   const p3Lines = doc.splitTextToSize(paragraph3, contentWidth);
   doc.text(p3Lines, marginLeft, y, { lineHeightFactor: 1.6 });
@@ -172,8 +173,9 @@ export function drawUeberUnsPage(
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
   setColor(doc, PINK);
+  const calloutTitle = overrides?.callout || "Seit 2010 im deutschen Bildungssystem";
   doc.text(
-    "Seit 2010 im deutschen Bildungssystem",
+    calloutTitle,
     marginLeft + 3 + boxPadding,
     boxY + 8
   );
@@ -214,7 +216,9 @@ export function drawMissionPage(
   pageWidth: number,
   pageHeight: number,
   marginLeft: number,
-  marginRight: number
+  marginRight: number,
+  missionOverrides?: { text?: string },
+  teamOverrides?: { members?: Array<{ name: string; role: string }> }
 ) {
   const contentWidth = pageWidth - marginLeft - marginRight;
 
@@ -225,7 +229,7 @@ export function drawMissionPage(
   let y = 60;
 
   // Pink left border line for the pull quote
-  const missionText =
+  const missionText = missionOverrides?.text ||
     "Die Leidenschaft unseres Teams ist es, Englischunterricht mit kreativen, künstlerischen Projekten an Schulen in ganz Deutschland zu bereichern und nachhaltig zu etablieren. Dafür bringen wir Muttersprachler*innen sowie ganze Sprachwelten, internationale Perspektiven und vielfältige Kulturen direkt an Ihre Schule. Mit diesem Ansatz ermöglichen wir Schüler*innen einzigartige Erlebnisse, die sie nicht nur sprachlich, sondern auch in ihren sozialen Kompetenzen stärken – Fähigkeiten, die in unserer globalen und vernetzten Welt unverzichtbar sind.";
 
   doc.setFontSize(12);
@@ -255,10 +259,11 @@ export function drawMissionPage(
   y += 14;
 
   // Team table — 3 columns, 2 rows, clean layout
+  const teamMembers = teamOverrides?.members || TEAM_MEMBERS;
   const colWidth = contentWidth / 3;
   const rowHeight = 28;
 
-  for (let i = 0; i < TEAM_MEMBERS.length; i++) {
+  for (let i = 0; i < teamMembers.length; i++) {
     const col = i % 3;
     const row = Math.floor(i / 3);
     const x = marginLeft + col * colWidth;
@@ -268,23 +273,26 @@ export function drawMissionPage(
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     setColor(doc, BLACK);
-    doc.text(TEAM_MEMBERS[i].name, x + 2, memberY + 4);
+    doc.text(teamMembers[i].name, x + 2, memberY + 4);
 
     // Role — grey italic 8pt
     doc.setFontSize(8);
     doc.setFont("helvetica", "italic");
     setColor(doc, GREY);
     const roleLines = doc.splitTextToSize(
-      TEAM_MEMBERS[i].role,
+      teamMembers[i].role,
       colWidth - 6
     );
     doc.text(roleLines, x + 2, memberY + 10);
 
-    // Country tag — pink 8pt
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
-    setColor(doc, PINK);
-    doc.text(TEAM_MEMBERS[i].country, x + 2, memberY + 10 + roleLines.length * 3.5 + 2);
+    // Country tag — pink 8pt (only available on default data)
+    const member = TEAM_MEMBERS.find(m => m.name === teamMembers[i].name);
+    if (member?.country) {
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      setColor(doc, PINK);
+      doc.text(member.country, x + 2, memberY + 10 + roleLines.length * 3.5 + 2);
+    }
 
     // Grey separator line between rows (under first row only)
     if (row === 0 && i < 3) {
@@ -324,7 +332,8 @@ export function drawNativeSpeakerPage(
   pageWidth: number,
   pageHeight: number,
   marginLeft: number,
-  marginRight: number
+  marginRight: number,
+  overrides?: { intro?: string; countries?: Array<{ name: string; count: number }>; teaching_artists?: string[] }
 ) {
   const contentWidth = pageWidth - marginLeft - marginRight;
 
@@ -337,7 +346,7 @@ export function drawNativeSpeakerPage(
   doc.setFont("helvetica", "normal");
   setColor(doc, BLACK);
 
-  const introText =
+  const introText = overrides?.intro ||
     "Unser Team aus über 80 Muttersprachler*innen kommt hauptsächlich aus Großbritannien, Irland, den USA, Kanada, Australien, Südafrika und Neuseeland. Alle unsere Teaching Artists sind pädagogisch geschult und bringen ihre einzigartigen kulturellen Perspektiven in den Unterricht ein.";
   const introLines = doc.splitTextToSize(introText, contentWidth);
   doc.text(introLines, marginLeft, y, { lineHeightFactor: 1.5 });
@@ -367,7 +376,11 @@ export function drawNativeSpeakerPage(
   const countryStartY = y + 26;
   const countryColWidth = (boxWidth - 24) / 3;
 
-  for (let i = 0; i < COUNTRY_DATA.length; i++) {
+  const countries = overrides?.countries
+    ? overrides.countries.map(c => ({ name: c.name, count: String(c.count) }))
+    : COUNTRY_DATA;
+
+  for (let i = 0; i < countries.length; i++) {
     const col = i % 3;
     const row = Math.floor(i / 3);
     const cx = boxX + 12 + col * countryColWidth;
@@ -381,12 +394,12 @@ export function drawNativeSpeakerPage(
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     setColor(doc, WHITE);
-    doc.text(COUNTRY_DATA[i].name, cx + 8, cy);
+    doc.text(countries[i].name, cx + 8, cy);
 
     // TA count
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
-    doc.text(`${COUNTRY_DATA[i].count} TAs`, cx + 8, cy + 5);
+    doc.text(`${countries[i].count} TAs`, cx + 8, cy + 5);
   }
 
   y += boxHeight + 12;
@@ -403,7 +416,9 @@ export function drawNativeSpeakerPage(
   doc.setFont("helvetica", "normal");
   setColor(doc, GREY);
 
-  for (let i = 0; i < TEACHING_ARTISTS.length; i++) {
+  const teachingArtists = overrides?.teaching_artists || TEACHING_ARTISTS;
+
+  for (let i = 0; i < teachingArtists.length; i++) {
     const col = i % 4;
     const row = Math.floor(i / 4);
     const tx = marginLeft + col * taColWidth;
@@ -414,7 +429,7 @@ export function drawNativeSpeakerPage(
     doc.circle(tx + 1.5, ty - 1, 0.8, "F");
 
     setColor(doc, BLACK);
-    doc.text(TEACHING_ARTISTS[i], tx + 4, ty);
+    doc.text(teachingArtists[i], tx + 4, ty);
   }
 
   drawFooter(doc, pageWidth, pageHeight, marginLeft);
@@ -832,7 +847,8 @@ export function drawEinflussPage(
   pageWidth: number,
   pageHeight: number,
   marginLeft: number,
-  marginRight: number
+  marginRight: number,
+  overrides?: { testimonials?: Array<{ quote: string; author: string }>; stats?: Array<{ value: string; label: string }> }
 ) {
   const contentWidth = pageWidth - marginLeft - marginRight;
 
@@ -841,72 +857,55 @@ export function drawEinflussPage(
 
   let y = 58;
 
-  // Testimonial 1
-  // Large pink opening quote mark
-  doc.setFontSize(48);
-  doc.setFont("helvetica", "bold");
-  setColor(doc, PINK);
-  doc.text("\u201C", marginLeft, y + 4);
+  const defaultTestimonials = [
+    {
+      quote: "Our Zusammenarbeit with InterACT was fantastic again! I loved working with the Teaching-Artists! Great inspiration for me that goes beyond three days... Wonderful results, happy kids and teachers... so soll es immer sein!",
+      author: "Frau Lellow, Englischlehrerin, Elbeschule, Berlin",
+    },
+    {
+      quote: "Nicht nur haben die Schüler gemeinsam eine Menge erreicht und tolle Produkte und Präsentationen kreiert. Sie haben eine Woche lang sehr viel Englisch gesprochen und sich dabei in Wortschatz und flüssigem Sprechen enorm verbessert. Das Projekt, das die Fachschaft Englisch bei einem Wettbewerb gewonnen hat, darf also als großer Erfolg bezeichnet werden.",
+      author: "Johannes S. StR, Fachbetreuer Englisch\nAlexander von Humboldt Schweinfurt",
+    },
+  ];
 
-  // Quote text — italic, indented
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "italic");
-  setColor(doc, BLACK);
-  const quote1 =
-    "Our Zusammenarbeit with InterACT was fantastic again! I loved working with the Teaching-Artists! Great inspiration for me that goes beyond three days... Wonderful results, happy kids and teachers... so soll es immer sein!";
-  const q1Lines = doc.splitTextToSize(quote1, contentWidth - 20);
-  doc.text(q1Lines, marginLeft + 14, y, { lineHeightFactor: 1.5 });
-  y += q1Lines.length * 5.5 + 4;
+  const testimonials = overrides?.testimonials || defaultTestimonials;
 
-  // Attribution with thin pink line above
-  doc.setFillColor(PINK[0], PINK[1], PINK[2]);
-  doc.rect(marginLeft + 14, y, 30, 0.5, "F");
-  y += 5;
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  setColor(doc, GREY);
-  doc.text(
-    "Frau Lellow, Englischlehrerin, Elbeschule, Berlin",
-    marginLeft + 14,
-    y
-  );
-  y += 12;
+  for (let t = 0; t < testimonials.length; t++) {
+    if (t > 0) {
+      // Grey separator between testimonials
+      doc.setDrawColor(LIGHT_GREY[0], LIGHT_GREY[1], LIGHT_GREY[2]);
+      doc.setLineWidth(0.3);
+      doc.line(marginLeft, y, marginLeft + contentWidth, y);
+      y += 10;
+    }
 
-  // Grey separator
-  doc.setDrawColor(LIGHT_GREY[0], LIGHT_GREY[1], LIGHT_GREY[2]);
-  doc.setLineWidth(0.3);
-  doc.line(marginLeft, y, marginLeft + contentWidth, y);
-  y += 10;
+    // Large pink opening quote mark
+    doc.setFontSize(48);
+    doc.setFont("helvetica", "bold");
+    setColor(doc, PINK);
+    doc.text("\u201C", marginLeft, y + 4);
 
-  // Testimonial 2
-  doc.setFontSize(48);
-  doc.setFont("helvetica", "bold");
-  setColor(doc, PINK);
-  doc.text("\u201C", marginLeft, y + 4);
+    // Quote text — italic, indented
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "italic");
+    setColor(doc, BLACK);
+    const qLines = doc.splitTextToSize(testimonials[t].quote, contentWidth - 20);
+    doc.text(qLines, marginLeft + 14, y, { lineHeightFactor: 1.5 });
+    y += qLines.length * 5.5 + 4;
 
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "italic");
-  setColor(doc, BLACK);
-  const quote2 =
-    "Nicht nur haben die Schüler gemeinsam eine Menge erreicht und tolle Produkte und Präsentationen kreiert. Sie haben eine Woche lang sehr viel Englisch gesprochen und sich dabei in Wortschatz und flüssigem Sprechen enorm verbessert. Das Projekt, das die Fachschaft Englisch bei einem Wettbewerb gewonnen hat, darf also als großer Erfolg bezeichnet werden.";
-  const q2Lines = doc.splitTextToSize(quote2, contentWidth - 20);
-  doc.text(q2Lines, marginLeft + 14, y, { lineHeightFactor: 1.5 });
-  y += q2Lines.length * 5.5 + 4;
-
-  // Attribution 2
-  doc.setFillColor(PINK[0], PINK[1], PINK[2]);
-  doc.rect(marginLeft + 14, y, 30, 0.5, "F");
-  y += 5;
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  setColor(doc, GREY);
-  doc.text("Johannes S. StR, Fachbetreuer Englisch", marginLeft + 14, y);
-  doc.text(
-    "Alexander von Humboldt Schweinfurt",
-    marginLeft + 14,
-    y + 4
-  );
-  y += 16;
+    // Attribution with thin pink line above
+    doc.setFillColor(PINK[0], PINK[1], PINK[2]);
+    doc.rect(marginLeft + 14, y, 30, 0.5, "F");
+    y += 5;
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    setColor(doc, GREY);
+    const authorLines = testimonials[t].author.split("\n");
+    for (let a = 0; a < authorLines.length; a++) {
+      doc.text(authorLines[a], marginLeft + 14, y + a * 4);
+    }
+    y += authorLines.length * 4 + 8;
+  }
 
   // INTERACT IN ZAHLEN section header
   doc.setFontSize(16);
@@ -924,28 +923,27 @@ export function drawEinflussPage(
   const halfW = (contentWidth - 8) / 2;
   const boxHeight = 36;
 
-  const stats = [
+  const defaultStats = [
     {
       value: "15.000",
       label: "Schüler*innen, welche in 2024\ndurch Programme mit InterACT\nEnglish erreicht wurden",
-      color: GREEN,
     },
     {
       value: "200",
       label: "Schulkooperationen\nin Deutschland",
-      color: PINK,
     },
     {
       value: "1.000",
       label: "Lehrer*innen, welche in 2024\ndurch Berufliche Weiterbildung\nmit InterACT English erreicht wurden",
-      color: GREEN,
     },
     {
       value: "85%",
       label: "der Schulen wiederholen\nProgramme mit InterACT English\njedes Jahr",
-      color: PINK,
     },
   ];
+
+  const stats = overrides?.stats || defaultStats;
+  const statColors = [GREEN, PINK, GREEN, PINK];
 
   for (let i = 0; i < stats.length; i++) {
     const col = i % 2;
@@ -961,7 +959,7 @@ export function drawEinflussPage(
     // Big number
     doc.setFontSize(32);
     doc.setFont("helvetica", "bold");
-    setColor(doc, stats[i].color);
+    setColor(doc, statColors[i % statColors.length]);
     doc.text(stats[i].value, bx + 8, by + 16);
 
     // Description

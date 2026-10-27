@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateOfferPDF } from "@/lib/offer-pdf";
 import { getProgramContent } from "@/lib/offer-program-content";
+import { getBrochureData } from "@/lib/offer-brochure-data";
 import { sendEmail, offerEmail } from "@/lib/email";
 
 export async function POST(
@@ -57,6 +58,9 @@ export async function POST(
     .map((p: string) => getProgramContent(p))
     .filter(Boolean) as import("@/lib/offer-program-content").ProgramContent[];
 
+  // Fetch editable brochure content from DB (falls back to hardcoded if no data)
+  const brochureData = await getBrochureData();
+
   // Generate PDF
   const pdfBuffer = await generateOfferPDF({
     offerNumber: offer.offer_number,
@@ -82,6 +86,7 @@ export async function POST(
     total: offer.total || 0,
     allProgramContents,
     programRates,
+    brochureData,
   });
 
   // Upload PDF to Supabase Storage
