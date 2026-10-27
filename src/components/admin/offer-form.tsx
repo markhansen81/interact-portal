@@ -41,6 +41,8 @@ interface OfferData {
 interface OfferFormProps {
   prefill?: Partial<OfferData>;
   rates: OfferRate[];
+  /** If editing, pass the offer ID */
+  offerId?: string;
 }
 
 const PROGRAM_TYPES = [
@@ -82,7 +84,8 @@ const inputClass =
   "w-full border border-neutral-300 rounded-sm px-4 py-2 text-sm focus:outline-none focus:border-black focus:ring-0";
 const labelClass = "block text-sm font-medium text-neutral-700 mb-1";
 
-export function OfferForm({ prefill, rates }: OfferFormProps) {
+export function OfferForm({ prefill, rates, offerId }: OfferFormProps) {
+  const isEdit = !!offerId;
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -156,20 +159,35 @@ export function OfferForm({ prefill, rates }: OfferFormProps) {
         total: total || null,
       };
 
-      const res = await fetch("/api/admin/offers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      let id = offerId;
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to save offer");
+      if (isEdit) {
+        // Update existing offer
+        const res = await fetch(`/api/admin/offers/${offerId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "Failed to update offer");
+        }
+      } else {
+        // Create new offer
+        const res = await fetch("/api/admin/offers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "Failed to save offer");
+        }
+        const created = await res.json();
+        id = created.id;
       }
 
-      const { id } = await res.json();
-
-      if (sendAfterSave) {
+      if (sendAfterSave && id) {
         await fetch(`/api/admin/offers/${id}/send`, { method: "POST" });
       }
 
@@ -501,10 +519,25 @@ export function OfferForm({ prefill, rates }: OfferFormProps) {
         />
       </div>
 
+      {/* Calculated total display */}
+      <div className="border border-neutral-200 rounded-sm p-4 bg-neutral-50">
+        <div className="flex items-baseline justify-between">
+          <span className="text-sm text-neutral-500">Calculated Total</span>
+          <span className="text-3xl font-light tracking-tight text-neutral-900">
+            {total > 0 ? `€${total.toLocaleString("de-DE", { minimumFractionDigits: 2 })}` : "—"}
+          </span>
+        </div>
+        <p className="text-xs text-neutral-400 mt-1">
+          {form.price_pp && form.num_students
+            ? `€${Number(form.price_pp).toFixed(2)} × ${form.num_students} Schüler*innen`
+            : "Price per student × number of students"}
+        </p>
+      </div>
+
       {/* Actions */}
       <div className="flex items-center gap-3 pt-4 border-t border-neutral-200">
         <Button type="submit" disabled={saving}>
-          {saving ? "Saving..." : "Save Draft"}
+          {saving ? "Saving..." : isEdit ? "Update Offer" : "Save Draft"}
         </Button>
         <Button
           type="button"
@@ -512,7 +545,7 @@ export function OfferForm({ prefill, rates }: OfferFormProps) {
           disabled={saving}
           onClick={() => handleSubmit(true)}
         >
-          Save & Send
+          {isEdit ? "Update & Resend" : "Save & Send"}
         </Button>
       </div>
     </form>
