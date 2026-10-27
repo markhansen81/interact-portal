@@ -11,6 +11,7 @@ interface Offer {
   contact_name: string | null;
   contact_email: string | null;
   program_type: string | null;
+  programs: string[] | null;
   num_students: number | null;
   total: number | null;
   status: string;
@@ -107,7 +108,7 @@ export function OffersTable({ offers }: { offers: Offer[] }) {
                 School
               </th>
               <th className="pb-3 pr-6 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">
-                Program
+                Programs
               </th>
               <th className="pb-3 pr-6 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">
                 Students
@@ -151,7 +152,9 @@ export function OffersTable({ offers }: { offers: Offer[] }) {
                       )}
                     </td>
                     <td className="py-4 pr-6 text-neutral-600">
-                      {offer.program_type || "-"}
+                      {Array.isArray(offer.programs) && offer.programs.length > 0
+                        ? offer.programs.join(", ")
+                        : offer.program_type || "-"}
                     </td>
                     <td className="py-4 pr-6 text-neutral-600">
                       {offer.num_students ?? "-"}
