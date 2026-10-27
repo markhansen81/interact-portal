@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import fs from "fs";
 import path from "path";
 import { ProgramContent, TimetableData } from "./offer-program-content";
+import type { BrochureData } from "./offer-brochure-data";
 import {
   drawUeberUnsPage,
   drawMissionPage,
@@ -484,6 +485,8 @@ export async function generateOfferPDF(data: {
   allProgramContents?: ProgramContent[];
   /** Per-program pricing for multi-program offers */
   programRates?: { programType: string; tariff1: number; tariff2: number | null }[];
+  /** Editable brochure content from DB (overrides hardcoded defaults) */
+  brochureData?: BrochureData;
 }): Promise<Buffer> {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const pageWidth = 210;
@@ -822,25 +825,25 @@ export async function generateOfferPDF(data: {
   // Über Uns
   doc.addPage();
   currentPage++;
-  drawUeberUnsPage(doc, data.schoolName, pageWidth, pageHeight, marginLeft, marginRight);
+  drawUeberUnsPage(doc, data.schoolName, pageWidth, pageHeight, marginLeft, marginRight, data.brochureData?.ueber_uns);
   drawPageNumber(doc, currentPage, totalPages, pageWidth, pageHeight, marginRight);
 
   // Unsere Mission + Team
   doc.addPage();
   currentPage++;
-  drawMissionPage(doc, data.schoolName, pageWidth, pageHeight, marginLeft, marginRight);
+  drawMissionPage(doc, data.schoolName, pageWidth, pageHeight, marginLeft, marginRight, data.brochureData?.mission, data.brochureData?.team);
   drawPageNumber(doc, currentPage, totalPages, pageWidth, pageHeight, marginRight);
 
   // Native Speaker
   doc.addPage();
   currentPage++;
-  drawNativeSpeakerPage(doc, data.schoolName, pageWidth, pageHeight, marginLeft, marginRight);
+  drawNativeSpeakerPage(doc, data.schoolName, pageWidth, pageHeight, marginLeft, marginRight, data.brochureData?.native_speaker);
   drawPageNumber(doc, currentPage, totalPages, pageWidth, pageHeight, marginRight);
 
   // Einfluss
   doc.addPage();
   currentPage++;
-  drawEinflussPage(doc, data.schoolName, pageWidth, pageHeight, marginLeft, marginRight);
+  drawEinflussPage(doc, data.schoolName, pageWidth, pageHeight, marginLeft, marginRight, data.brochureData?.einfluss);
   drawPageNumber(doc, currentPage, totalPages, pageWidth, pageHeight, marginRight);
 
   // ========================================================

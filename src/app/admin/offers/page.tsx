@@ -24,6 +24,9 @@ export default async function OffersPage() {
         action={
           <div className="flex items-center gap-3">
             <BrochureUpload />
+            <Link href="/admin/offers/content">
+              <Button variant="ghost" size="sm">Edit Content</Button>
+            </Link>
             <Link href="/admin/offers/new">
               <Button>New Offer</Button>
             </Link>

@@ -68,6 +68,12 @@ export default async function TemplatesPage() {
  version: programEdits > 0 ? `${programEdits} programs edited` : null,
  icon: "star",
  },
+ {
+ title: "Offer Brochure Content",
+ description: "Edit the static pages included in every offer PDF: Über Uns, Mission, Team, Native Speaker, and Impact sections.",
+ href: "/admin/offers/content",
+ icon: "star",
+ },
  ];
 
  return (
