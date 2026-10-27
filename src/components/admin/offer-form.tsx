@@ -21,6 +21,7 @@ interface OfferData {
   postcode: string;
   state: string;
   program_type: string;
+  programs: string[];
   grade_level: string;
   num_students: number | "";
   num_groups: number | "";
@@ -95,6 +96,7 @@ export function OfferForm({ prefill, rates }: OfferFormProps) {
     postcode: "",
     state: "",
     program_type: "",
+    programs: [],
     grade_level: "",
     num_students: "",
     num_groups: "",
@@ -110,16 +112,17 @@ export function OfferForm({ prefill, rates }: OfferFormProps) {
     ...prefill,
   });
 
-  // Auto-lookup rate when program_type, num_days, or tariff changes
+  // Auto-lookup rate when programs, num_days, or tariff changes (uses first program)
   const matchedRate = useMemo(() => {
-    if (!form.program_type || !form.num_days) return null;
+    const primary = form.programs[0] || form.program_type;
+    if (!primary || !form.num_days) return null;
     return rates.find(
       (r) =>
-        r.program_type === form.program_type &&
+        r.program_type === primary &&
         r.num_days === Number(form.num_days) &&
         r.tariff === form.tariff
     );
-  }, [form.program_type, form.num_days, form.tariff, rates]);
+  }, [form.programs, form.program_type, form.num_days, form.tariff, rates]);
 
   useEffect(() => {
     if (matchedRate) {
@@ -143,6 +146,8 @@ export function OfferForm({ prefill, rates }: OfferFormProps) {
     try {
       const payload = {
         ...form,
+        program_type: form.programs[0] || form.program_type,
+        programs: form.programs,
         num_students: form.num_students !== "" ? Number(form.num_students) : null,
         num_groups: form.num_groups !== "" ? Number(form.num_groups) : null,
         num_tas: form.num_tas !== "" ? Number(form.num_tas) : null,
@@ -283,19 +288,30 @@ export function OfferForm({ prefill, rates }: OfferFormProps) {
         </h3>
 
         <div>
-          <label className={labelClass}>Program Type</label>
-          <select
-            value={form.program_type}
-            onChange={(e) => update("program_type", e.target.value)}
-            className={inputClass}
-          >
-            <option value="">Select program...</option>
+          <label className={labelClass}>Programs *</label>
+          <p className="text-xs text-neutral-400 mb-2">Select all programs for this offer. Each gets its own description page in the PDF.</p>
+          <div className="grid grid-cols-2 gap-2">
             {PROGRAM_TYPES.map((p) => (
-              <option key={p} value={p}>
+              <label key={p} className="flex items-center gap-2 text-sm text-neutral-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.programs.includes(p)}
+                  onChange={(e) => {
+                    const next = e.target.checked
+                      ? [...form.programs, p]
+                      : form.programs.filter((x) => x !== p);
+                    setForm((prev) => ({
+                      ...prev,
+                      programs: next,
+                      program_type: next[0] || "",
+                    }));
+                  }}
+                  className="rounded-sm border-neutral-300"
+                />
                 {p}
-              </option>
+              </label>
             ))}
-          </select>
+          </div>
         </div>
 
         <div>

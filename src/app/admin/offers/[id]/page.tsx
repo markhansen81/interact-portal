@@ -104,7 +104,14 @@ export default async function OfferDetailPage({ params }: Props) {
             Program Details
           </h3>
           <dl className="space-y-3">
-            <DetailRow label="Program" value={offer.program_type} />
+            <DetailRow
+              label="Programs"
+              value={
+                Array.isArray(offer.programs) && offer.programs.length > 0
+                  ? offer.programs.join(", ")
+                  : offer.program_type
+              }
+            />
             <DetailRow label="Grade Level" value={offer.grade_level} />
             <DetailRow label="Students" value={offer.num_students} />
             <DetailRow label="Groups" value={offer.num_groups} />

@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
       postcode: body.postcode,
       state: body.state,
       program_type: body.program_type,
+      programs: body.programs || [body.program_type].filter(Boolean),
       grade_level: body.grade_level,
       num_students: body.num_students,
       num_groups: body.num_groups,
