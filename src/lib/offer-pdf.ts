@@ -7,6 +7,7 @@ import {
   drawMissionPage,
   drawNativeSpeakerPage,
   drawEinflussPage,
+  drawPreislistePage,
 } from "./offer-brochure-pages";
 
 function formatDateDE(dateStr: string): string {
@@ -504,7 +505,8 @@ export async function generateOfferPDF(data: {
     if (pc.timetable) programPageCount++; // timetable page
   }
   const brochurePageCount = 4; // Über Uns, Mission+Team, Native Speaker, Einfluss
-  const totalPages = 1 + brochurePageCount + programPageCount;
+  const preislistePageCount = 1; // Preisliste
+  const totalPages = 1 + brochurePageCount + programPageCount + preislistePageCount;
   let currentPage = 1;
 
   // ========================================================
@@ -875,6 +877,14 @@ export async function generateOfferPDF(data: {
       drawPageNumber(doc, currentPage, totalPages, pageWidth, pageHeight, marginRight);
     }
   }
+
+  // ========================================================
+  // PREISLISTE PAGE: Rate card (always last)
+  // ========================================================
+  doc.addPage();
+  currentPage++;
+  drawPreislistePage(doc, data.schoolName, pageWidth, pageHeight, marginLeft, marginRight);
+  drawPageNumber(doc, currentPage, totalPages, pageWidth, pageHeight, marginRight);
 
   // Convert to Buffer
   const arrayBuffer = doc.output("arraybuffer");

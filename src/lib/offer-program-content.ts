@@ -318,6 +318,227 @@ const programContentMap: Record<string, ProgramContent> = {
     ],
     effect: [],
   },
+
+  "English Class Trip": {
+    name: "English Class Trip",
+    tagline: "Eine unvergessliche Klassenfahrt auf Englisch",
+    gradeRange: "Klassenstufen 5\u201313",
+    duration: "5 Tage",
+    studentsRange: "24\u2013200 Sch\u00fcler*innen, 2 Native Speaker pro Gruppe",
+    description:
+      "Die English Class Trip verbindet Klassenfahrt mit immersivem Englischunterricht. Sch\u00fcler*innen verbringen eine Woche in einer Jugendherberge und arbeiten t\u00e4glich mit Native Speaking Teaching Artists. Durch kreative Workshops in Theater, Musik, Tanz, Kunst und Sport erleben die Sch\u00fcler*innen Englisch als lebendige Kommunikationssprache. Die Kombination aus Abenteuer, Gemeinschaft und Sprachpraxis macht diese Klassenfahrt zu einem einzigartigen Erlebnis.",
+    skills: [
+      "Intensive Sprachpraxis in authentischen Situationen",
+      "Teamarbeit und Gruppendynamik auf Englisch",
+      "Kreatives Schreiben und Storytelling",
+      "Pr\u00e4sentationsf\u00e4higkeiten",
+      "Interkultureller Austausch",
+    ],
+    activities: [
+      "Morning Warm-up und Team Building",
+      "Theatre und Performance Workshops",
+      "Art und Creative Projects",
+      "Sport und Outdoor Activities",
+      "Evening Programme",
+      "The Big Show \u2013 Abschlusspr\u00e4sentation",
+    ],
+    effect: [],
+    timetable: {
+      daysCount: 5,
+      gradeBlocks: [
+        {
+          label: "Klasse 5 bis 13",
+          periods: 6,
+          slots: [
+            ["Team Building", "Speak Up", "Theatre", "Art", "Sport", "Evening Programme"],
+            ["Team Building", "Speak Up", "Theatre", "Art", "Language Game", "Evening Programme"],
+            ["Team Building", "Speak Up", "Theatre", "Art", "Sport", "Evening Programme"],
+            ["Team Building", "Speak Up", "Theatre", "Art", "Language Game", "Evening Programme"],
+            ["Team Building", "Speak Up", "Theatre", "Art", "Sport", "Presentation"],
+          ],
+        },
+      ],
+      notes: [
+        "1 Schulstunde = 45 Minuten",
+        "2 Native Speaker pro Gruppe",
+        "Abendprogramm in der Jugendherberge",
+      ],
+    },
+  },
+
+  "Shakespeare Workshop": {
+    name: "Shakespeare Workshop",
+    tagline: "Shakespeare lebendig erleben",
+    gradeRange: "Klassenstufen 9\u201313",
+    duration: "3 Tage // Unterrichtseinheiten 30 x 45 Min",
+    studentsRange: "14\u201324 Sch\u00fcler*innen, 1 Native Speaker pro Gruppe",
+    description:
+      "Der Shakespeare Workshop bringt die Werke William Shakespeares zum Leben. Sch\u00fcler*innen erarbeiten Szenen aus Romeo und Julia, Macbeth, A Midsummer Night\u2019s Dream oder anderen St\u00fccken. Durch Theater\u00fcbungen, Textarbeit und szenische Interpretation erleben sie Shakespeares Sprache als lebendiges, emotionales Erlebnis. Der Workshop f\u00f6rdert nicht nur das Textverst\u00e4ndnis, sondern auch Selbstvertrauen und Ausdrucksf\u00e4higkeit in der englischen Sprache.",
+    skills: [
+      "Textverst\u00e4ndnis und -interpretation",
+      "Szenisches Spiel und B\u00fchnenpr\u00e4senz",
+      "Aussprache und Intonation im Englischen",
+      "Analyse literarischer Texte",
+      "Kreative Textarbeit",
+    ],
+    activities: [
+      "Warm-up und Theater\u00fcbungen",
+      "Textarbeit und Szenenanalyse",
+      "Szenische Interpretation und Proben",
+      "Improvisation mit Shakespeare-Texten",
+      "Auff\u00fchrung ausgew\u00e4hlter Szenen",
+    ],
+    effect: [],
+    timetable: {
+      daysCount: 3,
+      gradeBlocks: [
+        {
+          label: "Klasse 9 bis 13",
+          periods: 6,
+          slots: [
+            ["Theatre", "Speak Up", "Theatre", "Language Game", "Theatre", "Language Game"],
+            ["Theatre", "Theatre", "Theatre", "Art", "Theatre", "Language Game"],
+            ["Theatre", "Theatre", "Theatre", "Presentation", "Presentation", "Speak Up"],
+          ],
+        },
+      ],
+      notes: [
+        "1 Schulstunde = 45 Minuten",
+        "1 Native Speaker pro Gruppe",
+      ],
+    },
+  },
+
+  "Debating Skills Workshop": {
+    name: "Debating Skills Workshop",
+    tagline: "\u00dcberzeugend argumentieren auf Englisch",
+    gradeRange: "Klassenstufen 9\u201313",
+    duration: "3 Tage // Unterrichtseinheiten 30 x 45 Min",
+    studentsRange: "14\u201324 Sch\u00fcler*innen, 1 Native Speaker pro Gruppe",
+    description:
+      "Der Debating Skills Workshop vermittelt Sch\u00fcler*innen die Kunst der englischsprachigen Debatte. Von der Strukturierung von Argumenten \u00fcber Rhetorik bis hin zur spontanen Reaktion auf Gegenargumente \u2013 die Sch\u00fcler*innen entwickeln ihre F\u00e4higkeit, \u00fcberzeugend und selbstbewusst auf Englisch zu argumentieren. Der Workshop bereitet auch auf offizielle Debating-Wettbewerbe vor.",
+    skills: [
+      "Argumentationsstruktur und -logik",
+      "Rhetorische Techniken",
+      "Spontanes Reagieren auf Gegenargumente",
+      "\u00dcberzeugend pr\u00e4sentieren",
+      "Kritisches Denken auf Englisch",
+    ],
+    activities: [
+      "Einf\u00fchrung in Debating-Formate",
+      "Argumentation Building Workshops",
+      "Practice Debates",
+      "Impromptu Speaking",
+      "Final Debate / Tournament",
+    ],
+    effect: [],
+    timetable: {
+      daysCount: 3,
+      gradeBlocks: [
+        {
+          label: "Klasse 9 bis 13",
+          periods: 6,
+          slots: [
+            ["Speak Up", "Speak Up", "Language Game", "Language Game", "Theatre", "Speak Up"],
+            ["Speak Up", "Speak Up", "Speak Up", "Theatre", "Theatre", "Speak Up"],
+            ["Speak Up", "Speak Up", "Theatre", "Theatre", "Presentation", "Presentation"],
+          ],
+        },
+      ],
+      notes: [
+        "1 Schulstunde = 45 Minuten",
+        "1 Native Speaker pro Gruppe",
+      ],
+    },
+  },
+
+  "Job Prep Workshop": {
+    name: "Job Prep Workshop",
+    tagline: "Bewerbungstraining auf Englisch",
+    gradeRange: "Klassenstufen 9\u201313",
+    duration: "3 Tage // Unterrichtseinheiten 30 x 45 Min",
+    studentsRange: "10\u201313 Sch\u00fcler*innen, 1 Native Speaker pro Gruppe",
+    description:
+      "Der Job Preparation Workshop bereitet Sch\u00fcler*innen auf englischsprachige Bewerbungssituationen vor. Von der Erstellung eines englischen Lebenslaufs \u00fcber das Verfassen von Bewerbungsschreiben bis hin zu simulierten Vorstellungsgespr\u00e4chen \u2013 die Sch\u00fcler*innen sammeln praktische Erfahrungen f\u00fcr ihre berufliche Zukunft in einer globalisierten Arbeitswelt.",
+    skills: [
+      "Englischen Lebenslauf erstellen (CV Writing)",
+      "Bewerbungsschreiben auf Englisch (Cover Letter)",
+      "Vorstellungsgespr\u00e4ch auf Englisch (Interview Skills)",
+      "Professionelle Selbstpr\u00e4sentation",
+      "Small Talk und Business English",
+    ],
+    activities: [
+      "CV Writing Workshop",
+      "Cover Letter Workshop",
+      "Mock Interviews mit Feedback",
+      "Elevator Pitch \u00dcbungen",
+      "Business Communication Rollenspiele",
+      "Abschlusspr\u00e4sentation",
+    ],
+    effect: [],
+    timetable: {
+      daysCount: 3,
+      gradeBlocks: [
+        {
+          label: "Klasse 9 bis 13",
+          periods: 5,
+          slots: [
+            ["Speak Up", "Art", "Art", "Speak Up", "Speak Up"],
+            ["Speak Up", "Theatre", "Theatre", "Speak Up", "Speak Up"],
+            ["Speak Up", "Theatre", "Theatre", "Presentation", "Speak Up"],
+          ],
+        },
+      ],
+      notes: [
+        "1 Schulstunde = 45 Minuten",
+        "1 Native Speaker pro Gruppe",
+      ],
+    },
+  },
+
+  "Test Prep Workshop": {
+    name: "Test Prep Workshop",
+    tagline: "Gezielte Pr\u00fcfungsvorbereitung auf Englisch",
+    gradeRange: "Klassenstufen 9\u201313",
+    duration: "3 Tage // Unterrichtseinheiten 30 x 45 Min",
+    studentsRange: "10\u201313 Sch\u00fcler*innen, 1 Native Speaker pro Gruppe",
+    description:
+      "Der Test Preparation Workshop bereitet Sch\u00fcler*innen gezielt auf englische Sprachpr\u00fcfungen vor \u2013 ob MSA, Abitur oder Cambridge-Zertifikate. Unsere Native Speaking Teaching Artists trainieren alle Pr\u00fcfungsbereiche: Leseverstehen, H\u00f6rverstehen, Schreiben und m\u00fcndliche Pr\u00fcfung. Durch intensive \u00dcbungen und simulierte Pr\u00fcfungssituationen gewinnen die Sch\u00fcler*innen Sicherheit und Strategie f\u00fcr ihre bevorstehende Pr\u00fcfung.",
+    skills: [
+      "Leseverstehen (Reading Comprehension)",
+      "H\u00f6rverstehen (Listening)",
+      "Schriftlicher Ausdruck (Writing)",
+      "M\u00fcndliche Pr\u00fcfung (Speaking)",
+      "Pr\u00fcfungsstrategien und Zeitmanagement",
+    ],
+    activities: [
+      "Diagnostic Test und Bedarfsanalyse",
+      "Reading Comprehension Strategien",
+      "Listening Practice Sessions",
+      "Writing Workshop (Essay/Letter/Report)",
+      "Speaking Practice und Mock Oral Exams",
+      "Pr\u00fcfungssimulation unter Realbedingungen",
+    ],
+    effect: [],
+    timetable: {
+      daysCount: 3,
+      gradeBlocks: [
+        {
+          label: "Klasse 9 bis 13",
+          periods: 5,
+          slots: [
+            ["Speak Up", "Speak Up", "Speak Up", "Speak Up", "Speak Up"],
+            ["Speak Up", "Speak Up", "Speak Up", "Theatre", "Speak Up"],
+            ["Speak Up", "Speak Up", "Speak Up", "Speak Up", "Speak Up"],
+          ],
+        },
+      ],
+      notes: [
+        "1 Schulstunde = 45 Minuten",
+        "1 Native Speaker pro Gruppe",
+      ],
+    },
+  },
 };
 
 /**
