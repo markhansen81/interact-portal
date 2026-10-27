@@ -141,137 +141,169 @@ function drawProgramDescriptionPage(
 ): void {
   const contentWidth = pageWidth - marginLeft - marginRight;
 
-  drawPageHeader(doc, schoolName, pageWidth, marginRight);
-
-  // Pink header bar
-  const barY = 18;
-  const barHeight = 14;
+  // Full-width pink bar (40mm) with program name
   doc.setFillColor(BRAND_PINK[0], BRAND_PINK[1], BRAND_PINK[2]);
-  doc.rect(0, barY, pageWidth, barHeight, "F");
+  doc.rect(0, 0, pageWidth, 40, "F");
 
-  doc.setFontSize(16);
+  doc.setFontSize(24);
   doc.setFont("helvetica", "bold");
   setColor(doc, WHITE);
-  doc.text(content.name.toUpperCase(), marginLeft, barY + 10);
+  doc.text(content.name.toUpperCase(), marginLeft, 27);
+
+  // Right-aligned school name below bar
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "italic");
+  setColor(doc, BRAND_PINK);
+  doc.text(`Angebot f\u00fcr ${schoolName}`, pageWidth - marginRight, 48, {
+    align: "right",
+  });
 
   // Tagline
-  let y = barY + barHeight + 8;
+  let y = 50;
   doc.setFontSize(11);
   doc.setFont("helvetica", "italic");
   setColor(doc, BRAND_PINK);
   doc.text(content.tagline, marginLeft, y);
 
-  // Key details bullets
-  y += 9;
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bolditalic");
-  setColor(doc, BLACK);
-  const details = [content.gradeRange, content.duration, content.studentsRange];
-  for (const detail of details) {
-    doc.text("\u2022  " + detail, marginLeft, y);
-    y += 5;
+  // Key details as elegant inline text with pink pipes
+  y += 10;
+  doc.setFontSize(10);
+  const detailParts = [content.gradeRange, content.duration, content.studentsRange];
+  let detailX = marginLeft;
+  for (let i = 0; i < detailParts.length; i++) {
+    if (i > 0) {
+      // Pink pipe separator
+      doc.setFont("helvetica", "bold");
+      setColor(doc, BRAND_PINK);
+      doc.text("  |  ", detailX, y);
+      detailX += doc.getTextWidth("  |  ");
+    }
+    doc.setFont("helvetica", "bolditalic");
+    setColor(doc, BLACK);
+    doc.text(detailParts[i], detailX, y);
+    detailX += doc.getTextWidth(detailParts[i]);
   }
 
-  // Separator
-  y += 3;
-  doc.setDrawColor(LIGHT_GREY[0], LIGHT_GREY[1], LIGHT_GREY[2]);
-  doc.setLineWidth(0.3);
-  doc.line(marginLeft, y, pageWidth - marginRight, y);
-  y += 6;
+  // Main description — full-width, well-spaced
+  y += 12;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  setColor(doc, BLACK);
+  const descLines = doc.splitTextToSize(content.description, contentWidth);
+  doc.text(descLines, marginLeft, y, { lineHeightFactor: 1.6 });
+  y += descLines.length * 5 + 6;
 
-  // Two-column layout
-  const colGap = 8;
+  // Pink accent line
+  doc.setFillColor(BRAND_PINK[0], BRAND_PINK[1], BRAND_PINK[2]);
+  doc.rect(marginLeft, y, 40, 1.5, "F");
+  y += 10;
+
+  // Two side-by-side sections
+  const colGap = 10;
   const leftColWidth = (contentWidth - colGap) / 2;
   const rightColX = marginLeft + leftColWidth + colGap;
   const rightColWidth = leftColWidth;
 
-  // --- Left column: Description + Sprachf\u00e4higkeiten ---
+  // --- Left: Sprachfähigkeiten ---
   let leftY = y;
-
-  // Description
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  setColor(doc, BLACK);
-  const descLines = doc.splitTextToSize(content.description, leftColWidth);
-  doc.text(descLines, marginLeft, leftY);
-  leftY += descLines.length * 4 + 6;
-
   if (content.skills.length > 0) {
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
     setColor(doc, BRAND_PINK);
     doc.text("Sprachf\u00e4higkeiten", marginLeft, leftY);
-    leftY += 6;
+    leftY += 7;
 
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
     setColor(doc, BLACK);
     for (const skill of content.skills) {
-      const lines = doc.splitTextToSize(skill, leftColWidth - 6);
-      doc.text("\u2022", marginLeft + 1, leftY);
-      doc.text(lines, marginLeft + 5, leftY);
-      leftY += lines.length * 3.5 + 2;
+      const lines = doc.splitTextToSize(skill, leftColWidth - 8);
+      // Pink bullet
+      doc.setFillColor(BRAND_PINK[0], BRAND_PINK[1], BRAND_PINK[2]);
+      doc.circle(marginLeft + 2, leftY - 1, 1, "F");
+      doc.text(lines, marginLeft + 6, leftY);
+      leftY += lines.length * 4 + 2.5;
     }
   }
 
-  // --- Right column: Creative skills (if any) + Hauptaktivit\u00e4ten ---
+  // --- Right: Hauptaktivitäten ---
   let rightY = y;
 
+  // Creative skills first if present
   if (content.creativeSkills && content.creativeSkills.length > 0) {
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
     setColor(doc, BRAND_PINK);
     doc.text("Kreative F\u00e4higkeiten", rightColX, rightY);
-    rightY += 6;
+    rightY += 7;
 
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
     setColor(doc, BLACK);
     for (const skill of content.creativeSkills) {
-      const lines = doc.splitTextToSize(skill, rightColWidth - 6);
-      doc.text("\u2022", rightColX + 1, rightY);
-      doc.text(lines, rightColX + 5, rightY);
-      rightY += lines.length * 3.5 + 2;
+      const lines = doc.splitTextToSize(skill, rightColWidth - 8);
+      doc.setFillColor(BRAND_PINK[0], BRAND_PINK[1], BRAND_PINK[2]);
+      doc.circle(rightColX + 2, rightY - 1, 1, "F");
+      doc.text(lines, rightColX + 6, rightY);
+      rightY += lines.length * 4 + 2.5;
     }
-    rightY += 4;
+    rightY += 5;
   }
 
   if (content.activities.length > 0) {
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
     setColor(doc, BRAND_PINK);
     doc.text("Hauptaktivit\u00e4ten", rightColX, rightY);
-    rightY += 6;
+    rightY += 7;
 
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
     setColor(doc, BLACK);
     for (const activity of content.activities) {
-      const lines = doc.splitTextToSize(activity, rightColWidth - 6);
-      doc.text("\u2022", rightColX + 1, rightY);
-      doc.text(lines, rightColX + 5, rightY);
-      rightY += lines.length * 3.5 + 2;
+      const lines = doc.splitTextToSize(activity, rightColWidth - 8);
+      doc.setFillColor(BRAND_PINK[0], BRAND_PINK[1], BRAND_PINK[2]);
+      doc.circle(rightColX + 2, rightY - 1, 1, "F");
+      doc.text(lines, rightColX + 6, rightY);
+      rightY += lines.length * 4 + 2.5;
     }
   }
 
-  // Effect section (for Kulturtag etc.) — below both columns
+  // Effect section — highlighted box at bottom
   if (content.effect.length > 0) {
-    let effectY = Math.max(leftY, rightY) + 6;
+    let effectY = Math.max(leftY, rightY) + 8;
 
-    doc.setFontSize(10);
+    // Light pink background box
+    const effectBoxPadding = 6;
+    // Pre-calculate height
+    let tempH = 8; // header line height
+    for (const item of content.effect) {
+      const lines = doc.splitTextToSize(item, contentWidth - effectBoxPadding * 2 - 8);
+      tempH += lines.length * 4 + 2.5;
+    }
+    tempH += effectBoxPadding;
+
+    // Light pink background (RGB 252, 235, 245)
+    doc.setFillColor(252, 235, 245);
+    doc.roundedRect(marginLeft, effectY, contentWidth, tempH, 3, 3, "F");
+
+    effectY += effectBoxPadding;
+
+    doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
     setColor(doc, BRAND_PINK);
-    doc.text("Effekt", marginLeft, effectY);
-    effectY += 6;
+    doc.text("Effekt:", marginLeft + effectBoxPadding, effectY + 3);
+    effectY += 8;
 
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
     setColor(doc, BLACK);
     for (const item of content.effect) {
-      const lines = doc.splitTextToSize(item, contentWidth - 6);
-      doc.text("\u2022", marginLeft + 1, effectY);
-      doc.text(lines, marginLeft + 5, effectY);
-      effectY += lines.length * 3.5 + 2;
+      const lines = doc.splitTextToSize(item, contentWidth - effectBoxPadding * 2 - 8);
+      doc.setFillColor(BRAND_PINK[0], BRAND_PINK[1], BRAND_PINK[2]);
+      doc.circle(marginLeft + effectBoxPadding + 2, effectY - 1, 1, "F");
+      doc.text(lines, marginLeft + effectBoxPadding + 6, effectY);
+      effectY += lines.length * 4 + 2.5;
     }
   }
 
@@ -291,28 +323,32 @@ function drawTimetablePage(
 ): void {
   const contentWidth = pageWidth - marginLeft - marginRight;
 
-  drawPageHeader(doc, schoolName, pageWidth, marginRight);
-
-  // Pink header bar
-  const barY = 18;
-  const barHeight = 14;
+  // Full-width pink bar (40mm) consistent with other pages
   doc.setFillColor(BRAND_PINK[0], BRAND_PINK[1], BRAND_PINK[2]);
-  doc.rect(0, barY, pageWidth, barHeight, "F");
+  doc.rect(0, 0, pageWidth, 40, "F");
 
-  doc.setFontSize(16);
+  doc.setFontSize(24);
   doc.setFont("helvetica", "bold");
   setColor(doc, WHITE);
-  doc.text("BEISPIEL STUNDENPLAN", marginLeft, barY + 10);
+  doc.text("BEISPIEL STUNDENPLAN", marginLeft, 27);
 
-  let y = barY + barHeight + 10;
+  // Right-aligned school name below bar
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "italic");
+  setColor(doc, BRAND_PINK);
+  doc.text(`Angebot f\u00fcr ${schoolName}`, pageWidth - marginRight, 48, {
+    align: "right",
+  });
+
+  let y = 54;
 
   for (const block of timetable.gradeBlocks) {
     // Grade block label
-    doc.setFontSize(11);
+    doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     setColor(doc, BLACK);
     doc.text(block.label, marginLeft, y);
-    y += 7;
+    y += 8;
 
     const numDays = timetable.daysCount;
     const numPeriods = block.periods;
@@ -323,19 +359,22 @@ function drawTimetablePage(
     const cellWidth = numDays > 1
       ? availableWidth / numDays
       : availableWidth / numPeriods;
-    const cellHeight = 10;
+    const cellHeight = 11;
 
-    // Column headers
+    // Column headers — pink background
     if (numDays > 1) {
       // Multi-day: columns = Tag 1, Tag 2, ...
-      doc.setFontSize(7);
-      doc.setFont("helvetica", "bold");
-      setColor(doc, GREY);
       for (let d = 0; d < numDays; d++) {
         const cx = marginLeft + headerColWidth + d * cellWidth;
-        doc.text(`Tag ${d + 1}`, cx + cellWidth / 2, y, { align: "center" });
+        // Light pink header cell background
+        doc.setFillColor(252, 235, 245);
+        doc.roundedRect(cx + 0.5, y - 3, cellWidth - 1, 8, 1.5, 1.5, "F");
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "bold");
+        setColor(doc, BRAND_PINK);
+        doc.text(`Tag ${d + 1}`, cx + cellWidth / 2, y + 2, { align: "center" });
       }
-      y += 5;
+      y += 7;
 
       // Row headers = Stunde 1..n, cells = activities
       for (let p = 0; p < numPeriods; p++) {
@@ -351,9 +390,9 @@ function drawTimetablePage(
           const cx = marginLeft + headerColWidth + d * cellWidth;
           const color = getActivityColor(activity);
 
-          // Colored rectangle
+          // Colored rectangle with rounded corners
           doc.setFillColor(color[0], color[1], color[2]);
-          doc.roundedRect(cx + 0.5, y, cellWidth - 1, cellHeight - 1, 1, 1, "F");
+          doc.roundedRect(cx + 0.5, y, cellWidth - 1, cellHeight - 1, 1.5, 1.5, "F");
 
           // White text
           doc.setFontSize(6);
@@ -367,18 +406,21 @@ function drawTimetablePage(
       }
     } else {
       // Single day: columns = periods
-      doc.setFontSize(7);
-      doc.setFont("helvetica", "bold");
-      setColor(doc, GREY);
       for (let p = 0; p < numPeriods; p++) {
         const cx = marginLeft + headerColWidth + p * cellWidth;
+        // Light pink header cell background
+        doc.setFillColor(252, 235, 245);
+        doc.roundedRect(cx + 0.5, y - 3, cellWidth - 1, 10, 1.5, 1.5, "F");
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "bold");
+        setColor(doc, BRAND_PINK);
         const label = block.rooms
           ? block.rooms[p]
           : `${p + 1}. Std`;
         const labelLines = doc.splitTextToSize(label, cellWidth - 2);
-        doc.text(labelLines, cx + cellWidth / 2, y, { align: "center" });
+        doc.text(labelLines, cx + cellWidth / 2, y + 2, { align: "center" });
       }
-      y += 6;
+      y += 9;
 
       // Single row of activities
       for (let p = 0; p < numPeriods; p++) {
@@ -388,7 +430,7 @@ function drawTimetablePage(
         const color = getActivityColor(activity);
 
         doc.setFillColor(color[0], color[1], color[2]);
-        doc.roundedRect(cx + 0.5, y, cellWidth - 1, cellHeight - 1, 1, 1, "F");
+        doc.roundedRect(cx + 0.5, y, cellWidth - 1, cellHeight - 1, 1.5, 1.5, "F");
 
         doc.setFontSize(6);
         doc.setFont("helvetica", "bold");
@@ -400,7 +442,7 @@ function drawTimetablePage(
       y += cellHeight;
     }
 
-    y += 8;
+    y += 10;
   }
 
   // Notes
