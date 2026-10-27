@@ -76,6 +76,17 @@ export default async function OfferDetailPage({ params }: Props) {
             Valid until {fmt(offer.valid_until)}
           </span>
         )}
+        {offer.pdf_url && (
+          <a
+            href={offer.pdf_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-neutral-900 underline hover:text-neutral-600"
+          >
+            View PDF
+          </a>
+        )}
+        <span className="text-neutral-900 font-medium">{total}</span>
       </div>
 
       {/* Detail grid */}
