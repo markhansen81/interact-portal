@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/ui";
 import Link from "next/link";
 import { OfferActions } from "@/components/admin/offer-actions";
+import { OfferCrmSync } from "@/components/admin/offer-crm-sync";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -24,6 +25,41 @@ export default async function OfferDetailPage({ params }: Props) {
 
   if (!offer) notFound();
 
+  // CRM sync check
+  type CrmDiff = { field: string; label: string; offer: string | number | null; crm: string | number | null };
+  const crmDiffs: CrmDiff[] = [];
+  if (offer.church_item_id) {
+    const { data: item } = await supabase
+      .from("church_items")
+      .select("school_name, name, contact_email, num_students, num_groups, num_tas, num_days, start_date, end_date, program_type, city, state, grade_level")
+      .eq("id", offer.church_item_id)
+      .single();
+
+    if (item) {
+      const crmName = item.school_name || item.name;
+      const checks: { field: string; label: string; offerVal: unknown; crmVal: unknown }[] = [
+        { field: "school_name", label: "School", offerVal: offer.school_name, crmVal: crmName },
+        { field: "contact_email", label: "Email", offerVal: offer.contact_email, crmVal: item.contact_email },
+        { field: "num_students", label: "Students", offerVal: offer.num_students, crmVal: item.num_students },
+        { field: "num_groups", label: "Groups", offerVal: offer.num_groups, crmVal: item.num_groups },
+        { field: "num_tas", label: "TAs", offerVal: offer.num_tas, crmVal: item.num_tas },
+        { field: "num_days", label: "Days", offerVal: offer.num_days, crmVal: item.num_days },
+        { field: "start_date", label: "Start", offerVal: offer.start_date, crmVal: item.start_date },
+        { field: "end_date", label: "End", offerVal: offer.end_date, crmVal: item.end_date },
+        { field: "city", label: "City", offerVal: offer.city, crmVal: item.city },
+        { field: "state", label: "State", offerVal: offer.state, crmVal: item.state },
+      ];
+
+      for (const c of checks) {
+        const ov = c.offerVal == null ? null : String(c.offerVal);
+        const cv = c.crmVal == null ? null : String(c.crmVal);
+        if (cv && ov !== cv) {
+          crmDiffs.push({ field: c.field, label: c.label, offer: ov, crm: cv });
+        }
+      }
+    }
+  }
+
   const fmt = (val: string | null) =>
     val ? new Date(val).toLocaleDateString("de-DE") : "-";
 
@@ -33,6 +69,15 @@ export default async function OfferDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
+      {/* CRM sync banner */}
+      {offer.church_item_id && crmDiffs.length > 0 && (
+        <OfferCrmSync
+          offerId={id}
+          diffs={crmDiffs}
+          churchItemId={offer.church_item_id}
+        />
+      )}
+
       <PageHeader
         title={`Offer ${offer.offer_number || ""}`}
         description={offer.school_name || undefined}
