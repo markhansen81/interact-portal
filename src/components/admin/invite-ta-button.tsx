@@ -60,8 +60,8 @@ export function InviteTAButton() {
  }
 
  return (
- <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
- <div className="w-full max-w-md rounded-sm bg-white p-6">
+ <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setOpen(false)}>
+ <div className="w-full max-w-md rounded-sm bg-white p-6" onClick={(e) => e.stopPropagation()}
  <h3 className="text-lg font-semibold text-neutral-900">
  Invite Teaching Artist
  </h3>
