@@ -3,7 +3,6 @@ import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader, Button } from "@/components/ui";
 import { OffersTable } from "@/components/admin/offers-table";
-import { BrochureUpload } from "@/components/admin/brochure-upload";
 import Link from "next/link";
 
 export default async function OffersPage() {
@@ -23,7 +22,6 @@ export default async function OffersPage() {
         title="Offers"
         action={
           <div className="flex items-center gap-3">
-            <BrochureUpload />
             <Link href="/admin/offers/content">
               <Button variant="ghost" size="sm">Edit Content</Button>
             </Link>

@@ -34,7 +34,7 @@ export default async function ChurchPage() {
  <div className="space-y-6">
  <div className="flex items-center justify-between">
  <div>
- <h2 className="text-2xl font-bold text-neutral-900">Church</h2>
+ <h2 className="text-2xl font-bold text-neutral-900">CRM Pipeline</h2>
  <p className="mt-1 text-sm text-neutral-500">
  Project overview by calendar week. Data synced from Monday CRM.
  </p>
