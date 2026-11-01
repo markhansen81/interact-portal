@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { InfoPackForm } from "@/components/school/info-pack-form";
+import { requireSchoolSession } from "@/lib/school-auth";
 
 export default async function InfoFormPage({
   params,
@@ -8,6 +9,7 @@ export default async function InfoFormPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
+  await requireSchoolSession(token, `/school/project/${token}/info-form`);
   const adminClient = createAdminClient();
 
   const { data: project } = await adminClient
