@@ -1,6 +1,7 @@
 import { notFound } from"next/navigation";
 import { createAdminClient } from"@/lib/supabase/admin";
 import { SchoolProjectView } from"@/components/school/school-project-view";
+import { requireSchoolSession } from "@/lib/school-auth";
 
 export default async function SchoolProjectPage({
  params,
@@ -8,6 +9,7 @@ export default async function SchoolProjectPage({
  params: Promise<{ token: string }>;
 }) {
  const { token } = await params;
+ await requireSchoolSession(token);
  const adminClient = createAdminClient();
 
  // Look up project by teacher_token
