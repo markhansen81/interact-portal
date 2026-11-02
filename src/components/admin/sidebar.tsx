@@ -21,7 +21,6 @@ const navSections: NavSection[] = [
     label: "Staffing",
     items: [
       { href: "/admin/teaching-artists", label: "Teaching Artists" },
-      { href: "/admin/onboarding", label: "Onboarding" },
       { href: "/admin/training", label: "Training" },
       { href: "/admin/availability", label: "Availability" },
     ],

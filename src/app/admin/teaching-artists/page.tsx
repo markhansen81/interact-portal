@@ -12,15 +12,44 @@ export default async function TeachingArtistsPage() {
     .eq("role", "ta")
     .order("created_at", { ascending: false });
 
-  // Get document counts per TA
   const { data: docs } = await supabase
     .from("documents")
-    .select("ta_id, type, status");
+    .select("ta_id, type, status, expiry_date");
 
-  const docsByTA: Record<string, { type: string; status: string }[]> = {};
+  const { data: prefCounts } = await supabase
+    .from("ta_program_preferences")
+    .select("ta_id");
+
+  const { data: availability } = await supabase
+    .from("availability")
+    .select("ta_id")
+    .eq("status", "available");
+
+  const { data: workOrders } = await supabase
+    .from("work_orders")
+    .select("ta_id, project_name, school, start_date, end_date, status, program_type")
+    .order("start_date", { ascending: false });
+
+  const docsByTA: Record<string, { type: string; status: string; expiry_date: string | null }[]> = {};
   (docs || []).forEach((d) => {
     if (!docsByTA[d.ta_id]) docsByTA[d.ta_id] = [];
     docsByTA[d.ta_id].push(d);
+  });
+
+  const prefsByTA: Record<string, number> = {};
+  (prefCounts || []).forEach((p) => {
+    prefsByTA[p.ta_id] = (prefsByTA[p.ta_id] || 0) + 1;
+  });
+
+  const availByTA: Record<string, number> = {};
+  (availability || []).forEach((a) => {
+    availByTA[a.ta_id] = (availByTA[a.ta_id] || 0) + 1;
+  });
+
+  const workOrdersByTA: Record<string, { project_name: string | null; school: string | null; start_date: string | null; end_date: string | null; status: string; program_type: string | null }[]> = {};
+  (workOrders || []).forEach((wo) => {
+    if (!workOrdersByTA[wo.ta_id]) workOrdersByTA[wo.ta_id] = [];
+    workOrdersByTA[wo.ta_id].push(wo);
   });
 
   return (
@@ -33,7 +62,13 @@ export default async function TeachingArtistsPage() {
           <p className="mt-1 text-sm text-neutral-400">Invite your first TA to get started.</p>
         </div>
       ) : (
-        <TASearchFilter tas={tas as any} docsByTA={docsByTA} />
+        <TASearchFilter
+          tas={tas as any}
+          docsByTA={docsByTA as any}
+          prefsByTA={prefsByTA}
+          availByTA={availByTA}
+          workOrdersByTA={workOrdersByTA}
+        />
       )}
     </div>
   );
