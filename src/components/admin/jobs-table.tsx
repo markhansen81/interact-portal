@@ -81,15 +81,13 @@ function ProjectHub({ job }: { job: Job }) {
   const [inviting, setInviting] = useState(false);
 
   // Derived admin checklist
-  const wosExist = job.total > 0;
   const wosSent = job.sent + job.signed > 0;
-  const allSigned = job.needed > 0 && job.signed >= job.needed;
   const teacherInvited = !!job.teacher_invited_at;
   const infoPackReceived = !!job.info_pack_submitted_at;
   const scheduleConfirmed = !!job.schedule_confirmed_at;
 
-  // Overall completion: 5 checklist items
-  const checks = [wosSent, allSigned, teacherInvited, infoPackReceived, scheduleConfirmed];
+  // Overall completion: 4 checklist items
+  const checks = [wosSent, teacherInvited, infoPackReceived, scheduleConfirmed];
   const doneCount = checks.filter(Boolean).length;
   const pct = Math.round((doneCount / checks.length) * 100);
 
@@ -144,18 +142,7 @@ function ProjectHub({ job }: { job: Job }) {
             )}
           </div>
 
-          {/* 2. All signed */}
-          <div className="flex items-center gap-2">
-            <CheckIcon done={allSigned} />
-            <span className={`text-xs ${allSigned ? "text-neutral-500 line-through" : "text-neutral-700"}`}>
-              All WOs signed
-            </span>
-            {!allSigned && job.signed > 0 && (
-              <span className="ml-auto text-[10px] text-neutral-400">{job.signed}/{job.needed} signed</span>
-            )}
-          </div>
-
-          {/* 3. Invite teacher */}
+          {/* 2. Invite teacher */}
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               <CheckIcon done={teacherInvited} />
@@ -318,10 +305,9 @@ export function JobsTable({ jobs }: { jobs: Job[] }) {
             const weekBg = job.weekColor === 1 ? "bg-neutral-50" : "bg-white";
             const hoverBg = "hover:bg-neutral-100";
 
-            // Overall progress for summary column
+            // Overall progress for summary column (4 items)
             const checks = [
               job.sent + job.signed > 0,
-              job.needed > 0 && job.signed >= job.needed,
               !!job.teacher_invited_at,
               !!job.info_pack_submitted_at,
               !!job.schedule_confirmed_at,
