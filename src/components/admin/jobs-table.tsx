@@ -129,7 +129,7 @@ export function JobsTable({ jobs }: { jobs: Job[] }) {
  {/* # TAs needed */}
  <td className="px-4 py-3 text-center">
  {job.needed > 0 ? (
- <span className="text-sm font-medium text-neutral-700">{job.needed} TAs</span>
+ <span className="text-sm font-semibold text-neutral-700">{job.needed}</span>
  ) : (
  <span className="text-xs text-neutral-400">—</span>
  )}
