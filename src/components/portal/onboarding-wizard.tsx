@@ -963,6 +963,7 @@ function FormFlow({
 
  const [current, setCurrent] = useState(findFirstUnanswered);
  const [saving, setSaving] = useState(false);
+ const [saveError, setSaveError] = useState<string | null>(null);
  const [direction, setDirection] = useState<"forward"|"back">("forward");
  const containerRef = useRef<HTMLDivElement>(null);
  const dataRef = useRef(data);
@@ -985,20 +986,22 @@ function FormFlow({
  // eslint-disable-next-line react-hooks/exhaustive-deps
  }, [current, data]);
 
- async function saveStep() {
+ async function saveStep(): Promise<boolean> {
  setSaving(true);
+ setSaveError(null);
  const d = dataRef.current; // always read latest
  const stepData: Record<string, unknown> = {};
 
  try {
  if (step.type ==="programs") {
- await fetch("/api/portal/profile", {
+ const res = await fetch("/api/portal/profile", {
  method:"PATCH",
  headers: {"Content-Type":"application/json"},
  body: JSON.stringify({ program_preferences: prefsRef.current }),
  });
  setSaving(false);
- return;
+ if (!res.ok) { setSaveError("Failed to save. Please try again."); return false; }
+ return true;
  }
 
  if (step.field) {
@@ -1020,16 +1023,25 @@ function FormFlow({
  }
  }
  if (Object.keys(stepData).length > 0) {
- await fetch("/api/portal/profile", {
+ const res = await fetch("/api/portal/profile", {
  method:"PATCH",
  headers: {"Content-Type":"application/json"},
  body: JSON.stringify(stepData),
  });
+ if (!res.ok) {
+ const body = await res.json().catch(() => ({}));
+ setSaveError(body.error || "Failed to save. Please try again.");
+ setSaving(false);
+ return false;
+ }
  }
  } catch {
- // Silently ignore — saving is best-effort during step navigation
+ setSaveError("Network error — check your connection and try again.");
+ setSaving(false);
+ return false;
  }
  setSaving(false);
+ return true;
  }
 
  // Skip logic: skip disability description if they said No
@@ -1054,7 +1066,8 @@ function FormFlow({
  }
 
  async function goNext() {
- await saveStep();
+ const ok = await saveStep();
+ if (!ok) return;
  const next = nextIndex(current);
  if (next >= steps.length) {
  onComplete();
@@ -1066,7 +1079,7 @@ function FormFlow({
  }
 
  async function goBack() {
- await saveStep();
+ await saveStep(); // best-effort on back — don't block navigation on error
  const prev = prevIndex(current);
  if (prev < 0) {
  onBack();
@@ -1140,11 +1153,19 @@ function FormFlow({
  </div>
  </div>
 
+ {/* Save error */}
+ {saveError && (
+ <div className="border-t border-red-100 bg-red-50 px-6 py-3 text-sm text-red-700">
+ {saveError}
+ </div>
+ )}
+
  {/* Bottom nav */}
  <div className="flex items-center justify-between border-t border-neutral-100 px-6 py-4">
  <button
  onClick={goBack}
- className="flex items-center gap-1 rounded-sm px-4 py-2.5 text-sm text-neutral-500 transition-colors hover:bg-white hover:text-neutral-700">
+ disabled={saving}
+ className="flex items-center gap-1 rounded-sm px-4 py-2.5 text-sm text-neutral-500 transition-colors hover:bg-white hover:text-neutral-700 disabled:opacity-40">
  <svg className="h-4 w-4"fill="none"viewBox="0 0 24 24"strokeWidth={2} stroke="currentColor">
  <path strokeLinecap="round"strokeLinejoin="round"d="M15.75 19.5L8.25 12l7.5-7.5"/>
  </svg>
@@ -1158,8 +1179,9 @@ function FormFlow({
  )}
  <button
  onClick={goNext}
- className="flex items-center gap-1 rounded-sm bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-neutral-800">
- {isLast ?"Complete":"Continue"}
+ disabled={saving}
+ className="flex items-center gap-1 rounded-sm bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50">
+ {saving ? "Saving..." : isLast ?"Complete":"Continue"}
  <svg className="h-4 w-4"fill="none"viewBox="0 0 24 24"strokeWidth={2} stroke="currentColor">
  <path strokeLinecap="round"strokeLinejoin="round"d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
  </svg>
