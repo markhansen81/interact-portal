@@ -11,20 +11,15 @@ function fmtDate(dateStr: string): string {
 }
 
 function fmtDateRange(start: string, end: string | null): string {
- if (!end) return fmtDate(start);
+ if (!end || end === start) return `${fmtDate(start)} ${start.split("-")[0]}`;
  const [sy, sm] = start.split("-");
  const [ey, em] = end.split("-");
- const startStr = fmtDate(start);
- const endStr = fmtDate(end);
  // Same month: "2–6 Nov 2026"
- if (sy === ey && sm === em) {
- const [, , sd] = start.split("-");
- return `${parseInt(sd)}–${endStr} ${sy}`;
- }
+ if (sy === ey && sm === em) return `${parseInt(start.split("-")[2])}–${fmtDate(end)} ${sy}`;
  // Different month, same year: "2 Nov – 6 Dec 2026"
- if (sy === ey) return `${startStr} – ${endStr} ${ey}`;
+ if (sy === ey) return `${fmtDate(start)} – ${fmtDate(end)} ${ey}`;
  // Different year
- return `${startStr} ${sy} – ${endStr} ${ey}`;
+ return `${fmtDate(start)} ${sy} – ${fmtDate(end)} ${ey}`;
 }
 
 type WO = {
@@ -93,7 +88,7 @@ export function JobsTable({ jobs }: { jobs: Job[] }) {
  <tbody className="divide-y divide-neutral-200">
  {jobs.map((job) => {
  const isExpanded = expanded.has(job.id);
- const weekBg = job.weekColor === 1 ? "bg-slate-50" : "bg-white";
+ const weekBg = job.weekColor === 1 ? "bg-neutral-50" : "bg-white";
  const hoverBg = "hover:bg-neutral-100";
 
  return (
