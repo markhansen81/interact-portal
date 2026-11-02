@@ -34,10 +34,18 @@ function getMondayOfCurrentWeek(): Date {
 export default async function JobsPage() {
  const supabase = await createClient();
 
- const { data: rawJobs } = await supabase
+ const [{ data: rawJobs }, { data: taProfiles }] = await Promise.all([
+ supabase
  .from("jobs")
- .select("*, work_orders(id, ta_id, status, profiles!work_orders_ta_id_fkey(full_name))")
- .order("start_date", { ascending: true });
+ .select("*, work_orders(id, ta_id, status)")
+ .order("start_date", { ascending: true }),
+ supabase
+ .from("profiles")
+ .select("id, full_name")
+ .eq("role", "ta"),
+ ]);
+
+ const taNameMap = new Map((taProfiles || []).map((p) => [p.id, p.full_name]));
 
  const jobs = rawJobs || [];
  const thisMonday = getMondayOfCurrentWeek();
@@ -69,7 +77,10 @@ export default async function JobsPage() {
  }
 
  const tableJobs = sorted.map((job) => {
- const wos = (job.work_orders || []) as { id: string; ta_id: string; status: string; profiles: { full_name: string | null } | null }[];
+ const wos = ((job.work_orders || []) as { id: string; ta_id: string; status: string }[]).map((wo) => ({
+ ...wo,
+ profiles: { full_name: taNameMap.get(wo.ta_id) ?? null },
+ }));
  const sent = wos.filter((w) => w.status === "sent").length;
  const signed = wos.filter((w) => w.status === "signed").length;
  const needed = job.tas_needed || 0;
@@ -84,7 +95,7 @@ export default async function JobsPage() {
  end_date: job.end_date ?? null,
  days: job.days ?? null,
  tas_needed: needed,
- work_orders: wos,
+ work_orders: wos as { id: string; ta_id: string; status: string; profiles: { full_name: string | null } | null }[],
  weekNum: job.start_date ? getISOWeek(job.start_date) : null,
  weekColor: weekKey !== null ? (weekColorMap.get(weekKey) ?? 0) : 0,
  needsAttention: remaining > 0 && sent === 0 && needed > 0,
