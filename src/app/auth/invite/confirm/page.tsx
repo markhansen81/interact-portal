@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
@@ -23,7 +23,29 @@ export default function InviteConfirmPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
   const router = useRouter();
+
+  // Extract session from URL hash (implicit flow from Supabase invite link)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hash = window.location.hash.substring(1);
+    if (!hash) { setSessionReady(true); return; }
+    const params = new URLSearchParams(hash);
+    const accessToken = params.get("access_token");
+    const refreshToken = params.get("refresh_token");
+    if (accessToken && refreshToken) {
+      const supabase = createClient();
+      supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+        .then(({ error }) => {
+          if (error) setError("Invite link expired. Please ask for a new invitation.");
+          else window.history.replaceState(null, "", window.location.pathname);
+          setSessionReady(true);
+        });
+    } else {
+      setSessionReady(true);
+    }
+  });
 
   async function handleSetPassword(e: React.FormEvent) {
     e.preventDefault();
@@ -79,7 +101,7 @@ export default function InviteConfirmPage() {
           <h2 className="text-white font-bold text-xl mb-1">Welcome to InterACT!</h2>
           <p className="text-white/70 text-sm mb-8">Set a password to secure your account.</p>
 
-          <form onSubmit={handleSetPassword} className="flex flex-col gap-5">
+          <form onSubmit={handleSetPassword} className="flex flex-col gap-5" aria-busy={!sessionReady}>
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-white/80 mb-2">
                 Password
