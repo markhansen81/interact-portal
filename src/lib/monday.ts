@@ -49,8 +49,7 @@ export function parseTAsNeeded(staffStatus: string): number {
 
 export function mapMondayItemToJob(item: MondayJobItem) {
   const timeline = extractTimelineValue(item, "date__1");
-  const staffStatus = extractColumnValue(item, "status__1");
-  const tasNeeded = parseTAsNeeded(staffStatus);
+  const tasNeededRaw = parseInt(extractColumnValue(item, "__of_ta_s__1")) || 0;
 
   return {
     monday_item_id: item.id,
@@ -67,8 +66,8 @@ export function mapMondayItemToJob(item: MondayJobItem) {
     accommodation: extractColumnValue(item, "text32__1"),
     special_conditions: extractColumnValue(item, "long_text__1"),
     co_taught: extractColumnValue(item, "text6__1").toLowerCase().includes("co taught"),
-    tas_needed: tasNeeded,
-    status: tasNeeded > 0 ? "open" : "assigned",
+    tas_needed: tasNeededRaw,
+    status: tasNeededRaw > 0 ? "open" : "assigned",
   };
 }
 
