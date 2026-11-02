@@ -158,17 +158,39 @@ export default async function PortalDashboard() {
   const progress = Math.round((completedCount / totalCount) * 100);
   const allDone = completedCount === totalCount;
 
+  const firstName = (profile as Record<string, unknown>).preferred_name as string
+    || (profile as Record<string, unknown>).first_name as string
+    || "there";
+
   return (
     <div className="space-y-8">
-      {/* Page title */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-neutral-900">
-          Dashboard
-        </h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Track your onboarding progress and manage your work.
-        </p>
-      </div>
+      {/* Welcome hero — shown when onboarding is fresh */}
+      {completedCount === 0 ? (
+        <div className="rounded-sm bg-[#E91E8C] px-8 py-10 text-white">
+          <p className="text-sm font-medium uppercase tracking-widest text-white/70 mb-1">Welcome to InterACT</p>
+          <h1 className="text-3xl font-bold mb-2">Hi {firstName}! Let&apos;s get you set up.</h1>
+          <p className="text-white/80 max-w-lg mb-6">
+            Complete your Teaching Artist profile so we can match you to projects, send work orders, and get you paid. It takes about 10 minutes.
+          </p>
+          <Link
+            href="/onboarding?task=personal"
+            className="inline-block rounded-sm bg-white px-6 py-3 text-sm font-bold uppercase tracking-wider text-[#E91E8C] transition-colors hover:bg-white/90"
+          >
+            Start your profile →
+          </Link>
+        </div>
+      ) : (
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-neutral-900">
+            {allDone ? "You're all set!" : "Your Dashboard"}
+          </h1>
+          <p className="mt-1 text-sm text-neutral-500">
+            {allDone
+              ? "Profile complete. We'll be in touch when a project matches your availability."
+              : "Keep going — complete your profile to start receiving work orders."}
+          </p>
+        </div>
+      )}
 
       {/* Onboarding Progress */}
       <Card noPadding>

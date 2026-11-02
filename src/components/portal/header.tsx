@@ -8,6 +8,8 @@ interface Profile {
   preferred_name: string | null;
   email: string;
   pay_level: number;
+  // used to detect new vs returning users
+  [key: string]: unknown;
 }
 
 export function PortalHeader({ profile }: { profile: Profile }) {
