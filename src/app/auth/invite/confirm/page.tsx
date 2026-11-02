@@ -45,7 +45,7 @@ export default function InviteConfirmPage() {
     } else {
       setSessionReady(true);
     }
-  });
+  }, []);
 
   async function handleSetPassword(e: React.FormEvent) {
     e.preventDefault();
