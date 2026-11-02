@@ -61,17 +61,32 @@ export async function GET(
     prefsByTA.get(p.ta_id)!.set(p.program_type, p.preference);
   });
 
-  // Get availability conflicts
+  // Get availability for the job date range
+  let availableTAs = new Set<string>();
   let unavailableTAs = new Set<string>();
   if (job.start_date && job.end_date) {
-    const { data: conflicts } = await adminClient
+    const { data: availRows } = await adminClient
       .from("availability")
-      .select("ta_id")
+      .select("ta_id, status")
       .gte("date", job.start_date)
-      .lte("date", job.end_date)
-      .eq("status", "unavailable");
+      .lte("date", job.end_date);
 
-    unavailableTAs = new Set((conflicts || []).map((c) => c.ta_id));
+    const availCountByTA = new Map<string, number>();
+    const unavailCountByTA = new Map<string, number>();
+    for (const row of availRows || []) {
+      if (row.status === "available") {
+        availCountByTA.set(row.ta_id, (availCountByTA.get(row.ta_id) || 0) + 1);
+      } else if (row.status === "unavailable") {
+        unavailCountByTA.set(row.ta_id, (unavailCountByTA.get(row.ta_id) || 0) + 1);
+      }
+    }
+    // Available = has at least one available day AND no unavailable days in range
+    for (const [taId, count] of availCountByTA) {
+      if (count > 0 && !unavailCountByTA.has(taId)) {
+        availableTAs.add(taId);
+      }
+    }
+    unavailableTAs = new Set(unavailCountByTA.keys());
   }
 
   // Score each TA
@@ -81,13 +96,15 @@ export async function GET(
       let score = 0;
       const reasons: string[] = [];
 
-      // Availability check
-      const isAvailable = !unavailableTAs.has(ta.id);
-      if (isAvailable) {
+      // Availability check — only "Available" if they've explicitly set availability
+      if (unavailableTAs.has(ta.id)) {
+        reasons.push("Has conflicts on these dates");
+      } else if (availableTAs.has(ta.id)) {
         score += 30;
         reasons.push("Available for dates");
       } else {
-        reasons.push("May have conflicts");
+        // No availability set — neither confirm nor deny
+        reasons.push("Availability not set");
       }
 
       // Program fit
@@ -130,7 +147,8 @@ export async function GET(
         ta,
         score,
         reasons,
-        isAvailable,
+        isAvailable: availableTAs.has(ta.id),
+        hasConflict: unavailableTAs.has(ta.id),
       };
     })
     .sort((a, b) => b.score - a.score);
