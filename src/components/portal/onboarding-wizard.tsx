@@ -951,11 +951,9 @@ function FormFlow({
  if (s.fields) {
  const allFilled = s.fields.every((f) => {
  if (f.checkbox) return true; // checkboxes default to false, that's fine
- if (f.options) {
+ if (f.conditionalField && !data[f.conditionalField]) return true; // hidden conditional fields
  const val = data[f.field];
- return val !== null && val !== undefined && val !=="";
- }
- return true; // text fields are optional within multi-text
+ return val !== null && val !== undefined && val !== "";
  });
  if (!allFilled) return i;
  }
