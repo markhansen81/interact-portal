@@ -10,11 +10,13 @@ function getResend() {
 
 export async function sendEmail({
   to,
+  cc,
   subject,
   html,
   attachments,
 }: {
   to: string;
+  cc?: string;
   subject: string;
   html: string;
   attachments?: Array<{ filename: string; content: Buffer }>;
@@ -28,6 +30,7 @@ export async function sendEmail({
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to,
+      ...(cc && { cc }),
       subject,
       html,
       ...(attachments && { attachments }),
