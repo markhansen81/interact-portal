@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     type: "invite",
     email,
     options: {
-      redirectTo: `${appUrl}/portal`,
+      redirectTo: `${appUrl}/auth/callback?next=/auth/invite/confirm`,
     },
   });
 
