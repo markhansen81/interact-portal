@@ -1094,7 +1094,7 @@ function FormFlow({
  <div className={`flex flex-col ${embedded ?"min-h-full":"fixed inset-0 bg-white"}`}>
  {/* Top bar */}
  <div className="flex items-center justify-between border-b border-neutral-100 px-6 py-3">
- <button onClick={onBack} className="flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-700">
+ <button onClick={async () => { await saveStep(); onBack(); }} className="flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-700">
  <svg className="h-4 w-4"fill="none"viewBox="0 0 24 24"strokeWidth={2} stroke="currentColor">
  <path strokeLinecap="round"strokeLinejoin="round"d="M15.75 19.5L8.25 12l7.5-7.5"/>
  </svg>
