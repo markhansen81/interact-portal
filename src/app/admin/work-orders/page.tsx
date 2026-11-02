@@ -16,14 +16,9 @@ export default async function WorkOrdersPage() {
       <PageHeader
         title="Work Orders"
         action={
-          <div className="flex gap-3">
-            <Link href="/admin/work-orders/template">
-              <Button variant="secondary">Edit Template</Button>
-            </Link>
-            <Link href="/admin/work-orders/new">
-              <Button>Create Work Order</Button>
-            </Link>
-          </div>
+          <Link href="/admin/work-orders/template">
+            <Button variant="secondary">Edit Template</Button>
+          </Link>
         }
       />
       <WorkOrdersTable workOrders={(workOrders ?? []) as unknown as Parameters<typeof WorkOrdersTable>[0]["workOrders"]} />
