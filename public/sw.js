@@ -1,54 +1,22 @@
-const CACHE_NAME = 'interact-ta-v2';
-const STATIC_ASSETS = [
-  '/portal',
-  '/manifest.json',
-];
+const CACHE_NAME = 'interact-ta-v3';
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
-  );
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
+  // Clear all old caches
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+      Promise.all(keys.map((k) => caches.delete(k)))
     )
   );
   self.clients.claim();
 });
 
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-
-  // Skip non-GET
-  if (request.method !== 'GET') return;
-
-  // API calls: network first, cache fallback
-  if (request.url.includes('/api/')) {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          return response;
-        })
-        .catch(() => caches.match(request))
-    );
-    return;
-  }
-
-  // Static assets: cache first, network fallback
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request).then((response) => {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-        return response;
-      });
-    })
-  );
+// Pass all requests through to the network — no caching.
+// The portal uses server-side auth (cookies); caching HTML or API
+// responses causes stale auth state and session redirect loops.
+self.addEventListener('fetch', () => {
+  // intentionally do nothing — browser handles normally
 });
