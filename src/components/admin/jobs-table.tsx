@@ -146,8 +146,8 @@ function ProjectHub({ job }: { job: Job }) {
   const infoPackReceived = !!job.info_pack_submitted_at;
   const scheduleConfirmed = !!job.schedule_confirmed_at;
 
-  // Overall completion: 4 checklist items
-  const checks = [wosSent, teacherInvited, infoPackReceived, scheduleConfirmed];
+  // Overall completion: 3 active checklist items (invite is disabled — portal not built yet)
+  const checks = [wosSent, infoPackReceived, scheduleConfirmed];
   const doneCount = checks.filter(Boolean).length;
   const pct = Math.round((doneCount / checks.length) * 100);
 
@@ -189,31 +189,12 @@ function ProjectHub({ job }: { job: Job }) {
             )}
           </div>
 
-          {/* 2. Invite teacher */}
+          {/* 2. Invite teacher (portal not yet built — coming soon) */}
           <div className="flex items-center gap-2">
-            <CheckIcon done={teacherInvited} />
-            <span className={`text-xs ${teacherInvited ? "text-neutral-500 line-through" : "text-neutral-700"}`}>
-              Invite teacher
-            </span>
-            {teacherInvited && job.teacher_email && (
-              <span className="ml-auto text-[10px] text-neutral-400 truncate max-w-[120px]">{job.teacher_email}</span>
-            )}
-            {!teacherInvited && (
-              <button
-                onClick={() => setShowInviteModal(true)}
-                className="ml-auto text-[10px] font-medium text-[#E91E8C] hover:underline"
-              >
-                Invite →
-              </button>
-            )}
+            <CheckIcon done={false} />
+            <span className="text-xs text-neutral-400">Invite teacher</span>
+            <span className="ml-auto text-[10px] text-neutral-300">Portal coming soon</span>
           </div>
-          {showInviteModal && (
-            <TeacherInviteModal
-              job={job}
-              onClose={() => setShowInviteModal(false)}
-              onSent={() => startTransition(() => router.refresh())}
-            />
-          )}
 
           {/* 4. Info pack */}
           <div className="flex items-center gap-2">
@@ -281,33 +262,7 @@ function ProjectHub({ job }: { job: Job }) {
             {job.teacher_email && (
               <p className="text-xs text-neutral-500">{job.teacher_email}</p>
             )}
-            <div className="mt-1">
-              {teacherInvited ? (
-                <span className="inline-flex items-center gap-1 text-[10px] text-green-600">
-                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                  Portal invite sent
-                </span>
-              ) : (
-                <button
-                  onClick={() => setShowInviteModal(true)}
-                  className="text-[10px] font-medium text-[#E91E8C] hover:underline"
-                >
-                  Send portal invite →
-                </button>
-              )}
-            </div>
-            {teacherInvited && (
-              <div className="mt-1 space-y-1">
-                <div className="flex items-center gap-1.5">
-                  <CheckIcon done={infoPackReceived} />
-                  <span className="text-[10px] text-neutral-500">Info pack</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckIcon done={scheduleConfirmed} />
-                  <span className="text-[10px] text-neutral-500">Schedule confirmed</span>
-                </div>
-              </div>
-            )}
+            <p className="text-[10px] text-neutral-300 mt-1">Portal invite coming soon</p>
           </div>
         )}
       </div>
@@ -491,10 +446,9 @@ export function JobsTable({ jobs }: { jobs: Job[] }) {
             const weekBg = job.weekColor === 1 ? "bg-neutral-50" : "bg-white";
             const hoverBg = "hover:bg-neutral-100";
 
-            // Overall progress for summary column (4 items)
+            // Overall progress for summary column (3 items — invite disabled)
             const checks = [
               job.sent + job.signed > 0,
-              !!job.teacher_invited_at,
               !!job.info_pack_submitted_at,
               !!job.schedule_confirmed_at,
             ];
