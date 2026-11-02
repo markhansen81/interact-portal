@@ -3,6 +3,30 @@
 import Link from "next/link";
 import { useState } from "react";
 
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function fmtDate(dateStr: string): string {
+ const [, m, d] = dateStr.split("-");
+ return `${parseInt(d)} ${MONTHS[parseInt(m) - 1]}`;
+}
+
+function fmtDateRange(start: string, end: string | null): string {
+ if (!end) return fmtDate(start);
+ const [sy, sm] = start.split("-");
+ const [ey, em] = end.split("-");
+ const startStr = fmtDate(start);
+ const endStr = fmtDate(end);
+ // Same month: "2–6 Nov 2026"
+ if (sy === ey && sm === em) {
+ const [, , sd] = start.split("-");
+ return `${parseInt(sd)}–${endStr} ${sy}`;
+ }
+ // Different month, same year: "2 Nov – 6 Dec 2026"
+ if (sy === ey) return `${startStr} – ${endStr} ${ey}`;
+ // Different year
+ return `${startStr} ${sy} – ${endStr} ${ey}`;
+}
+
 type WO = {
  id: string;
  ta_id: string;
@@ -102,7 +126,7 @@ export function JobsTable({ jobs }: { jobs: Job[] }) {
  <td className="px-4 py-3 text-sm text-neutral-500">{job.school_state || "—"}</td>
  {/* Dates */}
  <td className="px-4 py-3 text-sm text-neutral-500 whitespace-nowrap">
- {job.start_date ? `${job.start_date} — ${job.end_date}` : "—"}
+ {job.start_date ? fmtDateRange(job.start_date, job.end_date) : "—"}
  </td>
  {/* Days */}
  <td className="px-4 py-3 text-center text-sm text-neutral-500">{job.days || "—"}</td>
