@@ -41,36 +41,6 @@ export default async function OfferDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
-      {/* PDF Preview */}
-      <div className="border border-neutral-200 rounded-sm overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-2 bg-neutral-50 border-b border-neutral-200">
-          <span className="text-sm font-medium text-neutral-700">Offer Preview</span>
-          <div className="flex items-center gap-3">
-            <a
-              href={`/api/admin/offers/${id}/pdf`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-neutral-600 hover:text-neutral-900 underline"
-            >
-              Open in new tab
-            </a>
-            <a
-              href={`/api/admin/offers/${id}/pdf`}
-              download={`Angebot_${offer.offer_number}.pdf`}
-              className="text-sm text-neutral-600 hover:text-neutral-900 underline"
-            >
-              Download
-            </a>
-          </div>
-        </div>
-        <iframe
-          src={`/api/admin/offers/${id}/pdf`}
-          className="w-full"
-          style={{ height: "85vh" }}
-          title="Offer PDF Preview"
-        />
-      </div>
-
       {/* CRM auto-update notice */}
       {wasAutoUpdated && (
         <div className="border border-blue-200 bg-blue-50 rounded-sm px-4 py-3 flex items-center justify-between">
@@ -138,6 +108,36 @@ export default async function OfferDetailPage({ params }: Props) {
           </span>
         )}
         <span className="text-neutral-900 font-medium">{total}</span>
+      </div>
+
+      {/* PDF Preview */}
+      <div className="border border-neutral-200 rounded-sm overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-2 bg-neutral-50 border-b border-neutral-200">
+          <span className="text-sm font-medium text-neutral-700">Offer Preview</span>
+          <div className="flex items-center gap-3">
+            <a
+              href={`/api/admin/offers/${id}/pdf`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-neutral-600 hover:text-neutral-900 underline"
+            >
+              Open in new tab
+            </a>
+            <a
+              href={`/api/admin/offers/${id}/pdf`}
+              download={`Angebot_${offer.offer_number}.pdf`}
+              className="text-sm text-neutral-600 hover:text-neutral-900 underline"
+            >
+              Download
+            </a>
+          </div>
+        </div>
+        <iframe
+          src={`/api/admin/offers/${id}/pdf`}
+          className="w-full"
+          style={{ height: "85vh" }}
+          title="Offer PDF Preview"
+        />
       </div>
 
       {/* Detail grid */}
