@@ -45,41 +45,42 @@ export default function TALoginPage() {
           Sign in to manage your profile, work orders, and invoices with InterACT English.
         </p>
 
-        {/* Login form — white card */}
-        <div className="w-full max-w-sm bg-white rounded-full px-8 py-4 flex items-center gap-3 shadow-lg mb-4">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="flex-1 bg-transparent text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
-            placeholder="your@email.com"
-          />
-        </div>
+        {/* Login form */}
+        <form onSubmit={handleLogin} className="w-full max-w-sm flex flex-col items-center gap-4">
+          <div className="w-full bg-white rounded-full px-8 py-4 flex items-center gap-3 shadow-lg">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="flex-1 bg-transparent text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
+              placeholder="your@email.com"
+            />
+          </div>
 
-        <div className="w-full max-w-sm bg-white rounded-full px-8 py-4 flex items-center gap-3 shadow-lg mb-6">
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="flex-1 bg-transparent text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
-            placeholder="Password"
-          />
-        </div>
+          <div className="w-full bg-white rounded-full px-8 py-4 flex items-center gap-3 shadow-lg">
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="flex-1 bg-transparent text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
+              placeholder="Password"
+            />
+          </div>
 
-        {error && (
-          <p className="text-sm text-white font-semibold mb-4 bg-red-500/30 px-4 py-2 rounded-full">{error}</p>
-        )}
+          {error && (
+            <p className="text-sm text-white font-semibold bg-red-500/30 px-4 py-2 rounded-full">{error}</p>
+          )}
 
-        <button
-          type="button"
-          disabled={loading}
-          onClick={handleLogin}
-          className="w-full max-w-sm rounded-full border-2 border-white bg-transparent px-8 py-4 text-sm font-semibold uppercase tracking-widest text-white transition-colors hover:bg-white hover:text-[#E91E8C] disabled:opacity-50"
-        >
-          {loading ? "Signing in..." : "SIGN IN"}
-        </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-full border-2 border-white bg-transparent px-8 py-4 text-sm font-semibold uppercase tracking-widest text-white transition-colors hover:bg-white hover:text-[#E91E8C] disabled:opacity-50"
+          >
+            {loading ? "Signing in..." : "SIGN IN"}
+          </button>
+        </form>
 
         <p className="mt-8 text-xs text-white/50">
           Admin? <Link href="/auth/admin" className="text-white underline hover:text-white/80">Sign in here</Link>
