@@ -484,7 +484,13 @@ export function JobsTable({ jobs }: { jobs: Job[] }) {
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
-                      <span className="text-sm font-medium text-neutral-900">{job.title}</span>
+                      <Link
+                        href={`/admin/jobs/${job.id}`}
+                        className="text-sm font-medium text-neutral-900 hover:text-[#E91E8C] hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {job.title}
+                      </Link>
                     </div>
                   </td>
                   {/* Type */}
