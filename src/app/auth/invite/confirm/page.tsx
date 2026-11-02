@@ -4,9 +4,23 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
+function EyeIcon({ open }: { open: boolean }) {
+  return open ? (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+    </svg>
+  ) : (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+    </svg>
+  );
+}
+
 export default function InviteConfirmPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -70,30 +84,40 @@ export default function InviteConfirmPage() {
               <label className="block text-xs font-semibold uppercase tracking-wider text-white/80 mb-2">
                 Password
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={8}
-                autoFocus
-                className="block w-full border-b-2 border-white/50 bg-transparent px-0 py-3 text-sm text-white placeholder:text-white/40 focus:border-white focus:outline-none transition-colors"
-                placeholder="At least 8 characters"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={8}
+                  autoFocus
+                  className="block w-full border-b-2 border-white/50 bg-transparent px-0 py-3 pr-8 text-sm text-white placeholder:text-white/40 focus:border-white focus:outline-none transition-colors"
+                  placeholder="At least 8 characters"
+                />
+                <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-0 top-3 text-white/50 hover:text-white">
+                  <EyeIcon open={showPassword} />
+                </button>
+              </div>
             </div>
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-white/80 mb-2">
                 Confirm password
               </label>
-              <input
-                type="password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                required
-                className="block w-full border-b-2 border-white/50 bg-transparent px-0 py-3 text-sm text-white placeholder:text-white/40 focus:border-white focus:outline-none transition-colors"
-                placeholder="Repeat your password"
-              />
+              <div className="relative">
+                <input
+                  type={showConfirm ? "text" : "password"}
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  required
+                  className="block w-full border-b-2 border-white/50 bg-transparent px-0 py-3 pr-8 text-sm text-white placeholder:text-white/40 focus:border-white focus:outline-none transition-colors"
+                  placeholder="Repeat your password"
+                />
+                <button type="button" onClick={() => setShowConfirm(v => !v)} className="absolute right-0 top-3 text-white/50 hover:text-white">
+                  <EyeIcon open={showConfirm} />
+                </button>
+              </div>
             </div>
 
             {error && (
