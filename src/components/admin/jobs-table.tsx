@@ -221,6 +221,13 @@ function ProjectHub({ job }: { job: Job }) {
               {scheduleConfirmed ? "Undo" : "Confirm →"}
             </button>
           </div>
+
+          {/* 6. Make schedule — coming soon */}
+          <div className="flex items-center gap-2">
+            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-dashed border-neutral-200" />
+            <span className="text-xs text-neutral-400">Make schedule</span>
+            <span className="ml-auto text-[10px] text-neutral-300">Coming soon</span>
+          </div>
         </div>
       </div>
 

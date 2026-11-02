@@ -114,7 +114,7 @@ export function JobDetail({
   const checkInfoPack     = !!job.info_pack_submitted_at;
   const checkSchedule     = !!job.schedule_confirmed_at;
   const doneCount = [checkWOsSent, checkInfoPack, checkSchedule].filter(Boolean).length;
-  const pct = Math.round((doneCount / 3) * 100);
+  const pct = Math.round((doneCount / 4) * 100);
 
   async function toggleSchedule() {
     await fetch(`/api/admin/jobs/${job.id}/confirm-schedule`, { method: "POST" });
@@ -283,7 +283,7 @@ export function JobDetail({
         <div className="rounded-sm border border-neutral-200 bg-white p-5">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-neutral-900">Checklist</h3>
-            <span className="text-xs text-neutral-400">{doneCount}/3</span>
+            <span className="text-xs text-neutral-400">{doneCount}/4</span>
           </div>
           <div className="h-1.5 w-full rounded-full bg-neutral-100 mb-4">
             <div className={`h-1.5 rounded-full ${pct===100?"bg-green-500":"bg-blue-400"}`} style={{width:`${pct}%`}} />
@@ -308,6 +308,11 @@ export function JobDetail({
               >
                 {checkSchedule ? "Undo" : "Confirm"}
               </button>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-neutral-200" />
+              <span className="text-sm text-neutral-400">Make schedule</span>
+              <span className="ml-auto text-xs text-neutral-300">Coming soon</span>
             </div>
           </div>
         </div>
