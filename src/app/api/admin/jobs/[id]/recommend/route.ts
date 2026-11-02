@@ -89,10 +89,16 @@ export async function GET(
     unavailableTAs = new Set(unavailCountByTA.keys());
   }
 
-  // Score each TA — exclude anyone already assigned or with confirmed conflicts.
-  // TAs with no availability set are still shown (we just don't know) but score lower.
+  // Score each TA — only show TAs who explicitly marked themselves available.
+  // Exclude anyone already assigned, with conflicts, or who hasn't set availability.
+  const hasJobDates = !!(job.start_date && job.end_date);
   const recommendations = allTAs
-    .filter((ta) => !assignedTAIds.has(ta.id) && !unavailableTAs.has(ta.id))
+    .filter((ta) => {
+      if (assignedTAIds.has(ta.id)) return false;
+      if (unavailableTAs.has(ta.id)) return false;
+      if (hasJobDates && !availableTAs.has(ta.id)) return false;
+      return true;
+    })
     .map((ta) => {
       let score = 0;
       const reasons: string[] = [];
