@@ -24,7 +24,6 @@ const navSections: NavSection[] = [
       { href: "/admin/onboarding", label: "Onboarding" },
       { href: "/admin/training", label: "Training" },
       { href: "/admin/availability", label: "Availability" },
-      { href: "/admin/lanes-planes", label: "Lanes & Planes" },
     ],
   },
   {
@@ -56,7 +55,11 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    items: [{ href: "/admin/users", label: "Admin Users" }],
+    label: "System",
+    items: [
+      { href: "/admin/lanes-planes", label: "Lanes & Planes" },
+      { href: "/admin/users", label: "Admin Users" },
+    ],
   },
 ];
 
