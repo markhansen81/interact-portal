@@ -1136,7 +1136,7 @@ function FormFlow({
  <DateStep step={step} value={(data[step.field!] as string) ||""} onChange={(v) => onChange(step.field!, v)} />
  )}
  {step.type ==="select"&& (
- <SelectStep step={step} value={(data[step.field!] as string) ||""} onChange={(v) => { dataRef.current = { ...dataRef.current, [step.field!]: v }; onChange(step.field!, v); setTimeout(goNext, 300); }} />
+ <SelectStep step={step} value={data[step.field!] != null ? String(data[step.field!]) : ""} onChange={(v) => { dataRef.current = { ...dataRef.current, [step.field!]: v }; onChange(step.field!, v); setTimeout(goNext, 300); }} />
  )}
  {step.type ==="multi-text"&& (
  <MultiTextStep step={step} data={data} onChange={onChange} />
@@ -1462,7 +1462,7 @@ function MultiTextStep({ step, data, onChange }: { step: Step; data: Record<stri
  return (
  <div key={f.field}>
  <label className="mb-1.5 block text-sm font-medium text-neutral-500">{f.label}</label>
- <select value={(data[f.field] as string) ||""} onChange={(e) => onChange(f.field, e.target.value)}
+ <select value={data[f.field] != null ? String(data[f.field]) : ""} onChange={(e) => onChange(f.field, e.target.value)}
  className="w-full border-0 border-b-2 border-neutral-200 bg-transparent py-3 text-xl text-neutral-900 focus:border-neutral-900 focus:outline-none focus:ring-0">
  <option value="">Select...</option>
  {f.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
