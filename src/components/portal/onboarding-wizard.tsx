@@ -946,6 +946,11 @@ function FormFlow({
  const s = steps[i];
  // Skip conditionally hidden steps (e.g. disability description when not disabled)
  if (s.id === "disability_desc" && data.exp_disabilities !== "true" && data.exp_disabilities !== true) continue;
+ // Programs step: check if any preferences have been saved
+ if (s.type === "programs") {
+ if (Object.keys(prefs).length === 0) return i;
+ continue;
+ }
  if (s.field) {
  const val = data[s.field];
  if (val === null || val === undefined || val ==="") return i;
