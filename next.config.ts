@@ -24,8 +24,16 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Admin offer PDF preview — allow same-origin iframe embedding
+        source: '/api/admin/offers/:id/pdf',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+        ],
+      },
+      {
         // Everything else: block iframes
-        source: '/((?!lead-form|school).*)',
+        source: '/((?!lead-form|school|api/admin/offers/.+/pdf).*)',
         headers: [
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
