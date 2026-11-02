@@ -47,6 +47,19 @@ export async function POST(request: Request) {
   `);
 
   const allItems = result?.data?.boards?.[0]?.items_page?.items || [];
+
+  // Debug mode: return raw column IDs from the first item to identify unmapped columns
+  if (url.searchParams.get("debug") === "1" && allItems[0]) {
+    return NextResponse.json({
+      debug: true,
+      columns: allItems[0].column_values.map((c: { id: string; text: string; value: string | null }) => ({
+        id: c.id,
+        text: c.text,
+        value: c.value,
+      })),
+    });
+  }
+
   const adminClient = createAdminClient();
 
   const today = new Date().toISOString().split("T")[0];

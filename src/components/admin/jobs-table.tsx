@@ -84,6 +84,7 @@ export function JobsTable({ jobs }: { jobs: Job[] }) {
  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">Location</th>
  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">Dates</th>
  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-neutral-500">Days</th>
+ <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-neutral-500"># TAs</th>
  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-neutral-500">Staffing</th>
  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-neutral-500">WOs</th>
  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-neutral-500">Action</th>
@@ -130,6 +131,14 @@ export function JobsTable({ jobs }: { jobs: Job[] }) {
  </td>
  {/* Days */}
  <td className="px-4 py-3 text-center text-sm text-neutral-500">{job.days || "—"}</td>
+ {/* # TAs needed */}
+ <td className="px-4 py-3 text-center">
+ {job.needed > 0 ? (
+ <span className="text-sm font-medium text-neutral-700">{job.needed} TAs</span>
+ ) : (
+ <span className="text-xs text-neutral-400">—</span>
+ )}
+ </td>
  {/* Staffing bar */}
  <td className="px-4 py-3">
  <div className="flex items-center justify-center">
