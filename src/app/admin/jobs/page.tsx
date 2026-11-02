@@ -2,13 +2,67 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { SyncJobsButton } from "@/components/admin/sync-jobs-button";
 
+function getISOWeek(dateStr: string): number {
+ const d = new Date(dateStr);
+ const dayOfWeek = d.getUTCDay() || 7;
+ d.setUTCDate(d.getUTCDate() + 4 - dayOfWeek);
+ const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+ return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+}
+
+function getISOYear(dateStr: string): number {
+ const d = new Date(dateStr);
+ const dayOfWeek = d.getUTCDay() || 7;
+ d.setUTCDate(d.getUTCDate() + 4 - dayOfWeek);
+ return d.getUTCFullYear();
+}
+
+function getWeekKey(dateStr: string): string {
+ return `${getISOYear(dateStr)}-W${getISOWeek(dateStr)}`;
+}
+
+function getMondayOfCurrentWeek(): Date {
+ const now = new Date();
+ const day = now.getUTCDay() || 7;
+ const monday = new Date(now);
+ monday.setUTCDate(now.getUTCDate() - day + 1);
+ monday.setUTCHours(0, 0, 0, 0);
+ return monday;
+}
+
 export default async function JobsPage() {
  const supabase = await createClient();
 
- const { data: jobs } = await supabase
+ const { data: rawJobs } = await supabase
  .from("jobs")
  .select("*, work_orders(id, ta_id, status)")
  .order("start_date", { ascending: true });
+
+ const jobs = rawJobs || [];
+
+ // Sort: current & future weeks first (ascending), then past weeks (most recent past first)
+ const thisMonday = getMondayOfCurrentWeek();
+ const sorted = [...jobs].sort((a, b) => {
+ const aDate = a.start_date ? new Date(a.start_date) : new Date("9999-12-31");
+ const bDate = b.start_date ? new Date(b.start_date) : new Date("9999-12-31");
+ const aFuture = aDate >= thisMonday;
+ const bFuture = bDate >= thisMonday;
+ if (aFuture && bFuture) return aDate.getTime() - bDate.getTime();
+ if (!aFuture && !bFuture) return bDate.getTime() - aDate.getTime();
+ return aFuture ? -1 : 1;
+ });
+
+ // Compute alternating week color index — toggle per unique KW
+ const weekColorMap = new Map<string, number>();
+ let colorToggle = 0;
+ for (const job of sorted) {
+ if (!job.start_date) continue;
+ const key = getWeekKey(job.start_date);
+ if (!weekColorMap.has(key)) {
+ weekColorMap.set(key, colorToggle % 2);
+ colorToggle++;
+ }
+ }
 
  return (
  <div className="space-y-6">
@@ -31,7 +85,7 @@ export default async function JobsPage() {
  </div>
  </div>
 
- {!jobs || jobs.length === 0 ? (
+ {jobs.length === 0 ? (
  <div className="rounded-sm border border-dashed border-neutral-300 bg-white p-12 text-center">
  <p className="text-neutral-500">No jobs synced yet.</p>
  <p className="mt-1 text-sm text-neutral-400">Click &quot;Sync from Monday&quot; to import.</p>
@@ -52,7 +106,7 @@ export default async function JobsPage() {
  </tr>
  </thead>
  <tbody className="divide-y divide-neutral-200">
- {jobs.map((job) => {
+ {sorted.map((job) => {
  const wos = (job.work_orders || []) as { id: string; ta_id: string; status: string }[];
  const sent = wos.filter((w) => w.status === "sent").length;
  const signed = wos.filter((w) => w.status === "signed").length;
@@ -64,13 +118,23 @@ export default async function JobsPage() {
  const needsAttention = remaining > 0 && sent === 0 && needed > 0;
  const href = `/admin/jobs/${job.id}`;
 
+ const weekKey = job.start_date ? getWeekKey(job.start_date) : null;
+ const weekColor = weekKey !== null ? weekColorMap.get(weekKey) : 0;
+ // Alternate: even weeks = white, odd weeks = very light blue-gray
+ const weekBg = weekColor === 1 ? "bg-blue-50/40" : "bg-white";
+
  return (
  <tr
  key={job.id}
- className={`group cursor-pointer hover:bg-neutral-50 ${needsAttention ? "bg-yellow-50/50 hover:bg-yellow-50" : ""}`}
+ className={`group cursor-pointer ${weekBg} ${needsAttention ? "!bg-yellow-50/50 hover:!bg-yellow-50" : "hover:bg-neutral-50"}`}
  >
  <td className="px-0 py-0">
- <Link href={href} className="block px-4 py-3 text-sm font-medium text-neutral-900">
+ <Link href={href} className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-neutral-900">
+ {weekKey && (
+ <span className="shrink-0 rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-400 tabular-nums">
+ KW{getISOWeek(job.start_date!)}
+ </span>
+ )}
  {job.title}
  </Link>
  </td>
