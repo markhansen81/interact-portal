@@ -1065,7 +1065,8 @@ function FormFlow({
  containerRef.current?.scrollTo({ top: 0 });
  }
 
- function goBack() {
+ async function goBack() {
+ await saveStep();
  const prev = prevIndex(current);
  if (prev < 0) {
  onBack();
