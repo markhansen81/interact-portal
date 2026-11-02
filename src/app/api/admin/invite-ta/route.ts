@@ -30,70 +30,53 @@ export async function POST(request: Request) {
   }
 
   const adminClient = createAdminClient();
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://interact-portal.vercel.app";
 
-  const tempPassword =
-    Math.random().toString(36).slice(-8) +
-    Math.random().toString(36).slice(-8).toUpperCase() +
-    "!1";
+  // Generate a magic invite link (no password created)
+  const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+    type: "invite",
+    email,
+    options: {
+      redirectTo: `${appUrl}/portal`,
+    },
+  });
 
-  const { data: newUser, error: createError } =
-    await adminClient.auth.admin.createUser({
-      email,
-      password: tempPassword,
-      email_confirm: true,
-      user_metadata: { role: "ta" },
-    });
-
-  if (createError) {
-    return NextResponse.json(
-      { error: createError.message },
-      { status: 400 }
-    );
+  if (linkError || !linkData?.properties?.action_link) {
+    return NextResponse.json({ error: linkError?.message ?? "Failed to generate invite link" }, { status: 400 });
   }
 
-  // Update the profile with name if provided
-  if (newUser.user && (firstName || lastName)) {
+  const inviteUrl = linkData.properties.action_link;
+
+  // Update profile with name if provided (user record was created by generateLink)
+  if (linkData.user && (firstName || lastName)) {
     await adminClient
       .from("profiles")
       .update({
         first_name: firstName || null,
         last_name: lastName || null,
       })
-      .eq("id", newUser.user.id);
+      .eq("id", linkData.user.id);
   }
 
-  // Send invite email to TA
-  const displayName = firstName || "Teaching Artist";
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://interact-portal.vercel.app";
+  // Send branded invite email
+  const displayName = firstName || "there";
 
   await sendEmail({
     to: email,
-    subject: "Welcome to InterACT Portal — Your Account",
+    subject: "You're invited to the InterACT Teaching Artist Portal",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h1 style="color: #18181b; font-size: 24px;">Welcome to InterACT Portal</h1>
         <p>Hi ${displayName},</p>
-        <p>You've been invited to the InterACT English Teaching Artist Portal. Here are your login credentials:</p>
-        <div style="background: #f4f4f5; border-radius: 8px; padding: 20px; margin: 20px 0;">
-          <p style="margin: 0; font-size: 14px; color: #71717a;">Email</p>
-          <p style="margin: 4px 0 16px; font-size: 16px; font-weight: bold; color: #18181b;">${email}</p>
-          <p style="margin: 0; font-size: 14px; color: #71717a;">Temporary Password</p>
-          <p style="margin: 4px 0 0; font-size: 16px; font-weight: bold; color: #18181b; font-family: monospace;">${tempPassword}</p>
-        </div>
-        <p style="color: #b45309; font-weight: bold;">Please change your password after your first login.</p>
-        <p>
-          <a href="${appUrl}/auth/login" style="display: inline-block; background: #18181b; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
-            Log In to Portal
+        <p>You've been invited to the InterACT English Teaching Artist Portal — your hub for work orders, invoices, and projects.</p>
+        <p>Click the button below to accept your invitation and set up your account. The link is valid for 24 hours.</p>
+        <p style="margin: 32px 0;">
+          <a href="${inviteUrl}" style="display: inline-block; background: #E91E8C; color: white; padding: 14px 28px; border-radius: 4px; text-decoration: none; font-weight: 600; font-size: 16px;">
+            Accept Invitation
           </a>
         </p>
-        <p style="margin-top: 24px;">Once logged in, you'll need to complete your onboarding profile. This includes:</p>
-        <ul style="color: #52525b;">
-          <li>Personal information</li>
-          <li>Teaching experience & qualifications</li>
-          <li>Program preferences</li>
-          <li>Document uploads (right to work, police check, etc.)</li>
-        </ul>
-        <p>If you have any questions, reply to this email or message us in the portal.</p>
+        <p style="color: #71717a; font-size: 14px;">Once you're in, you'll complete a short onboarding profile (personal info, qualifications, documents). It only takes a few minutes.</p>
+        <p style="color: #71717a; font-size: 14px;">If you have any questions, reply to this email.</p>
         <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 24px 0;" />
         <p style="color: #a1a1aa; font-size: 12px;">
           InterACT English gGmbH<br/>
@@ -104,10 +87,5 @@ export async function POST(request: Request) {
     `,
   });
 
-  return NextResponse.json({
-    success: true,
-    userId: newUser.user?.id,
-    tempPassword,
-    emailSent: !!process.env.RESEND_API_KEY,
-  });
+  return NextResponse.json({ success: true, emailSent: true });
 }
