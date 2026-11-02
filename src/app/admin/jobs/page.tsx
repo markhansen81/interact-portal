@@ -41,11 +41,11 @@ export default async function JobsPage() {
  .order("start_date", { ascending: true }),
  supabase
  .from("profiles")
- .select("id, full_name")
+ .select("id, full_name, first_name, last_name")
  .eq("role", "ta"),
  ]);
 
- const taNameMap = new Map((taProfiles || []).map((p) => [p.id, p.full_name]));
+ const taNameMap = new Map((taProfiles || []).map((p) => [p.id, p.full_name ?? (p.first_name && p.last_name ? `${p.first_name} ${p.last_name}` : null)]));
 
  const jobs = rawJobs || [];
  const thisMonday = getMondayOfCurrentWeek();
@@ -105,6 +105,11 @@ export default async function JobsPage() {
  remaining,
  needed,
  total: wos.length,
+ teacher_email: job.teacher_email ?? null,
+ teacher_name: job.teacher_name ?? null,
+ teacher_invited_at: job.teacher_invited_at ?? null,
+ info_pack_submitted_at: job.info_pack_submitted_at ?? null,
+ schedule_confirmed_at: job.schedule_confirmed_at ?? null,
  };
  });
 
@@ -114,7 +119,7 @@ export default async function JobsPage() {
  <div>
  <h2 className="text-2xl font-bold text-neutral-900">Projects</h2>
  <p className="mt-1 text-sm text-neutral-500">
-  Synced from Monday. Click a row to expand and see assigned TAs.
+  Click a row to expand — admin tasks, TA status &amp; teacher progress.
  </p>
  </div>
  <div className="flex gap-3">
