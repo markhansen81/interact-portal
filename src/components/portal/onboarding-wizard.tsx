@@ -949,6 +949,8 @@ function FormFlow({
  if (s.field) {
  const val = data[s.field];
  if (val === null || val === undefined || val ==="") return i;
+ // If s.field passed, skip s.fields when all are _ prefixed (internal UI-only fields like _dietary_*)
+ if (s.fields && s.fields.every((f) => f.field.startsWith("_"))) continue;
  }
  if (s.fields) {
  const allFilled = s.fields.every((f) => {
