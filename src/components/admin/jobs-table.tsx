@@ -68,12 +68,8 @@ export function JobsTable({ jobs }: { jobs: Job[] }) {
  <tbody className="divide-y divide-neutral-200">
  {jobs.map((job) => {
  const isExpanded = expanded.has(job.id);
- const weekBg = job.needsAttention
- ? "bg-yellow-50/60"
- : job.weekColor === 1
- ? "bg-slate-50"
- : "bg-white";
- const hoverBg = job.needsAttention ? "hover:bg-yellow-50" : "hover:bg-neutral-50";
+ const weekBg = job.weekColor === 1 ? "bg-slate-50" : "bg-white";
+ const hoverBg = "hover:bg-neutral-100";
 
  return (
  <>
