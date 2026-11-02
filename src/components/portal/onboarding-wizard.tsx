@@ -944,6 +944,8 @@ function FormFlow({
  function findFirstUnanswered(): number {
  for (let i = 0; i < steps.length; i++) {
  const s = steps[i];
+ // Skip conditionally hidden steps (e.g. disability description when not disabled)
+ if (s.id === "disability_desc" && data.exp_disabilities !== "true" && data.exp_disabilities !== true) continue;
  if (s.field) {
  const val = data[s.field];
  if (val === null || val === undefined || val ==="") return i;
