@@ -51,6 +51,9 @@ export function mapMondayItemToJob(item: MondayJobItem) {
   const timeline = extractTimelineValue(item, "date__1");
   const tasNeededRaw = parseInt(extractColumnValue(item, "__of_ta_s__1")) || 0;
 
+  const teacherName = extractColumnValue(item, "text50__1") || null;
+  const teacherEmail = extractColumnValue(item, "text_mksa5731") || null;
+
   return {
     monday_item_id: item.id,
     title: item.name,
@@ -68,6 +71,8 @@ export function mapMondayItemToJob(item: MondayJobItem) {
     co_taught: extractColumnValue(item, "text6__1").toLowerCase().includes("co taught"),
     tas_needed: tasNeededRaw,
     status: tasNeededRaw > 0 ? "open" : "assigned",
+    teacher_name: teacherName,
+    teacher_email: teacherEmail,
   };
 }
 
