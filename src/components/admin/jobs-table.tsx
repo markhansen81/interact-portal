@@ -271,24 +271,43 @@ function ProjectHub({ job }: { job: Job }) {
       {/* Teacher Section */}
       <div>
         <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 mb-2">Teacher</p>
-        {!teacherInvited ? (
-          <p className="text-xs text-neutral-400 italic">Not yet invited.</p>
+        {!job.teacher_name && !job.teacher_email ? (
+          <p className="text-xs text-neutral-400 italic">No teacher contact in Monday.</p>
         ) : (
           <div className="space-y-1.5">
             {job.teacher_name && (
               <p className="text-xs font-medium text-neutral-700">{job.teacher_name}</p>
             )}
-            <p className="text-xs text-neutral-500">{job.teacher_email}</p>
-            <div className="mt-2 space-y-1">
-              <div className="flex items-center gap-1.5">
-                <CheckIcon done={infoPackReceived} />
-                <span className="text-[10px] text-neutral-500">Info pack</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <CheckIcon done={scheduleConfirmed} />
-                <span className="text-[10px] text-neutral-500">Schedule confirmed</span>
-              </div>
+            {job.teacher_email && (
+              <p className="text-xs text-neutral-500">{job.teacher_email}</p>
+            )}
+            <div className="mt-1">
+              {teacherInvited ? (
+                <span className="inline-flex items-center gap-1 text-[10px] text-green-600">
+                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                  Portal invite sent
+                </span>
+              ) : (
+                <button
+                  onClick={() => setShowInviteModal(true)}
+                  className="text-[10px] font-medium text-[#E91E8C] hover:underline"
+                >
+                  Send portal invite →
+                </button>
+              )}
             </div>
+            {teacherInvited && (
+              <div className="mt-1 space-y-1">
+                <div className="flex items-center gap-1.5">
+                  <CheckIcon done={infoPackReceived} />
+                  <span className="text-[10px] text-neutral-500">Info pack</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckIcon done={scheduleConfirmed} />
+                  <span className="text-[10px] text-neutral-500">Schedule confirmed</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
