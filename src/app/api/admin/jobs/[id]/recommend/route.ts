@@ -89,17 +89,10 @@ export async function GET(
     unavailableTAs = new Set(unavailCountByTA.keys());
   }
 
-  // Score each TA
-  // When the job has dates, only show TAs who explicitly marked themselves available.
-  // If the job has no dates, fall back to showing all active unassigned TAs.
-  const hasJobDates = !!(job.start_date && job.end_date);
+  // Score each TA — exclude anyone already assigned or with confirmed conflicts.
+  // TAs with no availability set are still shown (we just don't know) but score lower.
   const recommendations = allTAs
-    .filter((ta) => {
-      if (assignedTAIds.has(ta.id)) return false;
-      if (unavailableTAs.has(ta.id)) return false;
-      if (hasJobDates && !availableTAs.has(ta.id)) return false;
-      return true;
-    })
+    .filter((ta) => !assignedTAIds.has(ta.id) && !unavailableTAs.has(ta.id))
     .map((ta) => {
       let score = 0;
       const reasons: string[] = [];
