@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     await supabase.auth.exchangeCodeForSession(code);
 
-    // For admin SSO: enforce @interactenglish.de domain and admin role
+    // For admin SSO: enforce @interactenglish.de domain, auto-provision admin profile
     if (source === "admin") {
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -19,13 +19,24 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}/auth/admin?error=domain`);
       }
 
+      // Check if profile exists
       const { data: profile } = await supabase
         .from("profiles")
         .select("role")
         .eq("id", user.id)
         .single();
 
-      if (profile?.role !== "admin") {
+      if (!profile) {
+        // First login — auto-create admin profile for @interactenglish.de
+        const nameParts = (user.user_metadata?.full_name ?? user.email!.split("@")[0]).split(" ");
+        await supabase.from("profiles").insert({
+          id: user.id,
+          email: user.email,
+          first_name: nameParts[0] ?? "",
+          last_name: nameParts.slice(1).join(" ") ?? "",
+          role: "admin",
+        });
+      } else if (profile.role !== "admin") {
         await supabase.auth.signOut();
         return NextResponse.redirect(`${origin}/auth/admin?error=not_admin`);
       }
