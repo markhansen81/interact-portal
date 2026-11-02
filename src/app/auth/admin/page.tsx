@@ -7,19 +7,14 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
 function AdminLoginForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const searchParams = useSearchParams();
 
   const urlError = searchParams.get("error");
-  const displayError = error ?? (
+  const displayError =
     urlError === "domain" ? "Only @interactenglish.de accounts can access the admin portal." :
     urlError === "not_admin" ? "This Google account does not have admin access." :
-    null
-  );
+    null;
 
   async function handleGoogleSSO() {
     setGoogleLoading(true);
@@ -29,41 +24,10 @@ function AdminLoginForm() {
       options: {
         redirectTo: `${window.location.origin}/auth/callback?next=/admin&source=admin`,
         queryParams: {
-          hd: "interactenglish.de", // hint Google to show only @interactenglish.de accounts
+          hd: "interactenglish.de",
         },
       },
     });
-  }
-
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    const supabase = createClient();
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-      return;
-    }
-
-    // Verify admin role
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", data.user.id)
-      .single();
-
-    if (profile?.role !== "admin") {
-      await supabase.auth.signOut();
-      setError("This account is not an admin. Use the TA login instead.");
-      setLoading(false);
-      return;
-    }
-
-    window.location.href = "/admin";
   }
 
   return (
@@ -92,9 +56,9 @@ function AdminLoginForm() {
         </div>
       </div>
 
-      {/* Right side — form */}
+      {/* Right side — SSO */}
       <div className="flex w-full lg:w-1/2 items-center justify-center p-8">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-sm">
           {/* Mobile logo */}
           <div className="lg:hidden mb-10">
             <h1
@@ -106,7 +70,10 @@ function AdminLoginForm() {
             <p className="mt-2 text-sm text-[#999]">InterACT English Management</p>
           </div>
 
-          {/* Google SSO — primary */}
+          <p className="text-[#999] text-sm mb-6">
+            Sign in with your InterACT Google account to continue.
+          </p>
+
           <button
             onClick={handleGoogleSSO}
             disabled={googleLoading}
@@ -121,59 +88,9 @@ function AdminLoginForm() {
             {googleLoading ? "Redirecting..." : "Sign in with Google"}
           </button>
 
-          {/* Divider */}
-          <div className="my-8 flex items-center gap-4">
-            <div className="h-px flex-1 bg-[#444]" />
-            <span className="text-xs text-[#666] uppercase tracking-wider">or</span>
-            <div className="h-px flex-1 bg-[#444]" />
-          </div>
-
-          {/* Email/password fallback */}
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#E91E8C] mb-2">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="block w-full border-b-2 border-[#555] bg-transparent px-0 py-3 text-sm text-white placeholder:text-[#666] focus:border-[#E91E8C] focus:outline-none transition-colors"
-                placeholder="admin@interactenglish.de"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#E91E8C] mb-2">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="block w-full border-b-2 border-[#555] bg-transparent px-0 py-3 text-sm text-white placeholder:text-[#666] focus:border-[#E91E8C] focus:outline-none transition-colors"
-                placeholder="Your password"
-              />
-            </div>
-
-            {displayError && (
-              <p className="text-sm text-red-400">{displayError}</p>
-            )}
-
-            <div className="flex justify-end pt-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="rounded-sm bg-[#E91E8C]/80 px-10 py-3 text-sm font-semibold uppercase tracking-wider text-white transition-colors hover:bg-[#E91E8C] disabled:opacity-50"
-              >
-                {loading ? "Signing in..." : "Sign in"}
-              </button>
-            </div>
-          </form>
+          {displayError && (
+            <p className="mt-4 text-sm text-red-400">{displayError}</p>
+          )}
 
           <p className="mt-12 text-xs text-[#666]">
             Teaching Artist? <Link href="/auth/login" className="text-[#E91E8C] hover:underline">Sign in here</Link>
