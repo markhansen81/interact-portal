@@ -16,7 +16,7 @@ export default async function JobsPage() {
  <div>
  <h2 className="text-2xl font-bold text-neutral-900">Projects</h2>
  <p className="mt-1 text-sm text-neutral-500">
- Synced from Monday. Click a project to assign TAs and send work orders.
+  Synced from Monday. Click any row to assign TAs and send work orders.
  </p>
  </div>
  <div className="flex gap-3">
@@ -48,6 +48,7 @@ export default async function JobsPage() {
  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-neutral-500">Days</th>
  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-neutral-500">Staffing</th>
  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-neutral-500">WOs</th>
+ <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-neutral-500">Action</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-neutral-200">
@@ -61,26 +62,36 @@ export default async function JobsPage() {
 
  const isFullyStaffed = remaining === 0 && needed > 0;
  const needsAttention = remaining > 0 && sent === 0 && needed > 0;
+ const href = `/admin/jobs/${job.id}`;
 
  return (
  <tr
  key={job.id}
- className={`hover:bg-neutral-50 ${needsAttention ? "bg-yellow-50/50" : ""}`}
+ className={`group cursor-pointer hover:bg-neutral-50 ${needsAttention ? "bg-yellow-50/50 hover:bg-yellow-50" : ""}`}
  >
- <td className="px-4 py-3">
- <Link href={`/admin/jobs/${job.id}`} className="text-sm font-medium text-neutral-900 hover:underline">
+ <td className="px-0 py-0">
+ <Link href={href} className="block px-4 py-3 text-sm font-medium text-neutral-900">
  {job.title}
  </Link>
  </td>
- <td className="px-4 py-3 text-sm text-neutral-500">{job.program_type || "—"}</td>
- <td className="px-4 py-3 text-sm text-neutral-500">{job.school_state || "—"}</td>
- <td className="px-4 py-3 text-sm text-neutral-500 whitespace-nowrap">
- {job.start_date ? `${job.start_date} — ${job.end_date}` : "—"}
+ <td className="px-0 py-0">
+ <Link href={href} className="block px-4 py-3 text-sm text-neutral-500">{job.program_type || "—"}</Link>
  </td>
- <td className="px-4 py-3 text-center text-sm text-neutral-500">{job.days || "—"}</td>
- <td className="px-4 py-3 text-center">
+ <td className="px-0 py-0">
+ <Link href={href} className="block px-4 py-3 text-sm text-neutral-500">{job.school_state || "—"}</Link>
+ </td>
+ <td className="px-0 py-0">
+ <Link href={href} className="block px-4 py-3 text-sm text-neutral-500 whitespace-nowrap">
+ {job.start_date ? `${job.start_date} — ${job.end_date}` : "—"}
+ </Link>
+ </td>
+ <td className="px-0 py-0 text-center">
+ <Link href={href} className="block px-4 py-3 text-sm text-neutral-500">{job.days || "—"}</Link>
+ </td>
+ <td className="px-0 py-0">
+ <Link href={href} className="flex items-center justify-center px-4 py-3">
  {needed > 0 ? (
- <div className="flex items-center justify-center gap-2">
+ <div className="flex items-center gap-2">
  <div className="h-1.5 w-16 rounded-full bg-neutral-100">
  <div
  className={`h-1.5 rounded-full ${isFullyStaffed ? "bg-green-500" : "bg-blue-500"}`}
@@ -94,10 +105,12 @@ export default async function JobsPage() {
  ) : (
  <span className="text-xs text-neutral-400">—</span>
  )}
+ </Link>
  </td>
- <td className="px-4 py-3 text-center">
+ <td className="px-0 py-0">
+ <Link href={href} className="flex items-center justify-center px-4 py-3">
  {total > 0 ? (
- <div className="flex items-center justify-center gap-1">
+ <div className="flex items-center gap-1">
  {signed > 0 && <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-green-100 px-1.5 text-[10px] font-bold text-green-700" title="Signed">{signed}</span>}
  {sent > 0 && <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-blue-100 px-1.5 text-[10px] font-bold text-blue-700" title="Sent, waiting">{sent}</span>}
  {wos.filter((w) => w.status === "draft").length > 0 && (
@@ -111,6 +124,19 @@ export default async function JobsPage() {
  ) : (
  <span className="text-xs text-neutral-400">—</span>
  )}
+ </Link>
+ </td>
+ <td className="px-0 py-0">
+ <Link href={href} className="flex items-center justify-end px-4 py-3">
+ {needsAttention ? (
+ <span className="inline-flex items-center gap-1 rounded-sm bg-[#E91E8C] px-3 py-1 text-xs font-semibold text-white">
+ Assign WOs
+ <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+ </span>
+ ) : (
+ <svg className="h-4 w-4 text-neutral-300 transition-colors group-hover:text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+ )}
+ </Link>
  </td>
  </tr>
  );
