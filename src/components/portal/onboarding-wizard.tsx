@@ -977,7 +977,7 @@ function FormFlow({
 
  useEffect(() => {
  function handleKey(e: KeyboardEvent) {
- if (e.key ==="Enter"&& !e.shiftKey && step.type !=="textarea"&& step.type !=="programs") {
+ if (e.key ==="Enter"&& !e.shiftKey && step.type !=="textarea"&& step.type !=="programs"&& step.type !=="select") {
  e.preventDefault();
  goNext();
  }
@@ -1124,7 +1124,7 @@ function FormFlow({
  <DateStep step={step} value={(data[step.field!] as string) ||""} onChange={(v) => onChange(step.field!, v)} />
  )}
  {step.type ==="select"&& (
- <SelectStep step={step} value={(data[step.field!] as string) ||""} onChange={(v) => { onChange(step.field!, v); setTimeout(goNext, 300); }} />
+ <SelectStep step={step} value={(data[step.field!] as string) ||""} onChange={(v) => { dataRef.current = { ...dataRef.current, [step.field!]: v }; onChange(step.field!, v); setTimeout(goNext, 300); }} />
  )}
  {step.type ==="multi-text"&& (
  <MultiTextStep step={step} data={data} onChange={onChange} />
