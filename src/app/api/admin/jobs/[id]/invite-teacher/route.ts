@@ -49,8 +49,11 @@ export async function POST(
     ? new Date(job.start_date).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })
     : "TBD";
 
+  const CC_EMAIL = process.env.ADMIN_CC_EMAIL || "mark@interactenglish.de";
+
   await sendEmail({
     to: teacher_email,
+    cc: CC_EMAIL,
     subject: `InterACT — Projektinformationen: ${job.title}`,
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #111;">

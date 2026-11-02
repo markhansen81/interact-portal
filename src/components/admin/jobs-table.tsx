@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -72,13 +72,73 @@ function CheckIcon({ done }: { done: boolean }) {
   );
 }
 
+function TeacherInviteModal({ job, onClose, onSent }: { job: Job; onClose: () => void; onSent: () => void }) {
+  const [email, setEmail] = useState(job.teacher_email || "");
+  const [sending, setSending] = useState(false);
+  const [done, setDone] = useState(false);
+
+  async function handleSend() {
+    if (!email) return;
+    setSending(true);
+    await fetch(`/api/admin/jobs/${job.id}/invite-teacher`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ teacher_email: email }),
+    });
+    setSending(false);
+    setDone(true);
+    setTimeout(() => { onClose(); onSent(); }, 800);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/40" />
+      <div className="relative w-full max-w-sm rounded-sm border border-neutral-200 bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="px-5 py-4 border-b border-neutral-100">
+          <h3 className="text-sm font-semibold text-neutral-900">Invite Teacher</h3>
+          <p className="mt-0.5 text-xs text-neutral-500">{job.title} · {job.program_type}</p>
+        </div>
+        <div className="px-5 py-4 space-y-3">
+          <div>
+            <label className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400">Teacher Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="teacher@school.de"
+              autoFocus
+              className="mt-1 w-full rounded border border-neutral-200 px-3 py-2 text-sm focus:outline-none focus:border-neutral-400"
+            />
+          </div>
+          <p className="text-[10px] text-neutral-400">
+            An invite email will be sent to the teacher. You will be CC'd at mark@interactenglish.de.
+          </p>
+          {done ? (
+            <p className="text-xs font-medium text-green-600">Sent ✓</p>
+          ) : (
+            <div className="flex gap-2">
+              <button
+                onClick={handleSend}
+                disabled={sending || !email}
+                className="flex-1 rounded bg-[#E91E8C] py-2 text-xs font-medium text-white hover:bg-[#d01a7d] disabled:opacity-50"
+              >
+                {sending ? "Sending..." : `Send invite to ${email || "…"}`}
+              </button>
+              <button onClick={onClose} className="rounded border border-neutral-200 px-3 py-2 text-xs font-medium text-neutral-500 hover:bg-neutral-50">
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProjectHub({ job }: { job: Job }) {
   const router = useRouter();
-  const [teacherEmail, setTeacherEmail] = useState(job.teacher_email || "");
-  const [teacherName, setTeacherName] = useState(job.teacher_name || "");
-  const [showInviteForm, setShowInviteForm] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [inviting, setInviting] = useState(false);
 
   // Derived admin checklist
   const wosSent = job.sent + job.signed > 0;
@@ -90,19 +150,6 @@ function ProjectHub({ job }: { job: Job }) {
   const checks = [wosSent, teacherInvited, infoPackReceived, scheduleConfirmed];
   const doneCount = checks.filter(Boolean).length;
   const pct = Math.round((doneCount / checks.length) * 100);
-
-  async function handleInviteTeacher() {
-    if (!teacherEmail) return;
-    setInviting(true);
-    await fetch(`/api/admin/jobs/${job.id}/invite-teacher`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ teacher_email: teacherEmail, teacher_name: teacherName }),
-    });
-    setInviting(false);
-    setShowInviteForm(false);
-    startTransition(() => router.refresh());
-  }
 
   async function handleConfirmSchedule() {
     await fetch(`/api/admin/jobs/${job.id}/confirm-schedule`, { method: "POST" });
@@ -143,51 +190,30 @@ function ProjectHub({ job }: { job: Job }) {
           </div>
 
           {/* 2. Invite teacher */}
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <CheckIcon done={teacherInvited} />
-              <span className={`text-xs ${teacherInvited ? "text-neutral-500 line-through" : "text-neutral-700"}`}>
-                Invite teacher
-              </span>
-              {teacherInvited && job.teacher_email && (
-                <span className="ml-auto text-[10px] text-neutral-400 truncate max-w-[120px]">{job.teacher_email}</span>
-              )}
-              {!teacherInvited && !showInviteForm && (
-                <button
-                  onClick={() => setShowInviteForm(true)}
-                  className="ml-auto text-[10px] font-medium text-[#E91E8C] hover:underline"
-                >
-                  Invite →
-                </button>
-              )}
-            </div>
-            {showInviteForm && (
-              <div className="ml-6 flex flex-col gap-1.5 mt-1">
-                <input
-                  type="email"
-                  placeholder="teacher@school.de"
-                  value={teacherEmail}
-                  onChange={(e) => setTeacherEmail(e.target.value)}
-                  className="rounded border border-neutral-200 px-2 py-1 text-xs focus:outline-none focus:border-neutral-400"
-                />
-                <div className="flex gap-1.5">
-                  <button
-                    onClick={handleInviteTeacher}
-                    disabled={inviting || !teacherEmail}
-                    className="rounded bg-[#E91E8C] px-2.5 py-1 text-[10px] font-medium text-white hover:bg-[#d01a7d] disabled:opacity-50"
-                  >
-                    {inviting ? "Sending..." : "Send invite"}
-                  </button>
-                  <button
-                    onClick={() => setShowInviteForm(false)}
-                    className="rounded border border-neutral-200 px-2.5 py-1 text-[10px] font-medium text-neutral-500 hover:bg-neutral-50"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
+          <div className="flex items-center gap-2">
+            <CheckIcon done={teacherInvited} />
+            <span className={`text-xs ${teacherInvited ? "text-neutral-500 line-through" : "text-neutral-700"}`}>
+              Invite teacher
+            </span>
+            {teacherInvited && job.teacher_email && (
+              <span className="ml-auto text-[10px] text-neutral-400 truncate max-w-[120px]">{job.teacher_email}</span>
+            )}
+            {!teacherInvited && (
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="ml-auto text-[10px] font-medium text-[#E91E8C] hover:underline"
+              >
+                Invite →
+              </button>
             )}
           </div>
+          {showInviteModal && (
+            <TeacherInviteModal
+              job={job}
+              onClose={() => setShowInviteModal(false)}
+              onSent={() => startTransition(() => router.refresh())}
+            />
+          )}
 
           {/* 4. Info pack */}
           <div className="flex items-center gap-2">
@@ -270,8 +296,149 @@ function ProjectHub({ job }: { job: Job }) {
   );
 }
 
+type Rec = {
+  ta: { id: string; first_name: string; last_name: string; email: string; pay_level: number; onboarding_status: string };
+  score: number;
+  reasons: string[];
+  isAvailable: boolean;
+};
+
+function AssignWOsModal({ job, onClose, onAssigned }: { job: Job; onClose: () => void; onAssigned: () => void }) {
+  const [recs, setRecs] = useState<Rec[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState<string | null>(null);
+  const [sent, setSent] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    fetch(`/api/admin/jobs/${job.id}/recommend`)
+      .then((r) => r.json())
+      .then((d) => { setRecs(d.recommendations || []); setLoading(false); });
+  }, [job.id]);
+
+  async function sendWO(taId: string) {
+    setSending(taId);
+    const res = await fetch("/api/admin/work-orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ta_id: taId,
+        job_id: job.id,
+        project_name: job.title,
+        school_state: job.school_state,
+        start_date: job.start_date,
+        end_date: job.end_date,
+        days: job.days,
+        program_type: job.program_type,
+      }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      await fetch(`/api/admin/work-orders/${data.workOrder.id}/send`, { method: "POST" });
+      setSent((prev) => new Set([...prev, taId]));
+      onAssigned();
+    }
+    setSending(null);
+  }
+
+  const remaining = job.needed - job.signed - sent.size;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/40" />
+      <div
+        className="relative w-full max-w-lg rounded-sm border border-neutral-200 bg-white shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between border-b border-neutral-100 px-5 py-4">
+          <div>
+            <h3 className="text-sm font-semibold text-neutral-900">{job.title}</h3>
+            <p className="mt-0.5 text-xs text-neutral-500">
+              {job.program_type} · {job.start_date ? fmtDateRange(job.start_date, job.end_date) : "No dates"} · {job.school_state || "—"}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className={`text-xs font-medium ${remaining <= 0 ? "text-green-600" : "text-neutral-500"}`}>
+              {remaining <= 0 ? "Fully staffed" : `${remaining} more needed`}
+            </span>
+            <button onClick={onClose} className="text-neutral-400 hover:text-neutral-700">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Already assigned */}
+        {job.work_orders.length > 0 && (
+          <div className="border-b border-neutral-100 px-5 py-3">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-neutral-400">Assigned</p>
+            <div className="flex flex-wrap gap-1.5">
+              {job.work_orders.map((wo) => (
+                <span key={wo.id} className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${WO_STATUS_COLORS[wo.status] ?? "bg-neutral-100 text-neutral-500"}`}>
+                  <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
+                  {wo.profiles?.full_name ?? "Unknown"} · {wo.status}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Recommendations */}
+        <div className="px-5 py-3">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-neutral-400">Recommendations</p>
+          {loading ? (
+            <p className="py-6 text-center text-xs text-neutral-400">Loading...</p>
+          ) : recs.length === 0 ? (
+            <p className="py-6 text-center text-xs text-neutral-400">No available TAs found for these dates.</p>
+          ) : (
+            <div className="max-h-72 overflow-y-auto -mx-1 px-1 space-y-1">
+              {recs.slice(0, 20).map((rec) => {
+                const alreadySent = sent.has(rec.ta.id);
+                const isSending = sending === rec.ta.id;
+                return (
+                  <div key={rec.ta.id} className="flex items-center gap-2.5 rounded px-2 py-1.5 hover:bg-neutral-50">
+                    {/* Score */}
+                    <span className={`shrink-0 inline-flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold ${
+                      rec.score >= 60 ? "bg-green-100 text-green-700" : rec.score >= 40 ? "bg-yellow-100 text-yellow-700" : "bg-neutral-100 text-neutral-500"
+                    }`}>
+                      {rec.score}
+                    </span>
+                    {/* Availability dot */}
+                    <span className={`shrink-0 h-2 w-2 rounded-full ${rec.isAvailable ? "bg-green-400" : "bg-neutral-300"}`} title={rec.isAvailable ? "Available" : "Availability not set"} />
+                    {/* Name + level */}
+                    <span className="flex-1 text-xs font-medium text-neutral-800">
+                      {rec.ta.first_name} {rec.ta.last_name || rec.ta.email}
+                    </span>
+                    <span className="shrink-0 text-[10px] text-neutral-400">Lv{rec.ta.pay_level}</span>
+                    {/* Send button */}
+                    {alreadySent ? (
+                      <span className="shrink-0 rounded bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700">Sent ✓</span>
+                    ) : (
+                      <button
+                        onClick={() => sendWO(rec.ta.id)}
+                        disabled={!!sending || remaining <= 0}
+                        className="shrink-0 rounded bg-neutral-900 px-2.5 py-1 text-[10px] font-medium text-white hover:bg-neutral-700 disabled:opacity-40"
+                      >
+                        {isSending ? "…" : "Send WO"}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function JobsTable({ jobs }: { jobs: Job[] }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [assigningJob, setAssigningJob] = useState<Job | null>(null);
+
+  const router = useRouter();
 
   function toggle(id: string) {
     setExpanded((prev) => {
@@ -393,13 +560,13 @@ export function JobsTable({ jobs }: { jobs: Job[] }) {
                   {/* Action */}
                   <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                     {job.needsAttention ? (
-                      <Link
-                        href={`/admin/jobs/${job.id}`}
+                      <button
+                        onClick={() => setAssigningJob(job)}
                         className="inline-flex items-center gap-1 rounded-sm bg-[#E91E8C] px-3 py-1 text-xs font-semibold text-white hover:bg-[#d01a7d]"
                       >
                         Assign WOs
                         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                      </Link>
+                      </button>
                     ) : (
                       <Link
                         href={`/admin/jobs/${job.id}`}
@@ -425,6 +592,13 @@ export function JobsTable({ jobs }: { jobs: Job[] }) {
           })}
         </tbody>
       </table>
+      {assigningJob && (
+        <AssignWOsModal
+          job={assigningJob}
+          onClose={() => setAssigningJob(null)}
+          onAssigned={() => router.refresh()}
+        />
+      )}
     </div>
   );
 }
