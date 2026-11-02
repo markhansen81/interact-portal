@@ -127,7 +127,7 @@ export function TAProjectView({
 
  // Filter documents for TA visibility
  const taDocs = documents.filter(
- (d) => !d.visibility || d.visibility ==="ta"|| d.visibility ==="both");
+ (d) => !d.visibility || d.visibility ==="ta"|| d.visibility ==="teacher"|| d.visibility ==="both");
  const travelDocs = documents.filter(
  (d) => d.name.toLowerCase().includes("travel") || d.name.toLowerCase().includes("flight") || d.name.toLowerCase().includes("itinerary")
  );
