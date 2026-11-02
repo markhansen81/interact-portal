@@ -91,7 +91,7 @@ export async function GET(
 
   // Score each TA
   const recommendations = allTAs
-    .filter((ta) => !assignedTAIds.has(ta.id))
+    .filter((ta) => !assignedTAIds.has(ta.id) && !unavailableTAs.has(ta.id))
     .map((ta) => {
       let score = 0;
       const reasons: string[] = [];
