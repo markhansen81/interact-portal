@@ -3,6 +3,16 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function fmtDate(d: string) { const [,m,day] = d.split("-"); return `${parseInt(day)} ${MONTHS[parseInt(m)-1]}`; }
+function fmtDateRange(start: string, end: string | null): string {
+  if (!end || end === start) return `${fmtDate(start)} ${start.split("-")[0]}`;
+  const [sy,sm] = start.split("-"); const [ey,em] = end.split("-");
+  if (sy===ey && sm===em) return `${parseInt(start.split("-")[2])}–${fmtDate(end)} ${sy}`;
+  if (sy===ey) return `${fmtDate(start)} – ${fmtDate(end)} ${ey}`;
+  return `${fmtDate(start)} ${sy} – ${fmtDate(end)} ${ey}`;
+}
+
 interface Job {
   id: string;
   monday_item_id: string | null;
@@ -142,7 +152,7 @@ export function JobDetail({
           <dl className="mt-4 grid grid-cols-2 gap-4">
             <Field label="Program Type" value={job.program_type} />
             <Field label="Days" value={job.days?.toString()} />
-            <Field label="Dates" value={`${job.start_date} — ${job.end_date}`} />
+            <Field label="Dates" value={job.start_date ? fmtDateRange(job.start_date, job.end_date) : "—"} />
             <Field label="Location" value={job.school_state || job.location} />
             <Field label="Address" value={job.school_address} />
             <Field label="Grade" value={job.grade} />
