@@ -177,13 +177,6 @@ function ProjectHub({ job }: { job: Job }) {
             {showInviteForm && (
               <div className="ml-6 flex flex-col gap-1.5 mt-1">
                 <input
-                  type="text"
-                  placeholder="Teacher name (optional)"
-                  value={teacherName}
-                  onChange={(e) => setTeacherName(e.target.value)}
-                  className="rounded border border-neutral-200 px-2 py-1 text-xs focus:outline-none focus:border-neutral-400"
-                />
-                <input
                   type="email"
                   placeholder="teacher@school.de"
                   value={teacherEmail}
