@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -12,6 +12,13 @@ function fmtDateRange(start: string, end: string | null): string {
   if (sy===ey) return `${fmtDate(start)} – ${fmtDate(end)} ${ey}`;
   return `${fmtDate(start)} ${sy} – ${fmtDate(end)} ${ey}`;
 }
+
+const WO_STATUS: Record<string, { label: string; cls: string }> = {
+  signed:   { label: "Signed",   cls: "bg-green-100 text-green-700" },
+  sent:     { label: "Sent",     cls: "bg-blue-100 text-blue-700" },
+  draft:    { label: "Draft",    cls: "bg-neutral-100 text-neutral-500" },
+  declined: { label: "Declined", cls: "bg-red-100 text-red-700" },
+};
 
 interface Job {
   id: string;
@@ -31,14 +38,22 @@ interface Job {
   co_taught: boolean;
   tas_needed: number;
   status: string;
-  notes: string;
+  notes: string | null;
+  teacher_name: string | null;
+  teacher_email: string | null;
+  teacher_invited_at: string | null;
+  info_pack_submitted_at: string | null;
+  info_pack_data: Record<string, unknown> | null;
+  schedule_confirmed_at: string | null;
 }
 
 interface WorkOrder {
   id: string;
   ta_id: string;
   status: string;
-  total: number;
+  total: number | null;
+  sent_at: string | null;
+  signed_at: string | null;
   profiles: {
     first_name: string;
     last_name: string;
@@ -47,164 +62,136 @@ interface WorkOrder {
   };
 }
 
-interface Recommendation {
-  ta: {
-    id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    pay_level: number;
-    onboarding_status: string;
-  };
-  score: number;
-  reasons: string[];
-  isAvailable: boolean;
+interface ActivityEntry {
+  id: string;
+  action: string;
+  details: string | null;
+  created_at: string;
+  performer: { first_name: string; last_name: string } | null;
+  ta: { first_name: string; last_name: string; email: string } | null;
+}
+
+function CheckCircle({ done }: { done: boolean }) {
+  return done ? (
+    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-green-100">
+      <svg className="h-3 w-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+      </svg>
+    </span>
+  ) : (
+    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-neutral-200" />
+  );
+}
+
+function Field({ label, value }: { label: string; value: string | null | undefined }) {
+  if (!value) return null;
+  return (
+    <div>
+      <dt className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400">{label}</dt>
+      <dd className="mt-0.5 text-sm text-neutral-900">{value}</dd>
+    </div>
+  );
 }
 
 export function JobDetail({
   job,
   workOrders,
+  activityLog,
 }: {
   job: Job;
   workOrders: WorkOrder[];
+  activityLog: ActivityEntry[];
 }) {
   const router = useRouter();
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
-  const [loadingRecs, setLoadingRecs] = useState(false);
   const [creatingWO, setCreatingWO] = useState<string | null>(null);
+  const [confirmingSchedule, startTransition] = useTransition();
 
-  const assignedCount = workOrders.filter(
-    (wo) => wo.status === "sent" || wo.status === "signed"
-  ).length;
-  const remaining = job.tas_needed - assignedCount;
+  const signedWOs = workOrders.filter(w => w.status === "signed");
+  const sentWOs   = workOrders.filter(w => w.status === "sent");
+  const remaining = job.tas_needed - signedWOs.length;
 
-  useEffect(() => {
-    loadRecommendations();
-  }, []);
+  const checkWOsSent      = workOrders.filter(w => w.status !== "draft").length > 0;
+  const checkInfoPack     = !!job.info_pack_submitted_at;
+  const checkSchedule     = !!job.schedule_confirmed_at;
+  const doneCount = [checkWOsSent, checkInfoPack, checkSchedule].filter(Boolean).length;
+  const pct = Math.round((doneCount / 3) * 100);
 
-  async function loadRecommendations() {
-    setLoadingRecs(true);
-    const res = await fetch(`/api/admin/jobs/${job.id}/recommend`);
-    const data = await res.json();
-    setRecommendations(data.recommendations || []);
-    setLoadingRecs(false);
-  }
-
-  async function createAndSendWorkOrder(taId: string) {
-    setCreatingWO(taId);
-
-    // Create work order from job data
-    const res = await fetch("/api/admin/work-orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ta_id: taId,
-        job_id: job.id,
-        project_name: job.title,
-        school: job.school,
-        school_address: job.school_address,
-        school_state: job.school_state,
-        location: job.location,
-        start_date: job.start_date,
-        end_date: job.end_date,
-        days: job.days,
-        program_type: job.program_type,
-        grade: job.grade,
-        accommodation: job.accommodation,
-        special_conditions: job.special_conditions,
-        co_taught: job.co_taught,
-      }),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      // Immediately send to TA
-      await fetch(`/api/admin/work-orders/${data.workOrder.id}/send`, {
-        method: "POST",
-      });
-      router.refresh();
-      loadRecommendations();
-    }
-
-    setCreatingWO(null);
+  async function toggleSchedule() {
+    await fetch(`/api/admin/jobs/${job.id}/confirm-schedule`, { method: "POST" });
+    startTransition(() => router.refresh());
   }
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-      {/* Left — Job Details */}
+
+      {/* ── LEFT (2 cols) ── */}
       <div className="lg:col-span-2 space-y-6">
-        {/* Job Info Card */}
+
+        {/* Project details */}
         <div className="rounded-sm border border-neutral-200 bg-white p-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-neutral-900">
-              Job Details
-            </h3>
-            {job.monday_item_id && (
-              <a
-                href={`https://interactenglish-squad.monday.com/boards/7871804260/pulses/${job.monday_item_id}`}
-                target="_blank"
-                className="text-sm text-blue-600 hover:underline"
-              >
-                View in Monday
-              </a>
-            )}
-          </div>
-          <dl className="mt-4 grid grid-cols-2 gap-4">
-            <Field label="Program Type" value={job.program_type} />
-            <Field label="Days" value={job.days?.toString()} />
+          <h3 className="text-sm font-semibold text-neutral-900 mb-4">Project Details</h3>
+          <dl className="grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-3">
+            <Field label="Program" value={job.program_type} />
             <Field label="Dates" value={job.start_date ? fmtDateRange(job.start_date, job.end_date) : "—"} />
+            <Field label="Days" value={job.days?.toString()} />
             <Field label="Location" value={job.school_state || job.location} />
             <Field label="Address" value={job.school_address} />
             <Field label="Grade" value={job.grade} />
             <Field label="Accommodation" value={job.accommodation} />
             <Field label="Co-taught" value={job.co_taught ? "Yes" : "No"} />
             {job.special_conditions && (
-              <div className="col-span-2">
-                <dt className="text-sm text-neutral-500">Special Conditions</dt>
-                <dd className="mt-1 text-sm italic text-neutral-900">{job.special_conditions}</dd>
+              <div className="col-span-full">
+                <dt className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400">Special Conditions</dt>
+                <dd className="mt-0.5 text-sm italic text-neutral-700">{job.special_conditions}</dd>
+              </div>
+            )}
+            {job.notes && (
+              <div className="col-span-full">
+                <dt className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400">Notes</dt>
+                <dd className="mt-0.5 text-sm text-neutral-700">{job.notes}</dd>
               </div>
             )}
           </dl>
         </div>
 
-        {/* Assigned TAs / Work Orders */}
+        {/* Teaching Artists */}
         <div className="rounded-sm border border-neutral-200 bg-white p-6">
-          <h3 className="text-lg font-semibold text-neutral-900">
-            Assigned TAs ({assignedCount}/{job.tas_needed})
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-neutral-900">
+              Teaching Artists <span className="font-normal text-neutral-400">({workOrders.filter(w=>w.status!=="draft").length}/{job.tas_needed})</span>
+            </h3>
+            {remaining > 0 && (
+              <span className="text-xs text-neutral-500">{remaining} more needed</span>
+            )}
+          </div>
+
           {workOrders.length === 0 ? (
-            <p className="mt-4 text-sm text-neutral-500">
-              No TAs assigned yet. Use the recommendations below.
-            </p>
+            <p className="text-sm text-neutral-400 italic">No TAs assigned yet.</p>
           ) : (
-            <div className="mt-4 space-y-2">
+            <div className="divide-y divide-neutral-100">
               {workOrders.map((wo) => {
                 const ta = wo.profiles;
+                const s = WO_STATUS[wo.status] ?? { label: wo.status, cls: "bg-neutral-100 text-neutral-500" };
                 return (
-                  <div
-                    key={wo.id}
-                    className="flex items-center justify-between rounded-sm border border-neutral-100 bg-neutral-50 p-3"
-                  >
-                    <div>
+                  <div key={wo.id} className="flex items-center gap-4 py-3">
+                    <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-neutral-900">
                         {ta.first_name} {ta.last_name}
                       </p>
-                      <p className="text-xs text-neutral-500">
-                        Level {ta.pay_level} — {wo.total ? `€${Number(wo.total).toFixed(2)}` : "Rate TBD"}
+                      <p className="text-xs text-neutral-400">
+                        Level {ta.pay_level} · {ta.email}
                       </p>
                     </div>
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        wo.status === "signed"
-                          ? "bg-green-100 text-green-700"
-                          : wo.status === "sent"
-                            ? "bg-blue-100 text-blue-700"
-                            : wo.status === "declined"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-neutral-100 text-neutral-600"
-                      }`}
-                    >
-                      {wo.status}
+                    <div className="text-right shrink-0">
+                      {wo.total ? (
+                        <p className="text-sm font-medium text-neutral-700">€{Number(wo.total).toFixed(2)}</p>
+                      ) : null}
+                      {wo.sent_at && (
+                        <p className="text-[10px] text-neutral-400">Sent {new Date(wo.sent_at).toLocaleDateString("de-DE")}</p>
+                      )}
+                    </div>
+                    <span className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${s.cls}`}>
+                      {s.label}
                     </span>
                   </div>
                 );
@@ -213,122 +200,175 @@ export function JobDetail({
           )}
         </div>
 
-        {/* TA Recommendations */}
-        {remaining > 0 && (
-          <div className="rounded-sm border border-neutral-200 bg-white p-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-neutral-900">
-                Recommended TAs
-              </h3>
-              <span className="text-sm text-neutral-500">
-                {remaining} more TA{remaining > 1 ? "s" : ""} needed
+        {/* Info Pack */}
+        <div className="rounded-sm border border-neutral-200 bg-white p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-neutral-900">Teacher Info Pack</h3>
+            {job.info_pack_submitted_at ? (
+              <span className="inline-flex items-center gap-1 text-xs text-green-600">
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Submitted {new Date(job.info_pack_submitted_at).toLocaleDateString("de-DE")}
               </span>
-            </div>
-
-            {loadingRecs ? (
-              <p className="mt-4 text-sm text-neutral-500">Loading recommendations...</p>
-            ) : recommendations.length === 0 ? (
-              <p className="mt-4 text-sm text-neutral-500">No recommendations available.</p>
             ) : (
-              <div className="mt-4 space-y-2">
-                {recommendations.slice(0, 15).map((rec) => (
-                  <div
-                    key={rec.ta.id}
-                    className="flex items-center justify-between rounded-sm border border-neutral-100 p-3 hover:bg-neutral-50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
-                          rec.score >= 60
-                            ? "bg-green-100 text-green-700"
-                            : rec.score >= 40
-                              ? "bg-yellow-100 text-yellow-700"
-                              : "bg-neutral-100 text-neutral-500"
-                        }`}
-                      >
-                        {rec.score}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-neutral-900">
-                          {rec.ta.first_name} {rec.ta.last_name || rec.ta.email}
-                        </p>
-                        <p className="text-xs text-neutral-500">
-                          Level {rec.ta.pay_level} —{" "}
-                          {rec.reasons.slice(0, 3).join(" · ")}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => createAndSendWorkOrder(rec.ta.id)}
-                      disabled={creatingWO === rec.ta.id}
-                      className="rounded-sm bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
-                    >
-                      {creatingWO === rec.ta.id ? "Sending..." : "Send Work Order"}
-                    </button>
-                  </div>
-                ))}
-              </div>
+              <span className="text-xs text-neutral-400">Not yet submitted</span>
             )}
+          </div>
+
+          {job.info_pack_data ? (
+            <dl className="grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-3">
+              {Object.entries(job.info_pack_data).map(([k, v]) => (
+                <div key={k}>
+                  <dt className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400">
+                    {k.replace(/_/g, " ")}
+                  </dt>
+                  <dd className="mt-0.5 text-sm text-neutral-900">{String(v)}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <div className="rounded border border-dashed border-neutral-200 py-8 text-center">
+              <p className="text-sm text-neutral-400">Awaiting teacher submission.</p>
+              <p className="mt-1 text-xs text-neutral-300">
+                Teacher portal coming soon — will auto-populate when submitted.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Activity Log */}
+        {activityLog.length > 0 && (
+          <div className="rounded-sm border border-neutral-200 bg-white p-6">
+            <h3 className="text-sm font-semibold text-neutral-900 mb-4">Activity</h3>
+            <div className="space-y-3">
+              {activityLog.map((entry) => {
+                const performer = entry.performer;
+                const ta = entry.ta;
+                const actionLabels: Record<string, string> = {
+                  work_order_sent: "WO sent",
+                  work_order_signed: "WO signed",
+                  work_order_declined: "WO declined",
+                  work_order_cancelled: "WO cancelled",
+                };
+                const dotCls = entry.action.includes("signed") ? "bg-green-500"
+                  : entry.action.includes("declined") || entry.action.includes("cancelled") ? "bg-red-400"
+                  : "bg-blue-400";
+                return (
+                  <div key={entry.id} className="flex items-start gap-3">
+                    <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dotCls}`} />
+                    <div>
+                      <p className="text-sm text-neutral-700">
+                        {actionLabels[entry.action] || entry.action}
+                        {ta && <span className="text-neutral-500"> — {ta.first_name} {ta.last_name || ta.email}</span>}
+                      </p>
+                      {entry.details && <p className="text-xs text-neutral-400">{entry.details}</p>}
+                      <p className="text-[10px] text-neutral-400">
+                        {new Date(entry.created_at).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}
+                        {performer && ` · ${performer.first_name} ${performer.last_name}`}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Right — Summary */}
+      {/* ── RIGHT sidebar ── */}
       <div className="space-y-6">
-        <div className="rounded-sm border border-neutral-200 bg-white p-6">
-          <h3 className="text-sm font-medium text-neutral-500">Staffing Status</h3>
-          <p className="mt-2 text-3xl font-bold text-neutral-900">
-            {assignedCount} / {job.tas_needed}
-          </p>
-          <p className="mt-1 text-sm text-neutral-500">
-            {remaining > 0
-              ? `${remaining} more TA${remaining > 1 ? "s" : ""} needed`
-              : "Fully staffed"}
-          </p>
-          <div className="mt-3 h-2 w-full rounded-full bg-neutral-100">
-            <div
-              className="h-2 rounded-full bg-green-500"
-              style={{
-                width: `${Math.min(100, (assignedCount / job.tas_needed) * 100)}%`,
-              }}
-            />
+
+        {/* Admin Checklist */}
+        <div className="rounded-sm border border-neutral-200 bg-white p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-neutral-900">Checklist</h3>
+            <span className="text-xs text-neutral-400">{doneCount}/3</span>
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-neutral-100 mb-4">
+            <div className={`h-1.5 rounded-full ${pct===100?"bg-green-500":"bg-blue-400"}`} style={{width:`${pct}%`}} />
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle done={checkWOsSent} />
+              <span className={`text-sm ${checkWOsSent?"line-through text-neutral-400":"text-neutral-700"}`}>Work orders sent</span>
+              {checkWOsSent && <span className="ml-auto text-xs text-neutral-400">{workOrders.filter(w=>w.status!=="draft").length}/{job.tas_needed}</span>}
+            </div>
+            <div className="flex items-center gap-2.5">
+              <CheckCircle done={checkInfoPack} />
+              <span className={`text-sm ${checkInfoPack?"line-through text-neutral-400":"text-neutral-700"}`}>Info pack received</span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <CheckCircle done={checkSchedule} />
+              <span className={`text-sm ${checkSchedule?"line-through text-neutral-400":"text-neutral-700"}`}>Schedule confirmed</span>
+              <button
+                onClick={toggleSchedule}
+                disabled={confirmingSchedule}
+                className={`ml-auto text-xs font-medium hover:underline ${checkSchedule?"text-neutral-400":"text-[#E91E8C]"}`}
+              >
+                {checkSchedule ? "Undo" : "Confirm"}
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="rounded-sm border border-neutral-200 bg-white p-6">
-          <h3 className="text-sm font-medium text-neutral-500">Job Status</h3>
-          <p className="mt-2 text-lg font-semibold capitalize text-neutral-900">
-            {job.status.replace("_", " ")}
-          </p>
+        {/* Teacher Contact */}
+        <div className="rounded-sm border border-neutral-200 bg-white p-5">
+          <h3 className="text-sm font-semibold text-neutral-900 mb-3">Teacher Contact</h3>
+          {job.teacher_name || job.teacher_email ? (
+            <div className="space-y-1">
+              {job.teacher_name && <p className="text-sm font-medium text-neutral-800">{job.teacher_name}</p>}
+              {job.teacher_email && (
+                <a href={`mailto:${job.teacher_email}`} className="text-sm text-blue-600 hover:underline block">
+                  {job.teacher_email}
+                </a>
+              )}
+              <div className="mt-3 pt-3 border-t border-neutral-100 space-y-2">
+                <div className="flex items-center gap-2 text-xs text-neutral-500">
+                  <span className={`h-2 w-2 rounded-full ${checkInfoPack?"bg-green-400":"bg-neutral-200"}`} />
+                  Info pack {checkInfoPack ? "received" : "pending"}
+                </div>
+                <div className="flex items-center gap-2 text-xs text-neutral-500">
+                  <span className={`h-2 w-2 rounded-full ${checkSchedule?"bg-green-400":"bg-neutral-200"}`} />
+                  Schedule {checkSchedule ? "confirmed" : "not confirmed"}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-neutral-400 italic">No teacher contact in Monday.</p>
+          )}
         </div>
 
+        {/* Staffing */}
+        <div className="rounded-sm border border-neutral-200 bg-white p-5">
+          <h3 className="text-sm font-semibold text-neutral-900 mb-2">Staffing</h3>
+          <p className="text-3xl font-bold text-neutral-900">{signedWOs.length}<span className="text-lg font-normal text-neutral-400">/{job.tas_needed}</span></p>
+          <p className="mt-1 text-xs text-neutral-500">{remaining > 0 ? `${remaining} more needed` : "Fully staffed"}</p>
+          <div className="mt-3 h-2 w-full rounded-full bg-neutral-100">
+            <div
+              className={`h-2 rounded-full ${remaining===0?"bg-green-500":"bg-blue-500"}`}
+              style={{width:`${Math.min(100,(signedWOs.length/Math.max(job.tas_needed,1))*100)}%`}}
+            />
+          </div>
+          {sentWOs.length > 0 && (
+            <p className="mt-2 text-xs text-neutral-400">{sentWOs.length} sent, awaiting signature</p>
+          )}
+        </div>
+
+        {/* Monday link */}
         {job.monday_item_id && (
-          <div className="rounded-sm border border-neutral-200 bg-white p-6">
-            <h3 className="text-sm font-medium text-neutral-500">Monday.com</h3>
-            <p className="mt-2 text-sm text-neutral-900">
-              Item #{job.monday_item_id}
-            </p>
+          <div className="rounded-sm border border-neutral-200 bg-white p-5">
+            <h3 className="text-sm font-semibold text-neutral-900 mb-2">Monday.com</h3>
             <a
               href={`https://interactenglish-squad.monday.com/boards/7871804260/pulses/${job.monday_item_id}`}
               target="_blank"
-              className="mt-2 inline-block text-sm text-blue-600 hover:underline"
+              className="text-sm text-blue-600 hover:underline"
             >
-              Open in Monday
+              Open in Monday ↗
             </a>
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-function Field({ label, value }: { label: string; value: string | null }) {
-  return (
-    <div>
-      <dt className="text-sm text-neutral-500">{label}</dt>
-      <dd className="mt-1 text-sm text-neutral-900">
-        {value || "—"}
-      </dd>
     </div>
   );
 }
