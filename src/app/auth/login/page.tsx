@@ -28,63 +28,95 @@ export default function TALoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#E91E8C]">
-      {/* Giant title */}
-      <div className="flex-shrink-0 overflow-hidden px-8 pt-8 lg:pt-12">
+    <div className="flex min-h-screen bg-[#E91E8C]">
+      {/* Left side — brand */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-center p-16">
         <h1
-          className="text-[20vw] lg:text-[16rem] font-bold text-white uppercase leading-[0.85] -tracking-wider"
+          className="text-6xl font-bold text-white uppercase leading-none"
           style={{ fontFamily: "Anton, sans-serif" }}
         >
-          TEACHING ARTIST PORTAL
+          TEACHING<br />ARTIST<br />PORTAL
         </h1>
+        <p className="mt-6 text-lg text-white/70 max-w-md">
+          Manage your profile, work orders, and invoices with InterACT English.
+        </p>
+        <div className="mt-10">
+          <a
+            href="mailto:connect@interactenglish.de"
+            className="text-white font-bold underline underline-offset-4 text-base uppercase tracking-wide"
+          >
+            connect@interactenglish.de
+          </a>
+          <p className="mt-2 text-white/70 text-base">
+            +49 (0) 30 20 33 97 02
+          </p>
+        </div>
       </div>
 
-      {/* Center content */}
-      <div className="flex flex-1 flex-col items-center justify-center px-8 pb-12">
-        <p className="text-center text-lg lg:text-xl text-white/80 max-w-lg mb-10">
-          Sign in to manage your profile, work orders, and invoices with InterACT English.
-        </p>
-
-        {/* Login form */}
-        <form onSubmit={handleLogin} className="w-full max-w-sm flex flex-col items-center gap-4">
-          <div className="w-full bg-white rounded-full px-8 py-4 flex items-center gap-3 shadow-lg">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="flex-1 bg-transparent text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
-              placeholder="your@email.com"
-            />
+      {/* Right side — form */}
+      <div className="flex w-full lg:w-1/2 items-center justify-center p-8 lg:bg-white/10">
+        <div className="w-full max-w-sm">
+          {/* Mobile logo */}
+          <div className="lg:hidden mb-10 text-center">
+            <h1
+              className="text-4xl font-bold text-white uppercase"
+              style={{ fontFamily: "Anton, sans-serif" }}
+            >
+              TEACHING ARTIST PORTAL
+            </h1>
           </div>
 
-          <div className="w-full bg-white rounded-full px-8 py-4 flex items-center gap-3 shadow-lg">
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="flex-1 bg-transparent text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
-              placeholder="Password"
-            />
-          </div>
+          <form onSubmit={handleLogin} className="flex flex-col gap-5">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-white/80 mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="block w-full border-b-2 border-white/50 bg-transparent px-0 py-3 text-sm text-white placeholder:text-white/40 focus:border-white focus:outline-none transition-colors"
+                placeholder="your@email.com"
+              />
+            </div>
 
-          {error && (
-            <p className="text-sm text-white font-semibold bg-red-500/30 px-4 py-2 rounded-full">{error}</p>
-          )}
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-white/80 mb-2">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="block w-full border-b-2 border-white/50 bg-transparent px-0 py-3 text-sm text-white placeholder:text-white/40 focus:border-white focus:outline-none transition-colors"
+                placeholder="Your password"
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-full border-2 border-white bg-transparent px-8 py-4 text-sm font-semibold uppercase tracking-widest text-white transition-colors hover:bg-white hover:text-[#E91E8C] disabled:opacity-50"
-          >
-            {loading ? "Signing in..." : "SIGN IN"}
-          </button>
-        </form>
+            {error && (
+              <p className="text-sm text-white font-medium bg-black/20 px-4 py-2 rounded">{error}</p>
+            )}
 
-        <p className="mt-8 text-xs text-white/50">
-          Admin? <Link href="/auth/admin" className="text-white underline hover:text-white/80">Sign in here</Link>
-        </p>
+            <div className="flex justify-end pt-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-white text-[#E91E8C] px-10 py-3 text-sm font-bold uppercase tracking-widest rounded-sm hover:bg-white/90 transition-colors disabled:opacity-50"
+              >
+                {loading ? "Signing in..." : "Sign In"}
+              </button>
+            </div>
+          </form>
+
+          <p className="mt-10 text-xs text-white/50">
+            Admin?{" "}
+            <Link href="/auth/admin" className="text-white underline hover:text-white/80">
+              Sign in here
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
