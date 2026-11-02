@@ -68,6 +68,27 @@ export async function POST(
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
   }
 
+  const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+  const ALLOWED_TYPES = [
+    "application/pdf",
+    "image/jpeg", "image/png", "image/gif", "image/webp",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "text/plain", "text/csv",
+  ];
+
+  if (file.size > MAX_FILE_SIZE) {
+    return NextResponse.json({ error: "File too large (max 20MB)" }, { status: 400 });
+  }
+
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    return NextResponse.json({ error: "File type not allowed" }, { status: 400 });
+  }
+
   // Upload to Supabase storage
   const fileBuffer = Buffer.from(await file.arrayBuffer());
   const fileName = `${Date.now()}-${file.name}`;
