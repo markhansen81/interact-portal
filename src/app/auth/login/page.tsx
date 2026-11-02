@@ -99,7 +99,10 @@ export default function TALoginPage() {
               <p className="text-sm text-white font-medium bg-black/20 px-4 py-2 rounded">{error}</p>
             )}
 
-            <div className="flex justify-end pt-2">
+            <div className="flex items-center justify-between pt-2">
+              <Link href="/auth/reset" className="text-white/60 text-xs hover:text-white transition-colors">
+                Forgot password?
+              </Link>
               <button
                 type="submit"
                 disabled={loading}
