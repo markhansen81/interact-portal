@@ -124,7 +124,7 @@ export function NewOfferModal({ onClose }: NewOfferModalProps) {
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
 
-      <div className="relative w-full max-w-2xl rounded-xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+      <div className="relative w-full max-w-4xl rounded-xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
           <div>
@@ -168,6 +168,15 @@ export function NewOfferModal({ onClose }: NewOfferModalProps) {
             </div>
 
             <div className="overflow-y-auto flex-1">
+              {!loading && (
+                <div className="grid grid-cols-[14px_1fr_160px_180px_160px] gap-x-4 px-6 py-1.5 border-b border-neutral-100 bg-neutral-50">
+                  <div />
+                  <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wide">School</p>
+                  <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wide">Contact</p>
+                  <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wide">Email</p>
+                  <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wide">Program</p>
+                </div>
+              )}
               {loading ? (
                 <div className="px-6 py-8 text-center text-sm text-neutral-400">Loading CRM…</div>
               ) : (
@@ -306,21 +315,20 @@ function ItemRow({ item, onSelect }: { item: ChurchItem; onSelect: () => void })
   return (
     <button
       onClick={onSelect}
-      className="w-full text-left px-6 py-3.5 border-b border-neutral-50 hover:bg-blue-50 transition-colors flex items-center justify-between group"
+      className="w-full text-left px-6 py-3 border-b border-neutral-50 hover:bg-blue-50 transition-colors flex items-center justify-between group"
     >
-      <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
         <div className={`h-2 w-2 shrink-0 rounded-full ${dotColor}`} />
-        <div className="min-w-0">
+        <div className="grid grid-cols-[1fr_160px_180px_160px] gap-x-4 min-w-0 flex-1 items-center">
           <p className="text-sm font-medium text-neutral-900 truncate">{item.school_name || item.name}</p>
-          <p className="text-xs text-neutral-400 truncate">
-            {[program, item.city].filter(Boolean).join(" · ")}
-            {item.num_students ? ` · ${item.num_students} students` : ""}
-          </p>
+          <p className="text-xs text-neutral-500 truncate">{item.teacher_contact || "—"}</p>
+          <p className="text-xs text-neutral-400 truncate">{item.contact_email || "—"}</p>
+          <p className="text-xs text-neutral-400 truncate">{program || "—"}</p>
         </div>
       </div>
-      <div className="flex items-center gap-2 shrink-0 ml-4">
+      <div className="flex items-center gap-2 shrink-0 ml-3">
         {stage && (
-          <span className="text-xs text-neutral-400">{stage}</span>
+          <span className="text-xs text-neutral-300">{stage}</span>
         )}
         <svg className="h-4 w-4 text-neutral-300 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
