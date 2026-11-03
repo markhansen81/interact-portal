@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { TAProfileEditor } from "@/components/admin/ta-profile-editor";
 import { TALevelEditor } from "@/components/admin/ta-level-editor";
+import { GenerateDocsButton } from "@/components/admin/generate-docs-button";
 import { logAudit } from "@/lib/audit";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -157,6 +158,13 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
         .or(`name.ilike.TA Profile \u2014 ${ta.first_name}%,name.ilike.Homestay Profile \u2014 ${ta.first_name}%`)
         .order("created_at", { ascending: false })
     : { data: [] };
+
+  // Fetch master TA profile docs (stored on TA, not in project folders)
+  const { data: taProfileDocs } = await supabase
+    .from("ta_profile_docs")
+    .select("school_html, homestay_html, generated_at")
+    .eq("ta_id", id)
+    .single();
 
   const adminUser = await getCurrentUser();
   if (adminUser) logAudit({ userId: adminUser.id, action: "profile_viewed", targetId: id, targetType: "ta_profile" });
@@ -466,37 +474,85 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
             )}
           </Section>
 
-          {/* Generated Profile Docs */}
-          {(profileDocs || []).length > 0 && (
-            <Section title="Generated Profile Documents">
-              <div className="divide-y divide-neutral-50">
-                {(profileDocs || []).map((doc) => {
-                  const isHomestay = doc.name.toLowerCase().startsWith("homestay");
-                  return (
-                    <div key={doc.id} className="flex items-center justify-between px-6 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-xs font-bold ${isHomestay ? "bg-purple-100 text-purple-600" : "bg-blue-100 text-blue-600"}`}>
-                          {isHomestay ? "H" : "S"}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-neutral-900">{doc.name}</p>
-                          <p className="text-xs text-neutral-400">
-                            {isHomestay ? "Homestay" : "School"} profile · Generated {new Date(doc.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                          </p>
-                        </div>
-                      </div>
-                      <Link
-                        href={`/admin/projects/${doc.project_id}`}
-                        className="rounded-md border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-50 transition-colors"
-                      >
-                        View in project →
-                      </Link>
-                    </div>
-                  );
-                })}
+          {/* TA Profile Documents (master copy stored on TA) */}
+          <Section
+            title="TA Profile Documents"
+            headerRight={<GenerateDocsButton taId={id} />}
+          >
+            {taProfileDocs?.generated_at && (
+              <p className="px-6 pt-3 pb-1 text-xs text-neutral-400">
+                Last generated: {new Date(taProfileDocs.generated_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+              </p>
+            )}
+            {!taProfileDocs?.school_html && !taProfileDocs?.homestay_html ? (
+              <div className="px-6 py-5 text-center">
+                <p className="text-sm text-neutral-400 italic mb-2">No profile documents generated yet.</p>
+                <p className="text-xs text-neutral-300">Click &ldquo;Generate Docs&rdquo; to create the school and homestay profile documents from this TA&apos;s profile data.</p>
               </div>
-            </Section>
-          )}
+            ) : (
+              <div className="divide-y divide-neutral-50">
+                {taProfileDocs?.school_html && (
+                  <div className="flex items-center justify-between px-6 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-100 text-xs font-bold text-blue-600">S</div>
+                      <div>
+                        <p className="text-sm font-medium text-neutral-900">School Profile</p>
+                        <p className="text-xs text-neutral-400">Sent to schools · placed in project folder at WO signing</p>
+                      </div>
+                    </div>
+                    <a
+                      href={`/api/admin/teaching-artists/${id}/profile-doc?type=school`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-md border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-50 transition-colors"
+                    >
+                      Preview ↗
+                    </a>
+                  </div>
+                )}
+                {taProfileDocs?.homestay_html && (
+                  <div className="flex items-center justify-between px-6 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-purple-100 text-xs font-bold text-purple-600">H</div>
+                      <div>
+                        <p className="text-sm font-medium text-neutral-900">Homestay Profile</p>
+                        <p className="text-xs text-neutral-400">Sent to homestay families · placed in project folder at WO signing</p>
+                      </div>
+                    </div>
+                    <a
+                      href={`/api/admin/teaching-artists/${id}/profile-doc?type=homestay`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-md border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-50 transition-colors"
+                    >
+                      Preview ↗
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+            {/* Copies placed in projects */}
+            {(profileDocs || []).length > 0 && (
+              <div className="border-t border-neutral-100 px-6 py-3">
+                <p className="text-xs font-semibold uppercase tracking-widest text-neutral-300 mb-2">Placed in projects</p>
+                <div className="space-y-1.5">
+                  {(profileDocs || []).map((doc) => {
+                    return (
+                      <div key={doc.id} className="flex items-center justify-between">
+                        <span className="text-xs text-neutral-500">{doc.name}</span>
+                        <Link
+                          href={`/admin/projects/${doc.project_id}`}
+                          className="text-xs text-blue-500 hover:underline"
+                        >
+                          Project →
+                        </Link>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </Section>
         </div>
 
         {/* ── RIGHT COLUMN ── */}

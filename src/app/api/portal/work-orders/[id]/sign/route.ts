@@ -263,36 +263,24 @@ export async function POST(
     sendSlackAlert({ type: "critical", title: "WO Sign Project Link Failed", message: String(err) }).catch(() => {});
   }
 
-  // Auto-generate TA profile documents for the project
+  // Copy TA profile docs into the project folder
   if (linkedProjectId) {
     try {
-      // Fetch full TA profile
-      const { data: fullProfile } = await adminClient
-        .from("profiles")
-        .select(PROFILE_FIELDS)
-        .eq("id", wo.ta_id)
+      const { data: taDocs } = await adminClient
+        .from("ta_profile_docs")
+        .select("school_html, homestay_html")
+        .eq("ta_id", wo.ta_id)
         .single();
 
-      if (fullProfile) {
-        const schoolDoc = generateSchoolProfile(fullProfile as unknown as Parameters<typeof generateSchoolProfile>[0]);
-        const homestayDoc = generateHomestayProfile(fullProfile as unknown as Parameters<typeof generateHomestayProfile>[0]);
-
-        // Check if profile docs already exist for this TA + project (avoid duplicates)
-        const { data: existingDocs } = await adminClient
-          .from("project_documents")
-          .select("name")
-          .eq("project_id", linkedProjectId)
-          .in("name", [schoolDoc.name, homestayDoc.name]);
-
-        const existingNames = new Set((existingDocs || []).map((d) => d.name));
-
+      if (taDocs?.school_html || taDocs?.homestay_html) {
+        const displayName = `${taName}`;
         const docsToInsert = [];
 
-        if (!existingNames.has(schoolDoc.name)) {
+        if (taDocs.school_html) {
           docsToInsert.push({
             project_id: linkedProjectId,
-            name: schoolDoc.name,
-            content: schoolDoc.content,
+            name: `TA Profile \u2014 ${displayName}`,
+            content: taDocs.school_html,
             doc_type: "native",
             published: true,
             visibility: "both",
@@ -300,11 +288,11 @@ export async function POST(
           });
         }
 
-        if (!existingNames.has(homestayDoc.name)) {
+        if (taDocs.homestay_html) {
           docsToInsert.push({
             project_id: linkedProjectId,
-            name: homestayDoc.name,
-            content: homestayDoc.content,
+            name: `Homestay Profile \u2014 ${displayName}`,
+            content: taDocs.homestay_html,
             doc_type: "native",
             published: true,
             visibility: "teacher",
@@ -313,11 +301,25 @@ export async function POST(
         }
 
         if (docsToInsert.length > 0) {
-          await adminClient.from("project_documents").insert(docsToInsert);
+          // Upsert — replace if already exists for this project
+          for (const doc of docsToInsert) {
+            const { data: existing } = await adminClient
+              .from("project_documents")
+              .select("id")
+              .eq("project_id", linkedProjectId)
+              .eq("name", doc.name)
+              .single();
+
+            if (existing) {
+              await adminClient.from("project_documents").update({ content: doc.content }).eq("id", existing.id);
+            } else {
+              await adminClient.from("project_documents").insert(doc);
+            }
+          }
         }
       }
     } catch (err) {
-      console.error("[SIGN] Failed to generate TA profile documents:", err);
+      console.error("[SIGN] Failed to copy TA profile docs to project:", err);
       sendSlackAlert({ type: "warning", title: "WO Sign TA Profile Docs Failed", message: String(err) }).catch(() => {});
     }
   }
