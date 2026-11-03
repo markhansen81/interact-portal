@@ -64,6 +64,15 @@ export default async function PortalDashboard() {
     .eq("ta_id", profile.id)
     .eq("status", "sent");
 
+  // Qualifying projects (3+ days, signed) for level progression display
+  const { data: qualifyingWOs } = await supabase
+    .from("work_orders")
+    .select("id, project_name, school, start_date, days, program_type")
+    .eq("ta_id", profile.id)
+    .eq("status", "signed")
+    .gte("days", 3)
+    .order("start_date", { ascending: true });
+
   const { count: unreadMessages } = await supabase
     .from("messages")
     .select("*", { count: "exact", head: true })
@@ -326,15 +335,51 @@ export default async function PortalDashboard() {
         />
         <StatCard
           label="Pay Level"
-          value={profile.pay_level}
+          value={profile.pay_level ? `${Number(profile.pay_level).toFixed(1)}` : "TBC"}
           action={{ label: "Profile", href: "/portal/profile" }}
         />
         <StatCard
-          label="Total Projects"
-          value={profile.total_projects ?? 0}
+          label="Qualifying Projects"
+          value={profile.qualifying_projects ?? 0}
           action={{ label: "View", href: "/portal/work-orders" }}
         />
       </div>
+
+      {/* Level Progression */}
+      {(qualifyingWOs || []).length > 0 && (
+        <div>
+          <h2 className="mb-3 text-sm font-semibold text-neutral-900">Level Progression</h2>
+          <div className="rounded-sm border border-neutral-200 bg-white divide-y divide-neutral-100">
+            {(qualifyingWOs || []).map((wo, i) => {
+              const n = i + 1;
+              const main = Math.ceil(n / 3);
+              const sub = ((n - 1) % 3) + 1;
+              const lvl = `${main}.${sub}`;
+              const pdBonus = Math.floor((profile.pd_workshop_credits ?? 0) / 4);
+              const isLatest = i === (qualifyingWOs || []).length - 1;
+              return (
+                <div key={wo.id} className={`flex items-center gap-4 px-4 py-3 ${isLatest ? "bg-neutral-50" : ""}`}>
+                  <span className={`w-10 shrink-0 text-sm font-bold tabular-nums ${isLatest ? "text-neutral-900" : "text-neutral-400"}`}>{lvl}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-medium truncate ${isLatest ? "text-neutral-900" : "text-neutral-600"}`}>
+                      {wo.project_name || wo.program_type || "Project"}
+                    </p>
+                    <p className="text-xs text-neutral-400">{wo.school || ""}{wo.start_date ? ` · ${new Date(wo.start_date).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}` : ""}</p>
+                  </div>
+                  <span className="text-xs text-neutral-300">{wo.days}d</span>
+                  {isLatest && <span className="text-xs font-medium text-neutral-500 bg-neutral-100 rounded-full px-2 py-0.5">current</span>}
+                </div>
+              );
+            })}
+            {(profile.pd_workshop_credits ?? 0) >= 4 && (
+              <div className="flex items-center gap-4 px-4 py-3 bg-blue-50">
+                <span className="w-10 shrink-0 text-sm font-bold text-blue-600">+{Math.floor((profile.pd_workshop_credits ?? 0) / 4)}</span>
+                <p className="text-sm text-blue-700">PD workshop bonus credits</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Training */}
       <div>
