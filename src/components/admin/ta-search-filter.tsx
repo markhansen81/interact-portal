@@ -365,7 +365,7 @@ export function TASearchFilter({
 
                       {/* Projects */}
                       <td className="px-4 py-3 text-center text-sm text-neutral-500">
-                        {ta.qualifying_projects}/{ta.total_projects}
+                        {(workOrdersByTA[ta.id] || []).length}
                       </td>
 
                       {/* Delete */}
