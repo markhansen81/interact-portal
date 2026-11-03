@@ -170,6 +170,16 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
   if (adminUser) logAudit({ userId: adminUser.id, action: "profile_viewed", targetId: id, targetType: "ta_profile" });
 
   const name = ta.first_name && ta.last_name ? `${ta.first_name} ${ta.last_name}` : ta.email;
+
+  // Determine what's missing for doc generation
+  const docReadyChecks = [
+    { field: "First name", ok: !!ta.first_name },
+    { field: "Last name", ok: !!ta.last_name },
+    { field: "Photo", ok: !!ta.photo_url },
+    { field: "Bio", ok: !!ta.bio },
+  ];
+  const missingForDocs = docReadyChecks.filter((c) => !c.ok).map((c) => c.field);
+  const docsReady = missingForDocs.length === 0;
   const allDocs = docs || [];
   const allWOs = workOrders || [];
   const prefCount = prefCounts?.length || 0;
@@ -485,9 +495,22 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
               </p>
             )}
             {!taProfileDocs?.school_html && !taProfileDocs?.homestay_html ? (
-              <div className="px-6 py-5 text-center">
-                <p className="text-sm text-neutral-400 italic mb-2">No profile documents generated yet.</p>
-                <p className="text-xs text-neutral-300">Click &ldquo;Generate Docs&rdquo; to create the school and homestay profile documents from this TA&apos;s profile data.</p>
+              <div className="px-6 py-5">
+                {docsReady ? (
+                  <p className="text-sm text-neutral-400 italic">Profile is complete — click &ldquo;Generate Docs&rdquo; to create the documents.</p>
+                ) : (
+                  <>
+                    <p className="text-sm text-neutral-500 font-medium mb-2">Waiting for TA to complete their profile</p>
+                    <p className="text-xs text-neutral-400 mb-2">Docs will auto-generate once the TA saves these fields:</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {missingForDocs.map((f) => (
+                        <span key={f} className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 border border-amber-100">
+                          {f} missing
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               <div className="divide-y divide-neutral-50">
