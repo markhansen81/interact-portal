@@ -1,13 +1,13 @@
 import { Resend } from "resend";
 import { uploadDocumentToDATEV } from "@/lib/datev-api";
 
-// Portal sends to invoices@ which auto-forwards to DATEV upload email.
-// This avoids DATEV rejecting Resend's envelope sender.
+// Send directly to DATEV upload mailbox using invoices@ as the From address.
+// DATEV whitelists by From header — invoices@interactenglish.de is whitelisted.
+// No Gmail forwarding script needed.
 export const DATEV_UPLOAD_EMAIL =
   "d6810779-6510-4ff9-ab1f-12424157e435@uploadmail.datev.de";
-const DATEV_VIA_EMAIL = "invoices@interactenglish.de";
 
-const DATEV_FROM_EMAIL = "noreply@interactenglish.de";
+const DATEV_FROM_EMAIL = "invoices@interactenglish.de";
 
 function getResend() {
   if (!process.env.RESEND_API_KEY) return null;
@@ -75,7 +75,7 @@ export async function sendToDATEV({
   try {
     const { data, error } = await resend.emails.send({
       from: DATEV_FROM_EMAIL,
-      to: DATEV_VIA_EMAIL,
+      to: DATEV_UPLOAD_EMAIL,
       subject,
       html: "<p>Beleg im Anhang.</p>",
       attachments: [{ filename, content: pdf }],
