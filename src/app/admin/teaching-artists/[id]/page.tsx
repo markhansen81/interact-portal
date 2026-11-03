@@ -132,6 +132,14 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
     supabase.from("ta_program_preferences").select("ta_id").eq("ta_id", id),
   ]);
 
+  // Fetch invoice history for level reconciliation
+  const { data: invoiceHistory } = await supabase
+    .from("ta_invoice_history")
+    .select("id, invoice_date, project_name, school, days, level_invoiced, pdf_url, confidence, notes")
+    .eq("ta_id", id)
+    .gte("days", 3)
+    .order("invoice_date", { ascending: true });
+
   // Fetch generated profile docs (school + homestay) from projects this TA is linked to
   const projectIds = (workOrders || []).map((wo) => wo.project_id).filter(Boolean) as string[];
   const { data: profileDocs } = projectIds.length > 0
@@ -340,6 +348,74 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
               <p className="px-6 py-2 text-xs text-neutral-400 italic border-t border-neutral-50">
                 * Showing legacy right-to-work document for Visa/Passport slots
               </p>
+            )}
+          </Section>
+
+          {/* Level Progression */}
+          <Section title="Level Progression">
+            {(invoiceHistory || []).length === 0 ? (
+              <div className="px-6 py-4 text-sm text-neutral-400 italic">
+                No invoice history yet — run the invoice scan to populate this.
+              </div>
+            ) : (
+              <div className="overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-neutral-50 text-xs font-semibold uppercase tracking-wide text-neutral-400">
+                    <tr>
+                      <th className="px-6 py-2.5 text-left">Project</th>
+                      <th className="px-6 py-2.5 text-left">Date</th>
+                      <th className="px-6 py-2.5 text-left">Days</th>
+                      <th className="px-6 py-2.5 text-left">Calculated</th>
+                      <th className="px-6 py-2.5 text-left">Invoiced at</th>
+                      <th className="px-6 py-2.5 text-left"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-50">
+                    {(invoiceHistory || []).map((inv, i) => {
+                      const n = i + 1;
+                      const calcMain = Math.ceil(n / 3);
+                      const calcSub = ((n - 1) % 3) + 1;
+                      const calcLevel = parseFloat(`${calcMain}.${calcSub}`);
+                      const invoicedLevel = inv.level_invoiced ? Number(inv.level_invoiced) : null;
+                      const mismatch = invoicedLevel !== null && invoicedLevel !== calcLevel;
+                      return (
+                        <tr key={inv.id} className={mismatch ? "bg-red-50" : "hover:bg-neutral-50"}>
+                          <td className="px-6 py-3">
+                            <p className="font-medium text-neutral-900">{inv.project_name || "—"}</p>
+                            <p className="text-xs text-neutral-400">{inv.school || ""}</p>
+                          </td>
+                          <td className="px-6 py-3 text-neutral-500 whitespace-nowrap">
+                            {inv.invoice_date ? new Date(inv.invoice_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                          </td>
+                          <td className="px-6 py-3 text-neutral-500">{inv.days}d</td>
+                          <td className="px-6 py-3 font-semibold text-neutral-700">{calcLevel.toFixed(1)}</td>
+                          <td className="px-6 py-3">
+                            {invoicedLevel !== null ? (
+                              <span className={`font-semibold ${mismatch ? "text-red-600" : "text-neutral-700"}`}>
+                                {invoicedLevel.toFixed(1)}
+                              </span>
+                            ) : (
+                              <span className="text-neutral-300 text-xs">not found</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-3">
+                            {mismatch && (
+                              <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                                ⚠ Discrepancy
+                              </span>
+                            )}
+                            {inv.pdf_url && (
+                              <a href={inv.pdf_url} target="_blank" rel="noopener noreferrer" className="ml-2 text-xs text-blue-500 hover:underline">
+                                Invoice ↗
+                              </a>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             )}
           </Section>
 
