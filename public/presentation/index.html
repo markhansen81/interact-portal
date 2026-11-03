@@ -8,10 +8,10 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --black: #18181b;
-    --amber: #b45309;
-    --amber-light: #fef3c7;
-    --amber-mid: #f59e0b;
+    --black: #1a1a1a;
+    --amber: #E8175D;
+    --amber-light: #fce7ef;
+    --amber-mid: #E8175D;
     --white: #ffffff;
     --gray: #71717a;
     --gray-light: #f4f4f5;
@@ -213,7 +213,7 @@
 
   .badge-green { background: #d1fae5; color: #065f46; }
   .badge-red { background: #fee2e2; color: #991b1b; }
-  .badge-amber { background: #fef3c7; color: #92400e; }
+  .badge-amber { background: #fce7ef; color: #9d1240; }
   .badge-blue { background: #dbeafe; color: #1e40af; }
 
   /* ── Lists ── */
@@ -451,38 +451,33 @@
     </div>
   </div>
 
-  <!-- 6. Demo: Lead Journey -->
+  <!-- 6. Demo: Lead → CRM → Offer (merged) -->
   <div class="slide demo-slide">
     <div class="logo">iA</div>
     <div class="eyebrow" style="color:rgba(255,255,255,0.4)">Demo 1</div>
-    <h2>The Lead Journey</h2>
-    <p style="margin-bottom:24px;opacity:0.6">School finds InterACT → fills out form → lead lands in CRM</p>
-    <div class="steps">
-      <div class="step"><div class="step-num">1</div><div class="step-content"><p><span class="label">Lead form</span> on interactenglish.de (embedded iframe)</p></div></div>
-      <div class="step"><div class="step-num">2</div><div class="step-content"><p>Teacher fills: name, school, programs, students</p></div></div>
-      <div class="step"><div class="step-num">3</div><div class="step-content"><p>Submits → <em>Vielen Dank</em> → lead arrives in <span class="accent">CRM Pipeline</span></p></div></div>
-      <div class="step"><div class="step-num">4</div><div class="step-content"><p>Also syncs to Monday + Slack notification</p></div></div>
+    <h2>Lead → CRM → Offer</h2>
+    <div class="two-col" style="margin-top:8px;gap:56px">
+      <div>
+        <h3>Lead comes in</h3>
+        <ul>
+          <li>School fills lead form on interactenglish.de</li>
+          <li>Submits → lead arrives in CRM Pipeline instantly</li>
+          <li>Syncs to Monday + Slack notification</li>
+          <li>Admin reviews in CRM — school, program, students, dates</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Send an Angebot</h3>
+        <ul>
+          <li>CRM Pipeline → click <span class="accent">Create Offer</span></li>
+          <li>Form pre-fills from lead data</li>
+          <li>Select programs, price auto-fills from Preisliste</li>
+          <li><span class="accent">Save &amp; Send</span> → school receives branded PDF by email</li>
+        </ul>
+      </div>
     </div>
-    <div class="callout">
-      <p>"Every lead from the website flows automatically into our pipeline."</p>
-    </div>
-  </div>
-
-  <!-- 7. Demo: CRM to Offer -->
-  <div class="slide demo-slide">
-    <div class="logo">iA</div>
-    <div class="eyebrow" style="color:rgba(255,255,255,0.4)">Demo 2</div>
-    <h2>CRM to Offer</h2>
-    <p style="margin-bottom:24px;opacity:0.6">Take a lead → send a professional Angebot in 2 minutes</p>
-    <div class="steps">
-      <div class="step"><div class="step-num">1</div><div class="step-content"><p>CRM Pipeline → click <span class="accent">Create Offer</span></p></div></div>
-      <div class="step"><div class="step-num">2</div><div class="step-content"><p>Form pre-fills from lead data</p></div></div>
-      <div class="step"><div class="step-num">3</div><div class="step-content"><p>Select programs (multi: NSW + Theatre Week)</p></div></div>
-      <div class="step"><div class="step-num">4</div><div class="step-content"><p>Price auto-fills from Preisliste (€129 Tarif 1)</p></div></div>
-      <div class="step"><div class="step-num">5</div><div class="step-content"><p><span class="accent">Save &amp; Send</span> → school receives PDF by email</p></div></div>
-    </div>
-    <div class="callout">
-      <p>"One click from CRM to a 10-page branded offer."</p>
+    <div class="callout" style="margin-top:24px">
+      <p>"Every lead lands in the pipeline automatically. Angebot out in 2 minutes."</p>
     </div>
   </div>
 
@@ -517,38 +512,77 @@
     </div>
   </div>
 
-  <!-- 9. Demo: Work Orders + Invoices -->
+  <!-- 9. Demo: Project Management -->
   <div class="slide demo-slide">
     <div class="logo">iA</div>
     <div class="eyebrow" style="color:rgba(255,255,255,0.4)">Demo 4</div>
-    <h2>Work Orders + Invoices</h2>
-    <div class="two-col">
+    <h2>Project Management</h2>
+    <div class="three-col" style="margin-top:8px">
       <div>
-        <h3>Assign a TA</h3>
+        <h3>1. Teacher Infopack</h3>
         <ul>
-          <li>Create Work Order → select TA, school, dates, program</li>
-          <li>Send → TA receives email + sees it in portal</li>
-          <li>TA clicks Accept &amp; Sign → digital signature</li>
-          <li>Project appears in TA's Projects tab</li>
+          <li>Send infopack request to school contact</li>
+          <li>Teacher fills: rooms, school times</li>
+          <li>Submitted via portal — no email back-and-forth</li>
+          <li>Admin sees responses in project view</li>
+          <li style="opacity:0.5">Make schedule <em>(coming soon)</em></li>
         </ul>
       </div>
       <div>
-        <h3>After the project</h3>
+        <h3>2. Staffing &amp; Work Orders</h3>
         <ul>
-          <li>Invoices → expected amount pre-calculated</li>
-          <li>TA uploads their Rechnung PDF</li>
-          <li>AI checks the invoice automatically</li>
-          <li>Admin: Approve → Mark Paid → DATEV</li>
-          <li>TA receives payment notification</li>
+          <li>Create work order → assign TA, school, dates, program</li>
+          <li>TA receives email + sees in portal</li>
+          <li>Accepts &amp; signs digitally</li>
+          <li>Added to project automatically</li>
+        </ul>
+      </div>
+      <div>
+        <h3>3. Project Folder</h3>
+        <ul>
+          <li>Google Drive folder linked to project</li>
+          <li>Admin coordination checklist attached</li>
+          <li>TAs see their work order + project docs</li>
+          <li>Teacher sees project info + TA profiles (no internal docs)</li>
         </ul>
       </div>
     </div>
-    <div class="callout">
-      <p>"No paper, no email attachments. Every euro tracked from submission to payment."</p>
+    <div class="callout" style="margin-top:20px">
+      <p>"One project. Every person sees exactly what they need — nothing more."</p>
     </div>
   </div>
 
-  <!-- 10. Admin Can -->
+  <!-- 10. Finance -->
+  <div class="slide demo-slide">
+    <div class="logo">iA</div>
+    <div class="eyebrow" style="color:rgba(255,255,255,0.4)">Finance</div>
+    <h2>Finance</h2>
+    <div class="two-col" style="margin-top:8px">
+      <div>
+        <h3>Admin — Vendor Invoices</h3>
+        <ul>
+          <li>Upload incoming vendor invoices (PDF)</li>
+          <li>Auto-booked to DATEV — no manual entry</li>
+          <li>See payment status at a glance</li>
+          <li>No more chasing Mark to know if something was paid</li>
+        </ul>
+      </div>
+      <div>
+        <h3>TA — Invoices &amp; Expenses</h3>
+        <ul>
+          <li>Upload Rechnung PDF — AI checks before submission</li>
+          <li>Expected fee pre-calculated from pay scale</li>
+          <li>Admin approves → marks paid → TA notified</li>
+          <li>Cost reimbursements (Auslagenerstattung) with receipt photos</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:20px">
+      <p>"Upload it. It's booked. You can see when it's paid. No asking."</p>
+    </div>
+  </div>
+
+  <!-- 11. Admin Can (now slide 11) -->
   <div class="slide light">
     <div class="logo">iA</div>
     <div class="eyebrow">Capabilities</div>
@@ -701,7 +735,7 @@
     if (stored !== 'IACT2026') {
       document.body.style.display = 'none';
       const pw = prompt('Password:');
-      if (pw !== 'IACT2026') { document.body.innerHTML = '<div style="display:flex;height:100vh;align-items:center;justify-content:center;background:#18181b;color:#71717a;font-family:sans-serif;font-size:14px">Incorrect password.</div>'; return; }
+      if (pw !== 'IACT2026') { document.body.innerHTML = '<div style="display:flex;height:100vh;align-items:center;justify-content:center;background:#1a1a1a;color:#71717a;font-family:sans-serif;font-size:14px">Incorrect password.</div>'; return; }
       sessionStorage.setItem('pres_auth', 'IACT2026');
       document.body.style.display = '';
     }
