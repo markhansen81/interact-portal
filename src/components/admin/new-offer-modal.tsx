@@ -256,6 +256,8 @@ export function NewOfferModal({ onClose }: NewOfferModalProps) {
                       <ConfirmRow label="Students" value={selected.num_students?.toString()} />
                       <ConfirmRow label="Groups" value={selected.num_groups?.toString()} />
                       <ConfirmRow label="Days" value={selected.num_days?.toString()} />
+                      <ConfirmRow label="Start date" value={selected.start_date ?? undefined} />
+                      <ConfirmRow label="End date" value={selected.end_date ?? undefined} />
                       <ConfirmRow label="Grade level" value={selected.grade_level} />
                       {selected.price_pp && <ConfirmRow label="Price/student" value={`€${selected.price_pp}`} />}
                     </div>
