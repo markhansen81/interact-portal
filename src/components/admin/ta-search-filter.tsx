@@ -93,6 +93,7 @@ function getMissing(ta: TAProfile, docs: TADoc[]) {
   if (!uploadedTypes.has("passport") && !hasRightToWork) missing.push("Passport");
   if (!uploadedTypes.has("police_check")) missing.push("Police Check");
   if (!uploadedTypes.has("measles")) missing.push("Measles");
+  if (!ta.training_online || !ta.training_offline) missing.push("Training");
   return missing;
 }
 
