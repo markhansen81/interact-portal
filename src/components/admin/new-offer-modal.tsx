@@ -7,10 +7,11 @@ interface ChurchItem {
   id: string;
   name: string;
   school_name: string | null;
-  source: "opportunity" | "project";
+  source: "opportunity" | "project" | "lead";
   deal_stage: string | null;
   opp_status: string | null;
   program_type: string | null;
+  programs?: string[] | null;
   num_students: number | null;
   num_groups: number | null;
   num_days: number | null;
@@ -20,10 +21,12 @@ interface ChurchItem {
   city: string | null;
   state: string | null;
   street: string | null;
+  postcode?: string | null;
   contact_email: string | null;
   teacher_contact: string | null;
   start_date: string | null;
   end_date: string | null;
+  lead_id?: string | null;
 }
 
 interface NewOfferModalProps {
@@ -61,24 +64,29 @@ export function NewOfferModal({ onClose }: NewOfferModalProps) {
     return name.includes(q) || prog.includes(q) || city.includes(q);
   });
 
-  // Only show leads/opportunities (not projects)
-  const leads = filtered.filter((i) => i.source === "opportunity");
-  const projects = filtered.filter((i) => i.source === "project");
+  const leadItems = filtered.filter((i) => i.source === "lead");
+  const oppItems = filtered.filter((i) => i.source === "opportunity");
+  const projectItems = filtered.filter((i) => i.source === "project");
 
   async function createOffer(sendAfter: boolean) {
     setCreating(true);
     setError(null);
     const body = selected
       ? {
-          church_item_id: selected.id,
+          ...(selected.source === "lead"
+            ? { lead_id: selected.lead_id || selected.id }
+            : { church_item_id: selected.id }),
           school_name: selected.school_name || selected.name,
           contact_name: selected.teacher_contact,
           contact_email: selected.contact_email,
           school_address: selected.street,
+          postcode: selected.postcode,
           city: selected.city,
           state: selected.state,
           program_type: selected.program_type,
-          programs: selected.program_type ? [selected.program_type] : [],
+          programs: selected.programs?.length
+            ? selected.programs
+            : selected.program_type ? [selected.program_type] : [],
           num_students: selected.num_students,
           num_groups: selected.num_groups,
           num_tas: selected.num_tas,
@@ -164,27 +172,37 @@ export function NewOfferModal({ onClose }: NewOfferModalProps) {
                 <div className="px-6 py-8 text-center text-sm text-neutral-400">Loading CRM…</div>
               ) : (
                 <>
-                  {leads.length > 0 && (
+                  {leadItems.length > 0 && (
                     <div>
                       <div className="sticky top-0 bg-neutral-50 px-6 py-2 text-xs font-semibold uppercase tracking-widest text-neutral-400 border-b border-neutral-100">
-                        Opportunities ({leads.length})
+                        Leads ({leadItems.length})
                       </div>
-                      {leads.map((item) => (
+                      {leadItems.map((item) => (
                         <ItemRow key={item.id} item={item} onSelect={() => { setSelected(item); setStep("confirm"); }} />
                       ))}
                     </div>
                   )}
-                  {projects.length > 0 && (
+                  {oppItems.length > 0 && (
                     <div>
                       <div className="sticky top-0 bg-neutral-50 px-6 py-2 text-xs font-semibold uppercase tracking-widest text-neutral-400 border-b border-neutral-100">
-                        Projects ({projects.length})
+                        Opportunities ({oppItems.length})
                       </div>
-                      {projects.map((item) => (
+                      {oppItems.map((item) => (
                         <ItemRow key={item.id} item={item} onSelect={() => { setSelected(item); setStep("confirm"); }} />
                       ))}
                     </div>
                   )}
-                  {leads.length === 0 && projects.length === 0 && (
+                  {projectItems.length > 0 && (
+                    <div>
+                      <div className="sticky top-0 bg-neutral-50 px-6 py-2 text-xs font-semibold uppercase tracking-widest text-neutral-400 border-b border-neutral-100">
+                        Projects ({projectItems.length})
+                      </div>
+                      {projectItems.map((item) => (
+                        <ItemRow key={item.id} item={item} onSelect={() => { setSelected(item); setStep("confirm"); }} />
+                      ))}
+                    </div>
+                  )}
+                  {leadItems.length === 0 && oppItems.length === 0 && projectItems.length === 0 && (
                     <div className="px-6 py-8 text-center text-sm text-neutral-400">
                       {query ? "No matches found." : "No CRM items loaded."}
                     </div>
@@ -221,7 +239,11 @@ export function NewOfferModal({ onClose }: NewOfferModalProps) {
                       <ConfirmRow label="Contact email" value={selected.contact_email} />
                       <ConfirmRow label="Contact name" value={selected.teacher_contact} />
                       <ConfirmRow label="City" value={[selected.city, selected.state].filter(Boolean).join(", ")} />
-                      <ConfirmRow label="Program" value={selected.program_type} />
+                      <ConfirmRow label="Program" value={
+                        selected.programs?.length
+                          ? selected.programs.join(", ")
+                          : selected.program_type
+                      } />
                       <ConfirmRow label="Students" value={selected.num_students?.toString()} />
                       <ConfirmRow label="Groups" value={selected.num_groups?.toString()} />
                       <ConfirmRow label="Days" value={selected.num_days?.toString()} />
@@ -275,17 +297,23 @@ export function NewOfferModal({ onClose }: NewOfferModalProps) {
 
 function ItemRow({ item, onSelect }: { item: ChurchItem; onSelect: () => void }) {
   const stage = item.opp_status || item.deal_stage;
+  const dotColor =
+    item.source === "lead" ? "bg-amber-400" :
+    item.source === "opportunity" ? "bg-blue-400" : "bg-green-400";
+  const program = item.programs?.length
+    ? item.programs.slice(0, 2).join(", ") + (item.programs.length > 2 ? ` +${item.programs.length - 2}` : "")
+    : item.program_type;
   return (
     <button
       onClick={onSelect}
       className="w-full text-left px-6 py-3.5 border-b border-neutral-50 hover:bg-blue-50 transition-colors flex items-center justify-between group"
     >
       <div className="flex items-center gap-3 min-w-0">
-        <div className={`h-2 w-2 shrink-0 rounded-full ${item.source === "opportunity" ? "bg-blue-400" : "bg-green-400"}`} />
+        <div className={`h-2 w-2 shrink-0 rounded-full ${dotColor}`} />
         <div className="min-w-0">
           <p className="text-sm font-medium text-neutral-900 truncate">{item.school_name || item.name}</p>
           <p className="text-xs text-neutral-400 truncate">
-            {[item.program_type, item.city].filter(Boolean).join(" · ")}
+            {[program, item.city].filter(Boolean).join(" · ")}
             {item.num_students ? ` · ${item.num_students} students` : ""}
           </p>
         </div>
