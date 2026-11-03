@@ -8,6 +8,7 @@ export function InviteTAButton() {
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [payLevel, setPayLevel] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -21,7 +22,7 @@ export function InviteTAButton() {
     const res = await fetch("/api/admin/invite-ta", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, firstName, lastName }),
+      body: JSON.stringify({ email, firstName, lastName, payLevel: payLevel ? Number(payLevel) : undefined }),
     });
 
     const data = await res.json();
@@ -41,6 +42,7 @@ export function InviteTAButton() {
     setEmail("");
     setFirstName("");
     setLastName("");
+    setPayLevel("");
     setSuccess(false);
     setError(null);
     router.refresh();
@@ -114,6 +116,20 @@ export function InviteTAButton() {
                   className="mt-1 block w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-neutral-700">Pay level <span className="font-normal text-neutral-400">(optional)</span></label>
+              <select
+                value={payLevel}
+                onChange={(e) => setPayLevel(e.target.value)}
+                className="mt-1 block w-full rounded-sm border border-neutral-300 px-3 py-2 text-sm"
+              >
+                <option value="">Set later</option>
+                {[1, 2, 3, 4, 5, 6].map((l) => (
+                  <option key={l} value={l}>Level {l}</option>
+                ))}
+              </select>
             </div>
 
             {error && <p className="text-sm text-red-600">{error}</p>}

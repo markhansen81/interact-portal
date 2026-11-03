@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { email, firstName, lastName } = await request.json();
+  const { email, firstName, lastName, payLevel } = await request.json();
 
   if (!email) {
     return NextResponse.json({ error: "Email is required" }, { status: 400 });
@@ -47,14 +47,15 @@ export async function POST(request: Request) {
 
   const inviteUrl = linkData.properties.action_link;
 
-  // Update profile with name if provided (user record was created by generateLink)
-  if (linkData.user && (firstName || lastName)) {
+  // Update profile with name/pay level if provided (user record was created by generateLink)
+  if (linkData.user && (firstName || lastName || payLevel)) {
+    const updates: Record<string, unknown> = {};
+    if (firstName) updates.first_name = firstName;
+    if (lastName) updates.last_name = lastName;
+    if (payLevel) updates.pay_level = payLevel;
     await adminClient
       .from("profiles")
-      .update({
-        first_name: firstName || null,
-        last_name: lastName || null,
-      })
+      .update(updates)
       .eq("id", linkData.user.id);
   }
 
