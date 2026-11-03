@@ -31,6 +31,12 @@ export async function PATCH(
   delete updates.id;
   delete updates.offer_number;
 
+  // Remap notes → custom_notes (form field name vs DB column name)
+  if ("notes" in updates) {
+    updates.custom_notes = updates.notes;
+    delete updates.notes;
+  }
+
   const { data, error } = await supabase
     .from("offers")
     .update(updates)
