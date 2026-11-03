@@ -20,7 +20,7 @@ export function PortalHeader({ profile }: { profile: Profile }) {
   }
 
   const displayName =
-    profile.first_name || profile.preferred_name || profile.email;
+    profile.preferred_name || profile.first_name || profile.email;
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-neutral-200 bg-white px-4 md:px-8">
