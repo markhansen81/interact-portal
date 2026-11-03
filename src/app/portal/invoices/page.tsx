@@ -13,11 +13,27 @@ export default async function TAInvoicesPage() {
   const adminClient = createAdminClient();
 
   // Fetch signed work orders (include standby projects too)
-  const { data: signedWOs } = await supabase
+  const { data: signedWOs, error: woError } = await supabase
     .from("work_orders")
-    .select("id, project_name, school, days, total, program_type, start_date, end_date, travel_hours, equipment_provided")
+    .select("id, project_name, school, days, total, program_type, start_date, end_date")
     .eq("ta_id", profile.id)
-    .in("status", ["signed", "standby"]);
+    .in("status", ["signed", "standby"])
+    .order("start_date", { ascending: false });
+
+  if (woError) console.error("[invoices] WO query error:", woError);
+
+  // Fetch travel_hours + equipment_provided separately (new columns, handle gracefully)
+  const woIds = (signedWOs || []).map((w) => w.id);
+  let woExtras: Record<string, { travel_hours: number | null; equipment_provided: boolean | null }> = {};
+  if (woIds.length > 0) {
+    const { data: extras } = await supabase
+      .from("work_orders")
+      .select("id, travel_hours, equipment_provided")
+      .in("id", woIds);
+    for (const e of extras || []) {
+      woExtras[e.id] = { travel_hours: e.travel_hours ?? null, equipment_provided: e.equipment_provided ?? null };
+    }
+  }
 
   // Fetch submitted invoices
   const { data: invoices } = await supabase
@@ -57,11 +73,27 @@ export default async function TAInvoicesPage() {
     return bracket ? Number(bracket.amount) : null;
   }
 
-  const enrichedWOs = (signedWOs || []).map((wo) => ({
-    ...wo,
-    expected_fee: calcExpectedFee(wo.program_type, wo.days),
-    travel_stipend: calcTravelStipend(wo.travel_hours),
-  }));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const enrichedWOs = (signedWOs || []).map((wo) => {
+    const extras = woExtras[wo.id] || { travel_hours: null, equipment_provided: null };
+    // Invoice available the day after project ends
+    const endDate = wo.end_date ? new Date(wo.end_date) : null;
+    const availableFrom = endDate ? new Date(endDate.getTime() + 86400000) : null;
+    const uploadLocked = availableFrom ? availableFrom > today : false;
+    const availableFromStr = availableFrom ? availableFrom.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : null;
+
+    return {
+      ...wo,
+      travel_hours: extras.travel_hours,
+      equipment_provided: extras.equipment_provided,
+      expected_fee: calcExpectedFee(wo.program_type, wo.days),
+      travel_stipend: calcTravelStipend(extras.travel_hours),
+      upload_locked: uploadLocked,
+      available_from: availableFromStr,
+    };
+  });
 
   // Summary stats
   const totalPaid = (invoices || [])

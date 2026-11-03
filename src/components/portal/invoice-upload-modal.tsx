@@ -16,6 +16,8 @@ interface WorkOrder {
   equipment_provided: boolean | null;
   expected_fee: number | null;
   travel_stipend: number | null;
+  upload_locked?: boolean;
+  available_from?: string | null;
 }
 
 interface Profile {

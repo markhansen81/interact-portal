@@ -16,6 +16,8 @@ interface WorkOrder {
   equipment_provided: boolean | null;
   expected_fee: number | null;
   travel_stipend: number | null;
+  upload_locked: boolean;
+  available_from: string | null;
 }
 
 interface Invoice {
@@ -177,12 +179,21 @@ export function InvoicesPageClient({
                     </div>
 
                     {/* Right: action */}
-                    <button
-                      onClick={() => setActiveModal(wo)}
-                      className="shrink-0 rounded-sm bg-neutral-900 px-4 py-2 text-[13px] font-medium text-white hover:bg-neutral-800"
-                    >
-                      Upload Invoice
-                    </button>
+                    {wo.upload_locked ? (
+                      <div className="shrink-0 text-right">
+                        <div className="rounded-sm border border-neutral-200 px-4 py-2 text-[13px] font-medium text-neutral-400 cursor-not-allowed">
+                          Upload Invoice
+                        </div>
+                        <p className="mt-1 text-[11px] text-neutral-400">Available {wo.available_from}</p>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setActiveModal(wo)}
+                        className="shrink-0 rounded-sm bg-neutral-900 px-4 py-2 text-[13px] font-medium text-white hover:bg-neutral-800"
+                      >
+                        Upload Invoice
+                      </button>
+                    )}
                   </div>
                 );
               })}
