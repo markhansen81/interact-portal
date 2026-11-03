@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>InterACT Portal — Team Meeting 4 Nov 2026</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #18181b;
+    --amber: #b45309;
+    --amber-light: #fef3c7;
+    --amber-mid: #f59e0b;
+    --white: #ffffff;
+    --gray: #71717a;
+    --gray-light: #f4f4f5;
+    --border: #e4e4e7;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--black);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .deck {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    display: none;
+    width: 100%;
+    height: 100vh;
+    position: absolute;
+    inset: 0;
+    padding: 64px 80px;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .slide.active { display: flex; }
+
+  /* ── Layouts ── */
+  .slide.cover {
+    background: var(--black);
+    color: var(--white);
+    justify-content: flex-end;
+    padding-bottom: 80px;
+  }
+
+  .slide.light {
+    background: var(--white);
+    color: var(--black);
+  }
+
+  .slide.amber {
+    background: var(--amber);
+    color: var(--white);
+  }
+
+  .slide.demo-slide {
+    background: var(--black);
+    color: var(--white);
+  }
+
+  /* ── Logo mark ── */
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--amber);
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.5px;
+    margin-bottom: 32px;
+    flex-shrink: 0;
+  }
+
+  .logo-white {
+    background: var(--white);
+    color: var(--black);
+  }
+
+  /* ── Typography ── */
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    font-size: clamp(40px, 6vw, 72px);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -2px;
+    margin-bottom: 20px;
+  }
+
+  h2 {
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 24px;
+  }
+
+  h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--amber);
+  }
+
+  .slide.demo-slide h3 { color: var(--amber-mid); }
+
+  p, li {
+    font-size: clamp(15px, 1.8vw, 20px);
+    line-height: 1.6;
+    opacity: 0.85;
+  }
+
+  .subtitle {
+    font-size: clamp(16px, 2.2vw, 24px);
+    opacity: 0.6;
+    font-weight: 400;
+    letter-spacing: -0.3px;
+  }
+
+  .accent { color: var(--amber-mid); }
+  .slide.light .accent { color: var(--amber); }
+
+  /* ── Two column layout ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+
+  .three-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 32px;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--gray-light);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    color: var(--black);
+  }
+
+  .slide.demo-slide .card {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.12);
+    color: var(--white);
+  }
+
+  .card h3 { font-size: 15px; margin-bottom: 8px; }
+  .card p, .card li { font-size: 14px; line-height: 1.55; opacity: 0.75; }
+
+  /* ── Table ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: clamp(13px, 1.5vw, 16px);
+  }
+
+  th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .slide.light td { opacity: 0.8; }
+  .slide.demo-slide th { border-color: rgba(255,255,255,0.15); }
+  .slide.demo-slide td { border-color: rgba(255,255,255,0.08); opacity: 0.85; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .badge-green { background: #d1fae5; color: #065f46; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .badge-amber { background: #fef3c7; color: #92400e; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+
+  /* ── Lists ── */
+  ul { list-style: none; }
+  ul li { padding-left: 0; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 10px; }
+  ul li::before { content: "→"; font-weight: 700; opacity: 0.4; flex-shrink: 0; margin-top: 1px; }
+  .slide.demo-slide ul li::before { color: var(--amber-mid); opacity: 1; }
+
+  ol { padding-left: 20px; }
+  ol li { margin-bottom: 8px; }
+
+  /* ── Step numbers ── */
+  .steps { display: flex; flex-direction: column; gap: 16px; }
+  .step { display: flex; gap: 16px; align-items: flex-start; }
+  .step-num {
+    width: 28px; height: 28px;
+    background: var(--amber);
+    color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    flex-shrink: 0; margin-top: 2px;
+  }
+  .slide.demo-slide .step-num { background: var(--amber-mid); color: var(--black); }
+  .step-content p { font-size: 15px; }
+  .step-content .label { font-weight: 600; font-size: 15px; opacity: 1; }
+
+  /* ── Quote / callout ── */
+  .callout {
+    border-left: 4px solid var(--amber);
+    padding: 16px 20px;
+    background: var(--amber-light);
+    border-radius: 0 6px 6px 0;
+    margin-top: 24px;
+  }
+  .slide.demo-slide .callout {
+    border-color: var(--amber-mid);
+    background: rgba(245,158,11,0.1);
+  }
+  .callout p { font-size: 16px; font-style: italic; opacity: 1; color: var(--black); }
+  .slide.demo-slide .callout p { color: var(--white); }
+
+  /* ── Metric grid ── */
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .metric {
+    background: var(--gray-light);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+  }
+  .metric-value { font-size: 36px; font-weight: 800; color: var(--black); line-height: 1; }
+  .metric-label { font-size: 12px; color: var(--gray); margin-top: 4px; font-weight: 500; }
+
+  /* ── Progress ── */
+  .nav {
+    position: fixed;
+    bottom: 24px;
+    right: 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 100;
+  }
+
+  .nav-counter {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: rgba(255,255,255,0.4);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .nav-dots { display: flex; gap: 6px; }
+  .nav-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    transition: background 0.2s;
+  }
+  .nav-dot.active { background: var(--amber-mid); width: 18px; border-radius: 3px; }
+
+  /* ── Divider ── */
+  .divider { width: 40px; height: 3px; background: var(--amber); margin-bottom: 24px; border-radius: 2px; }
+  .slide.demo-slide .divider { background: var(--amber-mid); }
+
+  /* ── Large stat ── */
+  .big-stat { font-size: clamp(60px, 10vw, 120px); font-weight: 900; line-height: 1; letter-spacing: -4px; }
+
+  /* ── Slide-in anim ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .slide.active > * { animation: fadeUp 0.35s ease both; }
+  .slide.active > *:nth-child(2) { animation-delay: 0.05s; }
+  .slide.active > *:nth-child(3) { animation-delay: 0.10s; }
+  .slide.active > *:nth-child(4) { animation-delay: 0.15s; }
+  .slide.active > *:nth-child(5) { animation-delay: 0.20s; }
+
+  /* ── Keyboard hint ── */
+  .hint {
+    position: fixed;
+    bottom: 24px;
+    left: 32px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Timeline ── */
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .tl-item { display: flex; gap: 24px; padding-bottom: 24px; position: relative; }
+  .tl-item:last-child { padding-bottom: 0; }
+  .tl-left { display: flex; flex-direction: column; align-items: center; width: 120px; flex-shrink: 0; }
+  .tl-month { font-size: 14px; font-weight: 700; color: var(--amber); }
+  .tl-line { width: 2px; flex: 1; background: var(--border); margin-top: 8px; }
+  .slide.demo-slide .tl-month { color: var(--amber-mid); }
+  .slide.demo-slide .tl-line { background: rgba(255,255,255,0.12); }
+  .tl-content { padding-top: 2px; }
+  .tl-content ul li { font-size: 14px; }
+
+  /* ── Role list ── */
+  .role-col { display: flex; flex-direction: column; gap: 8px; }
+  .role-item { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.45; }
+  .role-item::before { content: "✓"; color: var(--amber); font-weight: 700; flex-shrink: 0; }
+  .slide.light .role-item::before { color: var(--amber); }
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+  <!-- 1. Cover -->
+  <div class="slide cover active">
+    <div class="logo logo-white">iA</div>
+    <div class="eyebrow" style="color:rgba(255,255,255,0.4)">Team Meeting · 4 November 2026</div>
+    <h1>Moving Forward<br><span class="accent">Together</span></h1>
+    <p class="subtitle" style="margin-top:8px">InterACT Portal — Where We Are &amp; Where We're Going</p>
+  </div>
+
+  <!-- 2. Why We're Moving -->
+  <div class="slide light">
+    <div class="logo">iA</div>
+    <div class="eyebrow">The Problem</div>
+    <h2>Why We're Moving</h2>
+    <p style="max-width:700px;margin-bottom:32px">The Insightly–Monday integration keeps breaking. We spend time fixing syncs instead of actually working.</p>
+    <div class="card" style="max-width:640px">
+      <h3 style="color:var(--amber);margin-bottom:12px">We are leaving Insightly — permanently.</h3>
+      <p>One tool less. One source of truth. No more broken syncs.</p>
+    </div>
+  </div>
+
+  <!-- 3. One Object, One Flow -->
+  <div class="slide light">
+    <div class="logo">iA</div>
+    <div class="eyebrow">The Fix</div>
+    <h2>One Object, One Flow</h2>
+    <div class="two-col" style="gap:40px;align-items:start">
+      <div>
+        <h3 style="margin-bottom:12px">Today: 3 objects, 2 systems</h3>
+        <table>
+          <thead><tr><th>Stage</th><th>System</th><th>Problem</th></tr></thead>
+          <tbody>
+            <tr><td>Lead</td><td>Insightly</td><td><span class="badge badge-red">Breaks when syncing</span></td></tr>
+            <tr><td>Opportunity</td><td>Monday</td><td><span class="badge badge-amber">Different from lead</span></td></tr>
+            <tr><td>Project</td><td>Monday</td><td><span class="badge badge-amber">A third copy</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3 style="margin-bottom:12px">New: 2 objects</h3>
+        <div class="card" style="margin-bottom:16px">
+          <p style="font-weight:700;opacity:1">Lead → Opportunity/Project (merged)</p>
+          <p style="margin-top:8px">Won = becomes one record. Change a date once — updated everywhere. Rebook? Same record.</p>
+        </div>
+        <div class="card">
+          <p style="font-weight:700;opacity:1">Sales → Project Coordination</p>
+          <p style="margin-top:8px">In the same object. No more copying data across systems.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. What Stays, What Goes -->
+  <div class="slide light">
+    <div class="logo">iA</div>
+    <div class="eyebrow">The Stack</div>
+    <h2>What Stays, What Goes</h2>
+    <table>
+      <thead><tr><th>Tool</th><th>Status</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Insightly</strong></td><td><span class="badge badge-red">Gone</span></td><td>Replaced by Monday</td></tr>
+        <tr><td><strong>Monday</strong></td><td><span class="badge badge-green">Stays</span></td><td>Leads, opp/project, church</td></tr>
+        <tr><td><strong>Portal</strong></td><td><span class="badge badge-blue">New primary</span></td><td>Offers, onboarding, work orders, invoices, operations</td></tr>
+        <tr><td><strong>Zapier</strong></td><td><span class="badge badge-green">Stays</span></td><td>Glue — only where portal or Monday can't</td></tr>
+        <tr><td><strong>Squarespace</strong></td><td><span class="badge badge-green">Stays</span></td><td>Website + insurance shop</td></tr>
+        <tr><td><strong>DATEV</strong></td><td><span class="badge badge-green">Stays</span></td><td>Accounting (auto-upload from portal)</td></tr>
+        <tr><td><strong>Resend</strong></td><td><span class="badge badge-green">Stays</span></td><td>All portal emails</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 5. Migration Workshop -->
+  <div class="slide light">
+    <div class="logo">iA</div>
+    <div class="eyebrow">Your Input</div>
+    <h2>Migration Workshop</h2>
+    <p style="max-width:680px;margin-bottom:28px">Your automations, views, and shortcuts matter. We need to make sure nothing gets lost.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <p class="label">List every function/automation you use daily</p>
+          <p>Insightly or Monday — what it does, who uses it, where you'd want it. Add to the Monday board.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <p class="label">Note anything you wish you had but doesn't exist</p>
+          <p>Wishlist items welcome.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <p class="label">Deadline: 2 weeks — Mark reviews before next meeting</p>
+          <p>Sort: already in portal · build into portal · keep in Monday · bridge with Zap</p>
+        </div>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:24px">
+      <p>The portal is a prototype — your starting point to react to. Add your ideas and feedback to the Monday board.</p>
+    </div>
+  </div>
+
+  <!-- 6. Demo: Lead Journey -->
+  <div class="slide demo-slide">
+    <div class="logo">iA</div>
+    <div class="eyebrow" style="color:rgba(255,255,255,0.4)">Demo 1</div>
+    <h2>The Lead Journey</h2>
+    <p style="margin-bottom:24px;opacity:0.6">School finds InterACT → fills out form → lead lands in CRM</p>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-content"><p><span class="label">Lead form</span> on interactenglish.de (embedded iframe)</p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-content"><p>Teacher fills: name, school, programs, students</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-content"><p>Submits → <em>Vielen Dank</em> → lead arrives in <span class="accent">CRM Pipeline</span></p></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-content"><p>Also syncs to Monday + Slack notification</p></div></div>
+    </div>
+    <div class="callout">
+      <p>"Every lead from the website flows automatically into our pipeline."</p>
+    </div>
+  </div>
+
+  <!-- 7. Demo: CRM to Offer -->
+  <div class="slide demo-slide">
+    <div class="logo">iA</div>
+    <div class="eyebrow" style="color:rgba(255,255,255,0.4)">Demo 2</div>
+    <h2>CRM to Offer</h2>
+    <p style="margin-bottom:24px;opacity:0.6">Take a lead → send a professional Angebot in 2 minutes</p>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-content"><p>CRM Pipeline → click <span class="accent">Create Offer</span></p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-content"><p>Form pre-fills from lead data</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-content"><p>Select programs (multi: NSW + Theatre Week)</p></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-content"><p>Price auto-fills from Preisliste (€129 Tarif 1)</p></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-content"><p><span class="accent">Save &amp; Send</span> → school receives PDF by email</p></div></div>
+    </div>
+    <div class="callout">
+      <p>"One click from CRM to a 10-page branded offer."</p>
+    </div>
+  </div>
+
+  <!-- 8. Demo: TA Onboarding -->
+  <div class="slide demo-slide">
+    <div class="logo">iA</div>
+    <div class="eyebrow" style="color:rgba(255,255,255,0.4)">Demo 3</div>
+    <h2>TA Onboarding</h2>
+    <p style="margin-bottom:24px;opacity:0.6">Invite a TA → they complete onboarding → ready to work</p>
+    <div class="two-col">
+      <div>
+        <h3>Admin side</h3>
+        <ul>
+          <li>Teaching Artists → Invite TA → credentials generated</li>
+          <li>Onboarding page → all tasks + Nudge buttons</li>
+          <li>Training → online + offline completion tracking</li>
+          <li>Availability → calendar grid shows who's free</li>
+        </ul>
+      </div>
+      <div>
+        <h3>TA side</h3>
+        <ul>
+          <li>Logs in → dashboard shows onboarding checklist</li>
+          <li>Completes: personal details, payroll, school profile, documents, training</li>
+          <li>Uploads police check, measles cert, first aid</li>
+          <li>Sets weekly availability</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout">
+      <p>"From invite to ready-to-work — everything in the portal."</p>
+    </div>
+  </div>
+
+  <!-- 9. Demo: Work Orders + Invoices -->
+  <div class="slide demo-slide">
+    <div class="logo">iA</div>
+    <div class="eyebrow" style="color:rgba(255,255,255,0.4)">Demo 4</div>
+    <h2>Work Orders + Invoices</h2>
+    <div class="two-col">
+      <div>
+        <h3>Assign a TA</h3>
+        <ul>
+          <li>Create Work Order → select TA, school, dates, program</li>
+          <li>Send → TA receives email + sees it in portal</li>
+          <li>TA clicks Accept &amp; Sign → digital signature</li>
+          <li>Project appears in TA's Projects tab</li>
+        </ul>
+      </div>
+      <div>
+        <h3>After the project</h3>
+        <ul>
+          <li>Invoices → expected amount pre-calculated</li>
+          <li>TA uploads their Rechnung PDF</li>
+          <li>AI checks the invoice automatically</li>
+          <li>Admin: Approve → Mark Paid → DATEV</li>
+          <li>TA receives payment notification</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout">
+      <p>"No paper, no email attachments. Every euro tracked from submission to payment."</p>
+    </div>
+  </div>
+
+  <!-- 10. Admin Can -->
+  <div class="slide light">
+    <div class="logo">iA</div>
+    <div class="eyebrow">Capabilities</div>
+    <h2>Admin Can…</h2>
+    <div class="two-col">
+      <div class="role-col">
+        <div class="role-item">View live dashboard — stats, alerts, review queue</div>
+        <div class="role-item">Invite TAs and track onboarding progress</div>
+        <div class="role-item">Monitor training completion and availability</div>
+        <div class="role-item">Sync projects from Monday → CRM Pipeline</div>
+        <div class="role-item">Create and send branded Angebote (multi-program)</div>
+        <div class="role-item">Create and send work orders with digital signature</div>
+      </div>
+      <div class="role-col">
+        <div class="role-item">Review and approve TA invoices + expense claims</div>
+        <div class="role-item">Manage services, rates, contract templates</div>
+        <div class="role-item">Send messages to TAs</div>
+        <div class="role-item">Manage admin users, Lanes &amp; Planes sync</div>
+        <div class="role-item">DATEV auto-upload from portal</div>
+        <div class="role-item">Edit offer brochure content (PDF pages)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. TA Can -->
+  <div class="slide light">
+    <div class="logo">iA</div>
+    <div class="eyebrow">Capabilities</div>
+    <h2>Teaching Artist Can…</h2>
+    <div class="two-col">
+      <div class="role-col">
+        <div class="role-item">Log in and see personalised dashboard</div>
+        <div class="role-item">Complete onboarding step by step</div>
+        <div class="role-item">Upload required documents (police check, etc.)</div>
+        <div class="role-item">Set weekly availability on a calendar</div>
+        <div class="role-item">View, sign, or decline work orders digitally</div>
+      </div>
+      <div class="role-col">
+        <div class="role-item">View assigned projects with team and schedule</div>
+        <div class="role-item">Submit invoices (AI pre-checks before upload)</div>
+        <div class="role-item">Submit expense claims with receipt photos</div>
+        <div class="role-item">Send and receive messages</div>
+        <div class="role-item">Access on mobile via PWA</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12. School Can -->
+  <div class="slide light">
+    <div class="logo">iA</div>
+    <div class="eyebrow">Capabilities</div>
+    <h2>Teacher / School Can…</h2>
+    <div class="two-col">
+      <div class="role-col">
+        <div class="role-item">Submit a project inquiry via lead form (DE + EN)</div>
+        <div class="role-item">Receive a professional Angebot by email with full PDF</div>
+        <div class="role-item">Access school project portal via token link (no login)</div>
+        <div class="role-item">View project details, assigned TAs, schedule</div>
+      </div>
+      <div class="role-col">
+        <div class="role-item">Manage student groups</div>
+        <div class="role-item">Fill the info pack form (rooms, equipment)</div>
+        <div class="role-item">Submit project feedback</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 13. Platform Quality -->
+  <div class="slide light">
+    <div class="logo">iA</div>
+    <div class="eyebrow">Infrastructure</div>
+    <h2>Platform Quality</h2>
+    <div class="metrics" style="margin-bottom:32px">
+      <div class="metric"><div class="metric-value accent" style="color:var(--amber)">201</div><div class="metric-label">Automated tests</div></div>
+      <div class="metric"><div class="metric-value accent" style="color:var(--amber)">19</div><div class="metric-label">Admin pages, all tested</div></div>
+      <div class="metric"><div class="metric-value accent" style="color:var(--amber)">6</div><div class="metric-label">End-to-end user flows</div></div>
+      <div class="metric"><div class="metric-value accent" style="color:var(--amber)">3am</div><div class="metric-label">Daily security scan</div></div>
+    </div>
+    <div class="callout">
+      <p>Production-grade infrastructure for a 200-school operation. Health checks run hourly. Lead form monitored every hour.</p>
+    </div>
+  </div>
+
+  <!-- 14. Testing Tasks -->
+  <div class="slide amber">
+    <div class="logo logo-white">iA</div>
+    <div class="eyebrow" style="color:rgba(255,255,255,0.6)">Your Task</div>
+    <h2>Test the Portal</h2>
+    <p style="margin-bottom:28px;opacity:0.85">28 test tasks on the Monday board in the Testing group. Deadline: end of November.</p>
+    <table style="color:white">
+      <thead>
+        <tr>
+          <th style="color:rgba(255,255,255,0.6);border-color:rgba(255,255,255,0.2)">Role</th>
+          <th style="color:rgba(255,255,255,0.6);border-color:rgba(255,255,255,0.2)">Tasks</th>
+          <th style="color:rgba(255,255,255,0.6);border-color:rgba(255,255,255,0.2)">Who</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="border-color:rgba(255,255,255,0.15)">Admin flows</td><td style="border-color:rgba(255,255,255,0.15)">10 tasks</td><td style="border-color:rgba(255,255,255,0.15)">Nicole, Christin</td></tr>
+        <tr><td style="border-color:rgba(255,255,255,0.15)">TA flows</td><td style="border-color:rgba(255,255,255,0.15)">10 tasks</td><td style="border-color:rgba(255,255,255,0.15)">All TAs</td></tr>
+        <tr><td style="border-color:rgba(255,255,255,0.15)">Teacher/School</td><td style="border-color:rgba(255,255,255,0.15)">5 tasks</td><td style="border-color:rgba(255,255,255,0.15)">Team</td></tr>
+        <tr><td style="border-color:rgba(255,255,255,0.15)">Cross-flow</td><td style="border-color:rgba(255,255,255,0.15)">3 tasks</td><td style="border-color:rgba(255,255,255,0.15)">Mark</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 15. Timeline -->
+  <div class="slide light">
+    <div class="logo">iA</div>
+    <div class="eyebrow">Roadmap</div>
+    <h2>Ready by January 2027</h2>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-month">November</div><div class="tl-line"></div></div>
+        <div class="tl-content"><ul><li>Team tests the portal — 28 tasks on Monday</li><li>Collect automation/workflow wish lists</li></ul></div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-month">December</div><div class="tl-line"></div></div>
+        <div class="tl-content"><ul><li>Build missing features from team feedback</li><li>Fix every bug found in testing</li><li>Migrate automations — portal, Monday, or Zap</li></ul></div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-month">January 2027</div></div>
+        <div class="tl-content"><ul><li>Phase out Insightly — permanently</li><li>Go live with the full team</li><li>All automations migrated, team trained and confident</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 16. Questions -->
+  <div class="slide cover">
+    <div class="logo logo-white">iA</div>
+    <div class="eyebrow" style="color:rgba(255,255,255,0.4)">InterACT English gGmbH</div>
+    <h1>Questions?</h1>
+    <p class="subtitle" style="margin-top:12px">portal.interactenglish.de</p>
+  </div>
+
+</div><!-- /deck -->
+
+<!-- Nav -->
+<div class="nav">
+  <div class="nav-counter"><span id="cur">1</span> / <span id="tot">16</span></div>
+  <div class="nav-dots" id="dots"></div>
+</div>
+
+<div class="hint">← → or click to navigate · F for fullscreen</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dotsEl = document.getElementById('dots');
+  const curEl = document.getElementById('cur');
+  let current = 0;
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dotsEl.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    dotsEl.children[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, slides.length - 1));
+    slides[current].classList.add('active');
+    dotsEl.children[current].classList.add('active');
+    curEl.textContent = current + 1;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') goTo(current + 1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') goTo(current - 1);
+    if (e.key === 'f' || e.key === 'F') document.documentElement.requestFullscreen?.();
+  });
+
+  document.body.addEventListener('click', () => goTo(current + 1));
+</script>
+
+</body>
+</html>
