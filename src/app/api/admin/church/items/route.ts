@@ -14,10 +14,10 @@ export async function GET() {
       .select(
         "id, name, school_name, source, deal_stage, opp_status, program_type, " +
         "num_students, num_groups, num_days, num_tas, price_pp, grade_level, " +
-        "city, state, street, contact_email, teacher_contact, start_date, end_date"
+        "city, state, street, contact_email, teacher_contact, start_date, end_date, updated_at"
       )
       .in("source", ["opportunity", "project"])
-      .order("name"),
+      .order("updated_at", { ascending: false }),
 
     supabase
       .from("leads")
