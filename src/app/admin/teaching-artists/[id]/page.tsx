@@ -127,9 +127,20 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
 
   const [{ data: docs }, { data: workOrders }, { data: prefCounts }] = await Promise.all([
     supabase.from("documents").select("type, status, expiry_date, uploaded_at, issue_date").eq("ta_id", id),
-    supabase.from("work_orders").select("id, project_name, school, start_date, end_date, status, program_type").eq("ta_id", id).order("start_date", { ascending: false }),
+    supabase.from("work_orders").select("id, project_name, school, start_date, end_date, status, program_type, project_id").eq("ta_id", id).order("start_date", { ascending: false }),
     supabase.from("ta_program_preferences").select("ta_id").eq("ta_id", id),
   ]);
+
+  // Fetch generated profile docs (school + homestay) from projects this TA is linked to
+  const projectIds = (workOrders || []).map((wo) => wo.project_id).filter(Boolean) as string[];
+  const { data: profileDocs } = projectIds.length > 0
+    ? await supabase
+        .from("project_documents")
+        .select("id, name, content, doc_type, created_at, project_id")
+        .in("project_id", projectIds)
+        .or(`name.ilike.TA Profile — ${ta.first_name}%,name.ilike.Homestay Profile — ${ta.first_name}%`)
+        .order("created_at", { ascending: false })
+    : { data: [] };
 
   const adminUser = await getCurrentUser();
   if (adminUser) logAudit({ userId: adminUser.id, action: "profile_viewed", targetId: id, targetType: "ta_profile" });
@@ -370,6 +381,38 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
               </div>
             )}
           </Section>
+
+          {/* Generated Profile Docs */}
+          {(profileDocs || []).length > 0 && (
+            <Section title="Generated Profile Documents">
+              <div className="divide-y divide-neutral-50">
+                {(profileDocs || []).map((doc) => {
+                  const isHomestay = doc.name.toLowerCase().startsWith("homestay");
+                  return (
+                    <div key={doc.id} className="flex items-center justify-between px-6 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-xs font-bold ${isHomestay ? "bg-purple-100 text-purple-600" : "bg-blue-100 text-blue-600"}`}>
+                          {isHomestay ? "H" : "S"}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-neutral-900">{doc.name}</p>
+                          <p className="text-xs text-neutral-400">
+                            {isHomestay ? "Homestay" : "School"} profile · Generated {new Date(doc.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                          </p>
+                        </div>
+                      </div>
+                      <Link
+                        href={`/admin/projects/${doc.project_id}`}
+                        className="rounded-md border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-50 transition-colors"
+                      >
+                        View in project →
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+            </Section>
+          )}
         </div>
 
         {/* ── RIGHT COLUMN ── */}
