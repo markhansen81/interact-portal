@@ -316,7 +316,9 @@ export function TASearchFilter({
                       </td>
 
                       {/* Level */}
-                      <td className="px-4 py-3 text-center"><Badge>{ta.pay_level}</Badge></td>
+                      <td className="px-4 py-3 text-center">
+                        {ta.pay_level ? <Badge>{ta.pay_level}</Badge> : <span className="text-xs text-neutral-300">TBC</span>}
+                      </td>
 
                       {/* Onboarding progress */}
                       <td className="px-4 py-3">

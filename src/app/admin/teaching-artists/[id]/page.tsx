@@ -195,8 +195,8 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
               >
                 {ta.is_active ? "Active" : "Inactive"}
               </span>
-              <span className="inline-flex items-center rounded-full bg-neutral-900 px-2.5 py-0.5 text-xs font-semibold text-white">
-                Level {ta.pay_level}
+              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${ta.pay_level ? "bg-neutral-900 text-white" : "bg-neutral-100 text-neutral-400"}`}>
+                {ta.pay_level ? `Level ${ta.pay_level}` : "Level TBC"}
               </span>
               {ta.onboarding_status && (
                 <span className="inline-flex items-center rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-500 capitalize">

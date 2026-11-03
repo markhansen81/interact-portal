@@ -26,8 +26,10 @@ export function TALevelEditor({ taId, currentLevel }: { taId: string; currentLev
 
   return (
     <div>
-      <p className="text-5xl font-bold text-neutral-900 tabular-nums">{level}</p>
-      <p className="text-xs text-neutral-400 mt-0.5 mb-4">Current level</p>
+      {level === 0
+        ? <p className="text-3xl font-bold text-neutral-300 tabular-nums">TBC</p>
+        : <p className="text-5xl font-bold text-neutral-900 tabular-nums">{level}</p>}
+      <p className="text-xs text-neutral-400 mt-0.5 mb-4">{level === 0 ? "Not yet set" : "Current level"}</p>
       <div className="flex gap-1.5 flex-wrap">
         {[1, 2, 3, 4, 5, 6].map((l) => (
           <button
