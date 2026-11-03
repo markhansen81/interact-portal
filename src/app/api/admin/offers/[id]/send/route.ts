@@ -17,6 +17,9 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
+  const body = await req.json().catch(() => ({}));
+  const ccOverride: string | undefined = body.cc || undefined;
+
   const supabase = await createClient();
   const adminClient = createAdminClient();
 
@@ -62,6 +65,23 @@ export async function POST(
   // Fetch editable brochure content from DB (falls back to hardcoded if no data)
   const brochureData = await getBrochureData();
 
+  // Build per-program line items for PDF (preferred over flat programRates)
+  const rawProgramLines = Array.isArray(offer.program_lines) && offer.program_lines.length > 0
+    ? offer.program_lines
+    : null;
+
+  const pdfProgramLines = rawProgramLines
+    ? rawProgramLines.map((l: Record<string, unknown>) => ({
+        programType: String(l.program_type || ""),
+        numStudents: Number(l.num_students) || offer.num_students || 0,
+        numGroups: Number(l.num_groups) || 0,
+        numDays: Number(l.num_days) || undefined,
+        gradeLevel: l.grade_level ? String(l.grade_level) : undefined,
+        pricePP: Number(l.price_pp) || 0,
+        total: Number(l.total) || 0,
+      }))
+    : undefined;
+
   // Generate PDF
   const pdfBuffer = await generateOfferPDF({
     offerNumber: offer.offer_number,
@@ -87,6 +107,7 @@ export async function POST(
     total: offer.total || 0,
     allProgramContents,
     programRates,
+    programLines: pdfProgramLines,
     brochureData,
   });
 
@@ -107,9 +128,9 @@ export async function POST(
     pdfUrl = urlData.publicUrl;
   }
 
-  // Look up salesperson (offer creator) to CC
-  let ccEmail: string | undefined;
-  if (offer.created_by) {
+  // Determine CC: use override from request body, else look up creator
+  let ccEmail: string | undefined = ccOverride;
+  if (!ccEmail && offer.created_by) {
     const { data: creator } = await adminClient
       .from("profiles")
       .select("email")

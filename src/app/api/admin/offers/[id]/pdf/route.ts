@@ -53,6 +53,22 @@ export async function GET(
 
   const brochureData = await getBrochureData();
 
+  const rawProgramLines = Array.isArray(offer.program_lines) && offer.program_lines.length > 0
+    ? offer.program_lines
+    : null;
+
+  const pdfProgramLines = rawProgramLines
+    ? rawProgramLines.map((l: Record<string, unknown>) => ({
+        programType: String(l.program_type || ""),
+        numStudents: Number(l.num_students) || offer.num_students || 0,
+        numGroups: Number(l.num_groups) || 0,
+        numDays: Number(l.num_days) || undefined,
+        gradeLevel: l.grade_level ? String(l.grade_level) : undefined,
+        pricePP: Number(l.price_pp) || 0,
+        total: Number(l.total) || 0,
+      }))
+    : undefined;
+
   const pdfBuffer = await generateOfferPDF({
     offerNumber: offer.offer_number,
     offerDate: new Date().toISOString().split("T")[0],
@@ -77,6 +93,7 @@ export async function GET(
     total: offer.total || 0,
     allProgramContents,
     programRates,
+    programLines: pdfProgramLines,
     brochureData,
   });
 

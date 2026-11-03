@@ -42,6 +42,7 @@ export default async function EditOfferPage({ params }: Props) {
     state: offer.state,
     program_type: offer.program_type,
     programs: offer.programs || [offer.program_type].filter(Boolean),
+    program_lines: offer.program_lines || [],
     grade_level: offer.grade_level,
     num_students: offer.num_students ?? "",
     num_groups: offer.num_groups ?? "",
