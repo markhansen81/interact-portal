@@ -67,32 +67,40 @@ function fmt(n: number | null | undefined) {
 
 const FAQ = [
   {
-    q: "When do I submit my invoice?",
-    a: "After the project is complete and your work order is signed. You should invoice within 30 days of the project end date.",
+    q: "What should I write as the service description?",
+    a: 'Use a clear description of the service, e.g. "Instruction of Native Speaker Week" or "Instruction of Theatre Week". Do not write "teaching" or "Unterricht" — the service is instruction of an English immersion program.',
   },
   {
-    q: "What if my invoice total doesn't match?",
-    a: "The amounts shown are calculated from your level and the pay scale. If you believe there's a discrepancy, contact your coordinator before submitting.",
+    q: "What must my invoice include?",
+    a: "Your full name and address · Your Steuernummer · A unique invoice number (Rechnungsnummer) · The invoice date (Rechnungsdatum) · The project dates · Your teaching/camp level · A description of the service · The fee amount · Your bank details (IBAN + BIC) · The §19 UStG clause (if Kleinunternehmer) · Payment terms.",
   },
   {
-    q: "Do I charge VAT (Mehrwertsteuer)?",
-    a: 'Most TAs are Kleinunternehmer and do not charge VAT. If so, include: "Gemäß §19 UStG wird keine Umsatzsteuer berechnet." If you are VAT-registered, contact admin.',
+    q: "What is the §19 UStG clause and do I need it?",
+    a: 'If you are a Kleinunternehmer (most TAs are), you must include the phrase: "Gemäß §19 UStG wird keine Umsatzsteuer berechnet." This means you are exempt from charging VAT. If you are VAT-registered, contact your coordinator before invoicing.',
   },
   {
-    q: "Can I invoice for travel?",
-    a: "Only if a travel stipend is shown on your project card. The amount is based on your travel time to the school. If travel hours are missing, contact your coordinator.",
+    q: "What payment terms should I include?",
+    a: 'Add a payment terms line such as: "Zahlbar innerhalb von 30 Tagen nach Erhalt der Rechnung." This is standard and required on German invoices.',
   },
   {
-    q: "Can I include equipment rental?",
-    a: "Only if the project card shows equipment was provided. Do not include equipment costs for projects where you did not receive equipment.",
+    q: "Can I only invoice for my instruction fee?",
+    a: "Only services are invoiceable. Do not include cost reimbursements (Auslagenerstattung) such as travel costs, materials, or receipts on your invoice. These are handled separately through the Auslagenerstattung form. Your invoice should only reflect the instruction fee and, if applicable, a travel stipend shown on your project card.",
   },
   {
-    q: "What file format should my invoice be?",
-    a: "PDF only, ideally 1 page. Make sure your invoice number is unique — you cannot re-use numbers.",
+    q: "What format should my invoice be in?",
+    a: "PDF only, ideally 1 page. Use your own invoice design — do not use the InterACT invoice template. Every invoice must have a unique invoice number; you cannot reuse numbers.",
+  },
+  {
+    q: "What if my invoice total doesn't match what's shown here?",
+    a: "The amounts here are calculated from your pay level and the current pay scale. If you believe there is a discrepancy, contact your coordinator before uploading. Do not submit an invoice with a different total without checking first.",
+  },
+  {
+    q: "When can I submit my invoice?",
+    a: "You can upload your invoice the day after the project ends. The upload button will unlock automatically. Please invoice within 30 days of the project end date.",
   },
   {
     q: "How long until I get paid?",
-    a: "Once your invoice is approved, payment is processed within 30 days to your registered IBAN.",
+    a: "Once your invoice is accepted, payment is processed within 30 days to your registered IBAN. Make sure your IBAN is up to date in your profile under Payroll.",
   },
 ];
 
@@ -131,7 +139,9 @@ export function InvoicesPageClient({
     if (inv.work_order_id) invoiceByWO.set(inv.work_order_id, inv);
   }
 
-  const pendingWOs = workOrders.filter((wo) => !invoiceByWO.has(wo.id));
+  const uninvoicedWOs = workOrders.filter((wo) => !invoiceByWO.has(wo.id));
+  const readyWOs = uninvoicedWOs.filter((wo) => !wo.upload_locked);
+  const upcomingWOs = uninvoicedWOs.filter((wo) => wo.upload_locked);
   const invoicedWOs = workOrders.filter((wo) => invoiceByWO.has(wo.id));
 
   return (
@@ -145,19 +155,17 @@ export function InvoicesPageClient({
       )}
 
       <div className="space-y-8">
-        {/* Pending WOs — primary action */}
-        {pendingWOs.length > 0 && (
+        {/* Ready to invoice */}
+        {readyWOs.length > 0 && (
           <div className="space-y-3">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-              Ready to Invoice ({pendingWOs.length})
+              Ready to Invoice ({readyWOs.length})
             </h3>
             <div className="divide-y divide-neutral-100 rounded-sm border border-neutral-200 bg-white">
-              {pendingWOs.map((wo) => {
+              {readyWOs.map((wo) => {
                 const total = (wo.expected_fee ?? 0) + (wo.travel_stipend ?? 0);
-                const hasTotal = wo.expected_fee != null;
                 return (
                   <div key={wo.id} className="flex items-center gap-4 p-4">
-                    {/* Left: project info */}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-neutral-900 truncate">{wo.project_name}</p>
                       <p className="mt-0.5 text-xs text-neutral-500">
@@ -165,10 +173,8 @@ export function InvoicesPageClient({
                         {wo.school ? ` · ${wo.school}` : ""}
                       </p>
                     </div>
-
-                    {/* Middle: expected total */}
                     <div className="hidden sm:block text-right shrink-0">
-                      {hasTotal ? (
+                      {wo.expected_fee != null ? (
                         <>
                           <p className="text-sm font-semibold text-neutral-900">{fmt(total)}</p>
                           <p className="text-[11px] text-neutral-400">expected</p>
@@ -177,23 +183,53 @@ export function InvoicesPageClient({
                         <p className="text-xs text-neutral-400">Rate not set</p>
                       )}
                     </div>
+                    <button
+                      onClick={() => setActiveModal(wo)}
+                      className="shrink-0 rounded-sm bg-neutral-900 px-4 py-2 text-[13px] font-medium text-white hover:bg-neutral-800"
+                    >
+                      Upload Invoice
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
-                    {/* Right: action */}
-                    {wo.upload_locked ? (
-                      <div className="shrink-0 text-right">
-                        <div className="rounded-sm border border-neutral-200 px-4 py-2 text-[13px] font-medium text-neutral-400 cursor-not-allowed">
-                          Upload Invoice
-                        </div>
-                        <p className="mt-1 text-[11px] text-neutral-400">Available {wo.available_from}</p>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => setActiveModal(wo)}
-                        className="shrink-0 rounded-sm bg-neutral-900 px-4 py-2 text-[13px] font-medium text-white hover:bg-neutral-800"
-                      >
+        {/* Upcoming projects — not yet billable */}
+        {upcomingWOs.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
+              Upcoming Projects ({upcomingWOs.length})
+            </h3>
+            <div className="divide-y divide-neutral-100 rounded-sm border border-neutral-200 bg-white">
+              {upcomingWOs.map((wo) => {
+                const total = (wo.expected_fee ?? 0) + (wo.travel_stipend ?? 0);
+                return (
+                  <div key={wo.id} className="flex items-center gap-4 p-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-neutral-900 truncate">{wo.project_name}</p>
+                      <p className="mt-0.5 text-xs text-neutral-500">
+                        {wo.program_type} · {wo.days} {wo.days === 1 ? "day" : "days"} · {wo.start_date} – {wo.end_date}
+                        {wo.school ? ` · ${wo.school}` : ""}
+                      </p>
+                    </div>
+                    <div className="hidden sm:block text-right shrink-0">
+                      {wo.expected_fee != null ? (
+                        <>
+                          <p className="text-sm font-semibold text-neutral-900">{fmt(total)}</p>
+                          <p className="text-[11px] text-neutral-400">expected</p>
+                        </>
+                      ) : (
+                        <p className="text-xs text-neutral-400">Rate not set</p>
+                      )}
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <div className="rounded-sm border border-neutral-200 px-4 py-2 text-[13px] font-medium text-neutral-300 cursor-not-allowed select-none">
                         Upload Invoice
-                      </button>
-                    )}
+                      </div>
+                      <p className="mt-1 text-[11px] text-neutral-400">Available {wo.available_from}</p>
+                    </div>
                   </div>
                 );
               })}
