@@ -31,9 +31,11 @@ export function PortalHeader({ profile }: { profile: Profile }) {
         </p>
       </div>
       <div className="flex items-center gap-2">
-        <span className="hidden items-center rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-600 md:inline-flex">
-          Level {profile.pay_level}
-        </span>
+        {profile.pay_level > 0 && (
+          <span className="hidden items-center rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-600 md:inline-flex">
+            Level {profile.pay_level}
+          </span>
+        )}
         <NotificationBell />
         <button
           onClick={handleSignOut}
