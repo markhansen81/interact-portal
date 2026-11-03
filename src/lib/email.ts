@@ -102,7 +102,10 @@ export function documentExpiringEmail(taName: string, docType: string, expiryDat
   };
 }
 
-export function nudgeEmail(taName: string, item: string, message: string) {
+export function nudgeEmail(taName: string, item: string, message: string, portalPath = "/portal") {
+  const url = `${APP_URL}${portalPath}`;
+  const sectionLabel = portalPath.split("/").pop()?.replace(/-/g, " ") || "portal";
+  const btnLabel = `Go to ${sectionLabel.charAt(0).toUpperCase() + sectionLabel.slice(1)}`;
   return {
     subject: `Reminder: ${item}`,
     html: `
@@ -110,7 +113,7 @@ export function nudgeEmail(taName: string, item: string, message: string) {
         <h2 style="color: #18181b;">Reminder</h2>
         <p>Hi ${taName},</p>
         <p>${message}</p>
-        <p><a href="${APP_URL}/portal" style="display: inline-block; background: #18181b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">Go to Portal</a></p>
+        <p><a href="${url}" style="display: inline-block; background: #18181b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">${btnLabel}</a></p>
         <p style="color: #71717a; font-size: 14px;">InterACT English gGmbH</p>
       </div>
     `,

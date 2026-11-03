@@ -29,10 +29,12 @@ function expiryStatus(expiry: string | null): "ok" | "soon" | "expired" | "none"
 }
 
 // ── Onboarding helpers ─────────────────────────────────────────────────────
-const REQUIRED_DOCS = ["right_to_work", "police_check", "measles"];
-const REQUIRED_DOCS_DETAIL = ["right_to_work", "police_check", "measles", "first_aid"];
+const REQUIRED_DOCS = ["visa", "passport", "police_check", "measles"];
+const REQUIRED_DOCS_DETAIL = ["visa", "passport", "police_check", "measles", "first_aid"];
 const DOC_LABELS: Record<string, string> = {
-  right_to_work: "Visa/Passport",
+  visa: "Visa",
+  passport: "Passport",
+  right_to_work: "Visa/Passport (legacy)",
   police_check: "Police Check",
   measles: "Measles",
   first_aid: "First Aid",
@@ -42,6 +44,7 @@ interface MissingItem {
   id: string;
   label: string;
   category: "document" | "profile" | "training" | "availability";
+  portalPath: string;
 }
 
 interface TAProfile {
@@ -83,13 +86,16 @@ interface WorkOrderEntry {
 
 function getMissing(ta: TAProfile, docs: TADoc[]) {
   const uploadedTypes = new Set(docs.filter((d) => d.status !== "not_uploaded").map((d) => d.type));
+  // treat legacy right_to_work as satisfying both visa + passport
+  const hasRightToWork = uploadedTypes.has("right_to_work");
   const missing: string[] = [];
   if (!ta.first_name) missing.push("Name");
   if (!ta.address) missing.push("Address");
   if (!ta.phone) missing.push("Phone");
-  REQUIRED_DOCS.forEach((dt) => {
-    if (!uploadedTypes.has(dt)) missing.push(DOC_LABELS[dt] || dt);
-  });
+  if (!uploadedTypes.has("visa") && !hasRightToWork) missing.push("Visa");
+  if (!uploadedTypes.has("passport") && !hasRightToWork) missing.push("Passport");
+  if (!uploadedTypes.has("police_check")) missing.push("Police Check");
+  if (!uploadedTypes.has("measles")) missing.push("Measles");
   if (!ta.training_online) missing.push("Online Training");
   if (!ta.training_offline) missing.push("Offline Training");
   if (!ta.iban) missing.push("IBAN");
@@ -104,22 +110,25 @@ interface ChecklistItem extends MissingItem {
 
 function getChecklist(ta: TAProfile, docs: TADoc[], prefsCount: number, availCount: number): ChecklistItem[] {
   const uploadedTypes = new Set(docs.filter((d) => d.status !== "not_uploaded").map((d) => d.type));
+  const hasRightToWork = uploadedTypes.has("right_to_work");
 
   const personalFields = ["first_name", "last_name", "phone", "date_of_birth", "nationality", "street", "city", "postal_code"] as const;
   const personalDone = personalFields.filter((f) => !!(ta as any)[f]).length;
 
   return [
-    { id: "personal", label: "Personal Details", detail: `${personalDone}/${personalFields.length}`, done: personalDone === personalFields.length, category: "profile" },
-    { id: "payroll",  label: "Payroll & Banking",  done: !!(ta.iban && ta.tax_number), category: "profile" },
-    { id: "school",   label: "School Profile",     done: !!(ta.bio && ta.superpower), category: "profile" },
-    { id: "photo",    label: "Profile Photo",      done: !!ta.photo_url, category: "profile" },
-    { id: "programs", label: "Programs",           detail: `${prefsCount}/29`, done: prefsCount >= 29, category: "profile" },
-    ...REQUIRED_DOCS_DETAIL.map((dt) => ({
-      id: `doc_${dt}`, label: DOC_LABELS[dt], done: uploadedTypes.has(dt), category: "document" as const,
-    })),
-    { id: "training_online",  label: "Online Onboarding",  done: !!ta.training_online,  category: "training" },
-    { id: "training_offline", label: "Offline Foundation", done: !!ta.training_offline, category: "training" },
-    { id: "availability",     label: "Set Availability",   done: availCount > 0,         category: "availability" },
+    { id: "personal", label: "Personal Details", detail: `${personalDone}/${personalFields.length}`, done: personalDone === personalFields.length, category: "profile", portalPath: "/portal/profile" },
+    { id: "payroll",  label: "Payroll & Banking",  done: !!(ta.iban && ta.tax_number), category: "profile",      portalPath: "/portal/profile" },
+    { id: "school",   label: "School Profile",     done: !!(ta.bio && ta.superpower),  category: "profile",      portalPath: "/portal/profile" },
+    { id: "photo",    label: "Profile Photo",      done: !!ta.photo_url,               category: "profile",      portalPath: "/portal/profile" },
+    { id: "programs", label: "Programs",           detail: `${prefsCount}/29`, done: prefsCount >= 29, category: "profile", portalPath: "/portal/profile" },
+    { id: "doc_visa",         label: "Visa",         done: uploadedTypes.has("visa") || hasRightToWork,         category: "document", portalPath: "/portal/documents" },
+    { id: "doc_passport",     label: "Passport",     done: uploadedTypes.has("passport") || hasRightToWork,     category: "document", portalPath: "/portal/documents" },
+    { id: "doc_police_check", label: "Police Check", done: uploadedTypes.has("police_check"),                   category: "document", portalPath: "/portal/documents" },
+    { id: "doc_measles",      label: "Measles",      done: uploadedTypes.has("measles"),                        category: "document", portalPath: "/portal/documents" },
+    { id: "doc_first_aid",    label: "First Aid",    done: uploadedTypes.has("first_aid"),                      category: "document", portalPath: "/portal/documents" },
+    { id: "training_online",  label: "Online Onboarding",  done: !!ta.training_online,  category: "training",     portalPath: "/portal/profile" },
+    { id: "training_offline", label: "Offline Foundation", done: !!ta.training_offline, category: "training",     portalPath: "/portal/profile" },
+    { id: "availability",     label: "Set Availability",   done: availCount > 0,        category: "availability", portalPath: "/portal/availability" },
   ];
 }
 
@@ -179,7 +188,7 @@ export function TASearchFilter({
     await fetch("/api/admin/nudge", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ta_id: taId, item: item.label, message: messages[item.category] }),
+      body: JSON.stringify({ ta_id: taId, item: item.label, message: messages[item.category], portalPath: item.portalPath }),
     });
     setSendingNudge(null);
     setSentNudges((prev) => new Set(prev).add(key));
