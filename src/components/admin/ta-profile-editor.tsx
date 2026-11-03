@@ -19,7 +19,7 @@ interface TAProfile {
  onboarding_status: string;
 }
 
-export function TAProfileEditor({ ta }: { ta: TAProfile }) {
+export function TAProfileEditor({ ta, compact }: { ta: TAProfile; compact?: boolean }) {
  const [editing, setEditing] = useState(false);
  const [loading, setLoading] = useState(false);
  const [form, setForm] = useState({
@@ -53,6 +53,18 @@ export function TAProfileEditor({ ta }: { ta: TAProfile }) {
  }
 
  if (!editing) {
+   if (compact) {
+     return (
+       <div className="rounded-sm border border-neutral-200 bg-white p-4">
+         <button
+           onClick={() => setEditing(true)}
+           className="w-full rounded-sm border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
+         >
+           Edit Admin Fields
+         </button>
+       </div>
+     );
+   }
  return (
  <div className="rounded-sm border border-neutral-200 bg-white p-6">
  <div className="flex items-center justify-between">
