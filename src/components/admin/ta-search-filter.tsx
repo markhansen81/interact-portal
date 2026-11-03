@@ -258,7 +258,7 @@ export function TASearchFilter({
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">Onboarding</th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">Missing</th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">Doc Expiry</th>
-                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-neutral-500">Projects</th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">Work Orders</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
@@ -363,9 +363,20 @@ export function TASearchFilter({
                         </div>
                       </td>
 
-                      {/* Projects */}
-                      <td className="px-4 py-3 text-center text-sm text-neutral-500">
-                        {(workOrdersByTA[ta.id] || []).length}
+                      {/* Work Orders */}
+                      <td className="px-4 py-3">
+                        {(() => {
+                          const activeWOs = (workOrdersByTA[ta.id] || []).filter((wo) => wo.status === "signed" || wo.status === "sent");
+                          if (activeWOs.length === 0) return <span className="text-xs text-neutral-300">None</span>;
+                          const signed = activeWOs.filter((wo) => wo.status === "signed").length;
+                          const sent = activeWOs.filter((wo) => wo.status === "sent").length;
+                          return (
+                            <div className="flex flex-wrap gap-1">
+                              {signed > 0 && <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-medium text-green-700">{signed} signed</span>}
+                              {sent > 0 && <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-600">{sent} pending</span>}
+                            </div>
+                          );
+                        })()}
                       </td>
 
                       {/* Delete */}
