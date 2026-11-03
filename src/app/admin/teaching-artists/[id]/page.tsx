@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { TAProfileEditor } from "@/components/admin/ta-profile-editor";
+import { TALevelEditor } from "@/components/admin/ta-level-editor";
 import { logAudit } from "@/lib/audit";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -420,9 +421,8 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
 
           {/* Pay Level */}
           <SideCard title="Pay Level">
-            <p className="text-5xl font-bold text-neutral-900 tabular-nums">{ta.pay_level}</p>
-            <p className="text-xs text-neutral-400 mt-0.5 mb-4">Current level</p>
-            <div className="space-y-2 text-sm divide-y divide-neutral-50">
+            <TALevelEditor taId={ta.id} currentLevel={ta.pay_level} />
+            <div className="mt-4 space-y-2 text-sm divide-y divide-neutral-50">
               <div className="flex justify-between items-center pb-2">
                 <span className="text-neutral-400 text-xs">Qualifying projects</span>
                 <span className="font-semibold text-neutral-900">{ta.qualifying_projects ?? <Empty />}</span>
