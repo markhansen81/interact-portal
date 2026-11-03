@@ -389,19 +389,19 @@ export function TASearchFilter({
                                       Nudge all
                                     </button>
                                   </div>
-                                  <div className="flex flex-wrap gap-2">
+                                  <div className="divide-y divide-neutral-100 rounded-sm border border-neutral-200 bg-white">
                                     {detailedMissing.map((item) => {
                                       const key = `${ta.id}:${item.id}`;
                                       const isSent = sentNudges.has(key);
                                       const isLoading = sendingNudge === key;
                                       return (
-                                        <div key={item.id} className="flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white py-1 pl-3 pr-1">
-                                          <span className={`h-1.5 w-1.5 rounded-full ${item.category === "document" ? "bg-blue-500" : item.category === "training" ? "bg-purple-500" : item.category === "availability" ? "bg-amber-500" : "bg-neutral-400"}`} />
-                                          <span className="text-[11px] font-medium text-neutral-600">{item.label}</span>
+                                        <div key={item.id} className="flex items-center gap-3 px-3 py-2">
+                                          <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${item.category === "document" ? "bg-blue-500" : item.category === "training" ? "bg-purple-500" : item.category === "availability" ? "bg-amber-500" : "bg-neutral-300"}`} />
+                                          <span className="flex-1 text-xs text-neutral-700">{item.label}</span>
                                           {isSent ? (
-                                            <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700">Sent</span>
+                                            <span className="text-[10px] font-medium text-green-600">Sent ✓</span>
                                           ) : (
-                                            <button onClick={() => sendNudge(ta.id, item, taName)} disabled={isLoading} className="rounded-full bg-neutral-900 px-2 py-0.5 text-[10px] font-medium text-white hover:bg-neutral-700 disabled:opacity-50">
+                                            <button onClick={() => sendNudge(ta.id, item, taName)} disabled={isLoading} className="text-[10px] font-medium text-[#E91E8C] hover:underline disabled:opacity-50">
                                               {isLoading ? "…" : "Nudge"}
                                             </button>
                                           )}
