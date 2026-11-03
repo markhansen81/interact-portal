@@ -76,12 +76,12 @@ function Section({ title, children, headerRight }: { title: string; children: Re
   );
 }
 
-/** Single inline field row — label left, value right */
+/** Single inline field row — label col, value col */
 function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex justify-between items-baseline py-2.5 px-6 border-b border-neutral-50 last:border-b-0">
-      <span className="text-xs text-neutral-400 w-36 shrink-0">{label}</span>
-      <span className="text-sm text-neutral-900 text-right">{children}</span>
+    <div className="grid grid-cols-[180px_1fr] items-baseline py-2 px-6 border-b border-neutral-50 last:border-b-0">
+      <span className="text-xs text-neutral-400 shrink-0">{label}</span>
+      <span className="text-sm text-neutral-900">{children}</span>
     </div>
   );
 }
