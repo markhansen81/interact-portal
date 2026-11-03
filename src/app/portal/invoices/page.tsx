@@ -17,7 +17,7 @@ export default async function TAInvoicesPage() {
     .from("work_orders")
     .select("id, project_name, school, days, total, program_type, start_date, end_date")
     .eq("ta_id", profile.id)
-    .in("status", ["signed", "standby"])
+    .eq("status", "signed")
     .order("start_date", { ascending: false });
 
   if (woError) console.error("[invoices] WO query error:", woError);
