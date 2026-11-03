@@ -140,14 +140,21 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
     .gte("days", 3)
     .order("invoice_date", { ascending: true });
 
-  // Fetch generated profile docs (school + homestay) from projects this TA is linked to
-  const projectIds = (workOrders || []).map((wo) => wo.project_id).filter(Boolean) as string[];
-  const { data: profileDocs } = projectIds.length > 0
+  // Fetch all projects this TA is linked to (via work_orders.project_id OR project_tas)
+  const woProjectIds = (workOrders || []).map((wo) => wo.project_id).filter(Boolean) as string[];
+  const { data: projectTasRows } = await supabase
+    .from("project_tas")
+    .select("project_id")
+    .eq("ta_id", id);
+  const taProjectIds = (projectTasRows || []).map((r) => r.project_id).filter(Boolean) as string[];
+  const allProjectIds = [...new Set([...woProjectIds, ...taProjectIds])];
+
+  const { data: profileDocs } = allProjectIds.length > 0
     ? await supabase
         .from("project_documents")
         .select("id, name, content, doc_type, created_at, project_id")
-        .in("project_id", projectIds)
-        .or(`name.ilike.TA Profile — ${ta.first_name}%,name.ilike.Homestay Profile — ${ta.first_name}%`)
+        .in("project_id", allProjectIds)
+        .or(`name.ilike.TA Profile \u2014 ${ta.first_name}%,name.ilike.Homestay Profile \u2014 ${ta.first_name}%`)
         .order("created_at", { ascending: false })
     : { data: [] };
 
