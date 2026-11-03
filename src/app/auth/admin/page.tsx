@@ -2,24 +2,18 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
 function AdminLoginForm() {
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [emailLoading, setEmailLoading] = useState(false);
-  const [emailError, setEmailError] = useState<string | null>(null);
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   const urlError = searchParams.get("error");
   const displayError =
     urlError === "domain" ? "Only @interactenglish.de accounts can access the admin portal." :
-    urlError === "not_admin" ? "This account does not have admin access." :
+    urlError === "not_admin" ? "This Google account does not have admin access." :
     null;
 
   async function handleGoogleSSO() {
@@ -29,33 +23,11 @@ function AdminLoginForm() {
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback?next=/admin&source=admin`,
-        queryParams: { hd: "interactenglish.de" },
+        queryParams: {
+          hd: "interactenglish.de",
+        },
       },
     });
-  }
-
-  async function handleEmailLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setEmailLoading(true);
-    setEmailError(null);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setEmailError(error.message);
-      setEmailLoading(false);
-      return;
-    }
-    // Check role
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setEmailError("Login failed"); setEmailLoading(false); return; }
-    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-    if (profile?.role !== "admin") {
-      await supabase.auth.signOut();
-      setEmailError("This account does not have admin access.");
-      setEmailLoading(false);
-      return;
-    }
-    router.push("/admin");
   }
 
   return (
@@ -84,7 +56,7 @@ function AdminLoginForm() {
         </div>
       </div>
 
-      {/* Right side — login */}
+      {/* Right side — SSO */}
       <div className="flex w-full lg:w-1/2 items-center justify-center p-8">
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
@@ -98,8 +70,10 @@ function AdminLoginForm() {
             <p className="mt-2 text-sm text-[#999]">InterACT English Management</p>
           </div>
 
-          {/* Google SSO */}
-          <p className="text-[#999] text-sm mb-4">Sign in with your InterACT Google account</p>
+          <p className="text-[#999] text-sm mb-6">
+            Sign in with your InterACT Google account to continue.
+          </p>
+
           <button
             onClick={handleGoogleSSO}
             disabled={googleLoading}
@@ -114,42 +88,9 @@ function AdminLoginForm() {
             {googleLoading ? "Redirecting..." : "Sign in with Google"}
           </button>
 
-          {/* Divider */}
-          <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px bg-[#444]" />
-            <span className="text-xs text-[#666]">or</span>
-            <div className="flex-1 h-px bg-[#444]" />
-          </div>
-
-          {/* Email/password */}
-          <form onSubmit={handleEmailLogin} className="space-y-3">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="Email"
-              className="w-full rounded-sm border border-[#444] bg-[#333] px-4 py-3 text-sm text-white placeholder-[#666] focus:outline-none focus:border-[#666]"
-            />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="Password"
-              className="w-full rounded-sm border border-[#444] bg-[#333] px-4 py-3 text-sm text-white placeholder-[#666] focus:outline-none focus:border-[#666]"
-            />
-            {(emailError || displayError) && (
-              <p className="text-sm text-red-400">{emailError || displayError}</p>
-            )}
-            <button
-              type="submit"
-              disabled={emailLoading}
-              className="w-full rounded-sm bg-[#E91E8C] px-6 py-3 text-sm font-semibold text-white hover:bg-[#c4186f] disabled:opacity-50"
-            >
-              {emailLoading ? "Signing in…" : "Sign in"}
-            </button>
-          </form>
+          {displayError && (
+            <p className="mt-4 text-sm text-red-400">{displayError}</p>
+          )}
 
           <p className="mt-12 text-xs text-[#666]">
             Teaching Artist? <Link href="/auth/login" className="text-[#E91E8C] hover:underline">Sign in here</Link>
