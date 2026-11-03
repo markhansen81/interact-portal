@@ -322,9 +322,9 @@ export function TASearchFilter({
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <div className="h-1.5 w-16 rounded-full bg-neutral-100">
-                            <div className={`h-1.5 rounded-full transition-all ${progress === 100 ? "bg-neutral-900" : progress > 0 ? "bg-neutral-400" : "bg-neutral-200"}`} style={{ width: `${progress}%` }} />
+                            <div className={`h-1.5 rounded-full transition-all ${progress === 100 ? "bg-green-500" : progress >= 60 ? "bg-orange-400" : "bg-red-400"}`} style={{ width: `${progress}%` }} />
                           </div>
-                          <span className="text-[10px] text-neutral-400">{progress}%</span>
+                          <span className={`text-[10px] font-medium ${progress === 100 ? "text-green-600" : progress >= 60 ? "text-orange-500" : "text-red-500"}`}>{progress}%</span>
                         </div>
                       </td>
 
