@@ -89,17 +89,10 @@ function getMissing(ta: TAProfile, docs: TADoc[]) {
   // treat legacy right_to_work as satisfying both visa + passport
   const hasRightToWork = uploadedTypes.has("right_to_work");
   const missing: string[] = [];
-  if (!ta.first_name) missing.push("Name");
-  if (!ta.address) missing.push("Address");
-  if (!ta.phone) missing.push("Phone");
   if (!uploadedTypes.has("visa") && !hasRightToWork) missing.push("Visa");
   if (!uploadedTypes.has("passport") && !hasRightToWork) missing.push("Passport");
   if (!uploadedTypes.has("police_check")) missing.push("Police Check");
   if (!uploadedTypes.has("measles")) missing.push("Measles");
-  if (!ta.training_online) missing.push("Online Training");
-  if (!ta.training_offline) missing.push("Offline Training");
-  if (!ta.iban) missing.push("IBAN");
-  if (!ta.tax_number) missing.push("Tax #");
   return missing;
 }
 
@@ -279,7 +272,7 @@ export function TASearchFilter({
                 const taName = ta.first_name || "there";
 
                 // Doc expiry
-                const visaDoc = docs.find((d) => d.type === "right_to_work");
+                const visaDoc = docs.find((d) => d.type === "visa" || d.type === "right_to_work");
                 const policeDoc = docs.find((d) => d.type === "police_check");
                 const visaStatus = expiryStatus(visaDoc?.expiry_date ?? null);
                 const policeStatus = expiryStatus(policeDoc?.expiry_date ?? null);
@@ -340,9 +333,8 @@ export function TASearchFilter({
                           {missing.length === 0 ? (
                             <Badge variant="success">Complete</Badge>
                           ) : (
-                            missing.slice(0, 3).map((m) => <Badge key={m} variant="error">{m}</Badge>)
+                            missing.map((m) => <Badge key={m} variant="error">{m}</Badge>)
                           )}
-                          {missing.length > 3 && <Badge>+{missing.length - 3}</Badge>}
                         </div>
                       </td>
 
