@@ -85,7 +85,7 @@ export function ChatThread({
 
  // Group messages by date
  let lastDate ="";
- const initials = otherName.split("").map((n) => n[0]).join("").toUpperCase();
+ const initials = otherName.split(" ").map((n) => n[0]).filter(Boolean).join("").toUpperCase().slice(0, 2);
 
  return (
  <div className="flex flex-col overflow-hidden rounded-sm border border-neutral-200/80 bg-white"style={{ height:"calc(100vh - 220px)"}}>
