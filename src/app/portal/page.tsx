@@ -355,7 +355,6 @@ export default async function PortalDashboard() {
               const main = Math.ceil(n / 3);
               const sub = ((n - 1) % 3) + 1;
               const lvl = `${main}.${sub}`;
-              const pdBonus = Math.floor((profile.pd_workshop_credits ?? 0) / 4);
               const isLatest = i === (qualifyingWOs || []).length - 1;
               return (
                 <div key={wo.id} className={`flex items-center gap-4 px-4 py-3 ${isLatest ? "bg-neutral-50" : ""}`}>
@@ -371,12 +370,6 @@ export default async function PortalDashboard() {
                 </div>
               );
             })}
-            {(profile.pd_workshop_credits ?? 0) >= 4 && (
-              <div className="flex items-center gap-4 px-4 py-3 bg-blue-50">
-                <span className="w-10 shrink-0 text-sm font-bold text-blue-600">+{Math.floor((profile.pd_workshop_credits ?? 0) / 4)}</span>
-                <p className="text-sm text-blue-700">PD workshop bonus credits</p>
-              </div>
-            )}
           </div>
         </div>
       )}

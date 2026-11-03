@@ -4,17 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 /**
- * Level formula:
- * effective = qualifying_projects + floor(pd_credits / 4)
- * main_level = ceil(effective / 3)
- * sub_level  = ((effective - 1) % 3) + 1  → .1 / .2 / .3
+ * Level formula (qualifying projects only):
+ * main_level = ceil(qualifying / 3)
+ * sub_level  = ((qualifying - 1) % 3) + 1  → .1 / .2 / .3
  * e.g. 9 projects → main=3, sub=3 → 3.3
  */
-function calcSuggestedLevel(qualifying: number, pdCredits: number): number | null {
-  const effective = qualifying + Math.floor(pdCredits / 4);
-  if (effective <= 0) return null;
-  const main = Math.ceil(effective / 3);
-  const sub = ((effective - 1) % 3) + 1;
+function calcSuggestedLevel(qualifying: number): number | null {
+  if (qualifying <= 0) return null;
+  const main = Math.ceil(qualifying / 3);
+  const sub = ((qualifying - 1) % 3) + 1;
   return parseFloat(`${main}.${sub}`);
 }
 
@@ -22,12 +20,10 @@ export function TALevelEditor({
   taId,
   currentLevel,
   qualifyingProjects,
-  pdCredits,
 }: {
   taId: string;
   currentLevel: number;
   qualifyingProjects: number;
-  pdCredits: number;
 }) {
   const [level, setLevel] = useState(currentLevel || 0);
   const [input, setInput] = useState(currentLevel ? String(currentLevel) : "");
@@ -35,9 +31,7 @@ export function TALevelEditor({
   const [saved, setSaved] = useState(false);
   const router = useRouter();
 
-  const suggested = calcSuggestedLevel(qualifyingProjects, pdCredits);
-  const pdBonus = Math.floor(pdCredits / 4);
-  const effective = qualifyingProjects + pdBonus;
+  const suggested = calcSuggestedLevel(qualifyingProjects);
 
   async function save(newLevel: number) {
     if (!newLevel || isNaN(newLevel)) return;
@@ -75,8 +69,7 @@ export function TALevelEditor({
             Calculated: <span className="text-blue-800 font-bold">{suggested.toFixed(1)}</span>
           </p>
           <p className="text-[11px] text-blue-400 mt-0.5">
-            {effective} qualifying ({qualifyingProjects} projects
-            {pdBonus > 0 ? ` + ${pdBonus} PD bonus` : ""})
+            {qualifyingProjects} qualifying projects
           </p>
           {suggested !== level && (
             <button
