@@ -30,7 +30,8 @@ interface ExtractedData {
 }
 
 const REQUIRED_DOCS = [
- { type:"right_to_work", label:"Work Permit / Passport / Visa", description:"Upload your right to work document"},
+ { type:"visa", label:"Visa / Work Permit", description:"Your current visa or right to work permit"},
+ { type:"passport", label:"Passport", description:"A valid passport for identity verification"},
  { type:"police_check", label:"Extended Police Check (Fuhrungszeugnis)", description:"Required for working with minors. Valid for 2 years."},
  { type:"measles", label:"Measles Vaccination Proof", description:"Proof of measles vaccination or immunity"},
  { type:"first_aid", label:"First Aid Certificate", description:"A valid first aid certificate"},
@@ -53,9 +54,16 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export function DocumentManager({ profileId, documents }: { profileId: string; documents: Document[] }) {
- const [docs, setDocs] = useState<Map<string, Document>>(
- new Map(documents.map((d) => [d.type, d]))
- );
+ const [docs, setDocs] = useState<Map<string, Document>>(() => {
+   const m = new Map(documents.map((d) => [d.type, d]));
+   // Backward compat: if TA uploaded right_to_work before the split, show it under both visa and passport slots
+   const rtw = m.get("right_to_work");
+   if (rtw) {
+     if (!m.has("visa")) m.set("visa", { ...rtw, type: "visa" });
+     if (!m.has("passport")) m.set("passport", { ...rtw, type: "passport" });
+   }
+   return m;
+ });
  const [preview, setPreview] = useState<string | null>(null);
  const router = useRouter();
 
