@@ -485,6 +485,16 @@ export async function generateOfferPDF(data: {
   allProgramContents?: ProgramContent[];
   /** Per-program pricing for multi-program offers */
   programRates?: { programType: string; tariff1: number; tariff2: number | null }[];
+  /** Per-program line items with individual student counts (preferred over programRates) */
+  programLines?: {
+    programType: string;
+    numStudents: number;
+    numGroups?: number;
+    numDays?: number;
+    gradeLevel?: string;
+    pricePP: number;
+    total: number;
+  }[];
   /** Editable brochure content from DB (overrides hardcoded defaults) */
   brochureData?: BrochureData;
 }): Promise<Buffer> {
@@ -669,12 +679,50 @@ export async function generateOfferPDF(data: {
   const cbX = colProgram;
   const labelX = colProgram + 5;
 
-  // Build list of programs with rates
+  let grandTotal = 0;
+
+  // Use programLines (per-program student counts) if available, else fall back to programRates
+  if (data.programLines && data.programLines.length > 0) {
+    // New: per-program line items with individual student counts
+    for (let idx = 0; idx < data.programLines.length; idx++) {
+      const pl = data.programLines[idx];
+      const lineTotal = pl.pricePP * pl.numStudents;
+      grandTotal += lineTotal;
+
+      y += 10;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      setColor(doc, BLACK);
+
+      // Program name + grade
+      const gradeStr = pl.gradeLevel ? ` (Klasse ${pl.gradeLevel})` : "";
+      doc.text(`${pl.programType}${gradeStr}`, labelX, y);
+      doc.text(`${formatMoney(pl.pricePP)} EUR`, colPrice, y);
+      doc.text(String(pl.numStudents), colQty, y);
+      doc.text(`${formatMoney(lineTotal)} EUR`, colTotal, y, { align: "right" });
+
+      if (pl.numDays) {
+        y += 4;
+        doc.setFontSize(7);
+        setColor(doc, GREY);
+        const tariffLabel = data.tariff === 1
+          ? "Tarif 1 — Schule stellt Homestay"
+          : "Tarif 2 — InterACT übernimmt Übernachtung";
+        doc.text(`${pl.numDays} ${pl.numDays === 1 ? "Tag" : "Tage"} · ${tariffLabel}`, labelX, y);
+      }
+
+      if (idx < data.programLines.length - 1) {
+        y += 6;
+        doc.setDrawColor(LIGHT_GREY[0], LIGHT_GREY[1], LIGHT_GREY[2]);
+        doc.setLineWidth(0.2);
+        doc.line(tableLeft, y, tableLeft + contentWidth, y);
+      }
+    }
+  } else {
+  // Legacy: programRates with shared numStudents + tariff checkboxes
   const lineItems = (data.programRates && data.programRates.length > 0)
     ? data.programRates
     : [{ programType: data.programType, tariff1: data.pricePPTariff1, tariff2: data.pricePPTariff2 }];
-
-  let grandTotal = 0;
 
   for (let idx = 0; idx < lineItems.length; idx++) {
     const item = lineItems[idx];
@@ -759,6 +807,7 @@ export async function generateOfferPDF(data: {
       doc.line(tableLeft, y, tableLeft + contentWidth, y);
     }
   }
+  } // end legacy else block
 
   // Bottom table line
   y += 6;
@@ -767,13 +816,7 @@ export async function generateOfferPDF(data: {
   doc.line(tableLeft, y, tableLeft + contentWidth, y);
 
   // --- Totals ---
-  // Recalculate grand total for correct tariff
-  if (data.tariff === 2) {
-    grandTotal = 0;
-    for (const item of lineItems) {
-      grandTotal += (item.tariff2 ?? item.tariff1) * data.numStudents;
-    }
-  }
+  // (grandTotal already computed above in whichever branch ran)
 
   y += 8;
   doc.setFontSize(9);

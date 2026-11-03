@@ -14,11 +14,19 @@ export async function PATCH(
   const body = await req.json();
   const supabase = await createClient();
 
-  // Recalculate total if price_pp or num_students changed
-  const total =
-    body.price_pp != null && body.num_students != null
-      ? Number(body.price_pp) * Number(body.num_students)
-      : body.total;
+  // Recalculate total: prefer sum of program_lines, fall back to flat fields
+  let total: number | null = null;
+  if (Array.isArray(body.program_lines) && body.program_lines.length > 0) {
+    total = body.program_lines.reduce((sum: number, l: Record<string, unknown>) => {
+      const pp = Number(l.price_pp) || 0;
+      const stu = Number(l.num_students) || 0;
+      return sum + pp * stu;
+    }, 0) || null;
+  } else if (body.price_pp != null && body.num_students != null) {
+    total = Number(body.price_pp) * Number(body.num_students);
+  } else {
+    total = body.total ?? null;
+  }
 
   const updates: Record<string, unknown> = {
     ...body,
