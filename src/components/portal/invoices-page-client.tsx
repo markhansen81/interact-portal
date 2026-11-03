@@ -50,6 +50,14 @@ const statusVariant: Record<string, "default" | "success" | "warning" | "error" 
   rejected: "error",
 };
 
+const statusLabel: Record<string, string> = {
+  draft: "Draft",
+  submitted: "Being Reviewed",
+  approved: "Accepted",
+  paid: "Paid",
+  rejected: "Rejected",
+};
+
 function fmt(n: number | null | undefined) {
   if (n == null) return null;
   return `€${Number(n).toFixed(2)}`;
@@ -214,7 +222,7 @@ export function InvoicesPageClient({
                       </p>
                     </div>
                     <span className="text-sm font-semibold text-neutral-800">{fmt(inv.total)}</span>
-                    <Badge variant={statusVariant[inv.status] || "default"}>{inv.status}</Badge>
+                    <Badge variant={statusVariant[inv.status] || "default"}>{statusLabel[inv.status] || inv.status}</Badge>
                   </div>
                 );
               })}
@@ -232,7 +240,7 @@ export function InvoicesPageClient({
                       </p>
                     </div>
                     <span className="text-sm font-semibold text-neutral-800">{fmt(inv.total)}</span>
-                    <Badge variant={statusVariant[inv.status] || "default"}>{inv.status}</Badge>
+                    <Badge variant={statusVariant[inv.status] || "default"}>{statusLabel[inv.status] || inv.status}</Badge>
                   </div>
                 ))}
             </div>
