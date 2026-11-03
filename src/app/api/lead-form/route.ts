@@ -57,6 +57,13 @@ export async function POST(request: Request) {
       num_groups: data.num_groups || null,
       school_year: data.school_year || null,
       preferred_dates: data.preferred_dates || null,
+      end_date: (data.has_dates === true && data.num_days && data.num_days !== data.preferred_dates) ? data.num_days : null,
+      num_days: (data.has_dates === true && data.preferred_dates) ? (() => {
+        const s = new Date(data.preferred_dates);
+        const e = new Date(data.num_days || data.preferred_dates);
+        const diff = Math.ceil((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        return diff > 0 ? diff : null;
+      })() : null,
       has_dates: data.has_dates ?? null,
       lead_source: data.lead_source || null,
       message: data.message || null,

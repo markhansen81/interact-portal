@@ -23,8 +23,8 @@ export async function GET() {
       .from("leads")
       .select(
         "id, school_name, first_name, last_name, email, phone, " +
-        "programs, grades, num_students, num_groups, city, state, street, postcode, " +
-        "preferred_dates, school_year, created_at"
+        "programs, grades, num_students, num_groups, num_days, city, state, street, postcode, " +
+        "preferred_dates, end_date, school_year, created_at"
       )
       .not("school_name", "is", null)
       .order("created_at", { ascending: false }),
@@ -42,7 +42,14 @@ export async function GET() {
     programs: l.programs,
     num_students: l.num_students ? parseInt(l.num_students, 10) || null : null,
     num_groups: l.num_groups ? parseInt(l.num_groups as string, 10) || null : null,
-    num_days: null,
+    num_days: (() => {
+      if (l.num_days) return l.num_days;
+      if (l.preferred_dates && l.end_date) {
+        const diff = Math.ceil((new Date(l.end_date).getTime() - new Date(l.preferred_dates).getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        return diff > 0 ? diff : null;
+      }
+      return null;
+    })(),
     num_tas: null,
     price_pp: null,
     grade_level: Array.isArray(l.grades) && l.grades.length > 0
@@ -54,8 +61,8 @@ export async function GET() {
     postcode: l.postcode,
     contact_email: l.email,
     teacher_contact: [l.first_name, l.last_name].filter(Boolean).join(" ") || null,
-    start_date: null,
-    end_date: null,
+    start_date: l.preferred_dates || null,
+    end_date: l.end_date || null,
     // extra fields for offer pre-fill
     lead_id: l.id,
   }));
