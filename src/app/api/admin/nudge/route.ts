@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { ta_id, item, message } = await request.json();
+  const { ta_id, item, message, portalPath } = await request.json();
 
   const adminClient = createAdminClient();
   const { data: ta } = await adminClient
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   }
 
   const taName = `${ta.first_name || ""} ${ta.last_name || ""}`.trim() || ta.email;
-  const emailTemplate = nudgeEmail(taName, item, message);
+  const emailTemplate = nudgeEmail(taName, item, message, portalPath);
 
   await notify({
     userId: ta.id,
