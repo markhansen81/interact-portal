@@ -695,6 +695,18 @@
 <div class="hint">← → or click to navigate · F for fullscreen</div>
 
 <script>
+  // Password gate
+  (function() {
+    const stored = sessionStorage.getItem('pres_auth');
+    if (stored !== 'IACT2026') {
+      document.body.style.display = 'none';
+      const pw = prompt('Password:');
+      if (pw !== 'IACT2026') { document.body.innerHTML = '<div style="display:flex;height:100vh;align-items:center;justify-content:center;background:#18181b;color:#71717a;font-family:sans-serif;font-size:14px">Incorrect password.</div>'; return; }
+      sessionStorage.setItem('pres_auth', 'IACT2026');
+      document.body.style.display = '';
+    }
+  })();
+
   const slides = document.querySelectorAll('.slide');
   const dotsEl = document.getElementById('dots');
   const curEl = document.getElementById('cur');
