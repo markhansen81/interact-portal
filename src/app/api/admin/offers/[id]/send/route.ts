@@ -6,6 +6,7 @@ import { generateOfferPDF } from "@/lib/offer-pdf";
 import { getProgramContent } from "@/lib/offer-program-content";
 import { getBrochureData } from "@/lib/offer-brochure-data";
 import { sendEmail, offerEmail } from "@/lib/email";
+import { mondayQuery } from "@/lib/monday";
 
 export async function POST(
   req: NextRequest,
@@ -136,5 +137,68 @@ export async function POST(
     })
     .eq("id", id);
 
+  // Post update to Monday CRM item (fire and forget — non-blocking)
+  postMondayUpdate({ offer, pdfUrl, programs, adminClient }).catch((e) =>
+    console.error("[OFFER SEND] Monday update failed:", e)
+  );
+
   return NextResponse.json({ ok: emailResult.ok, pdf_url: pdfUrl });
+}
+
+async function postMondayUpdate({
+  offer,
+  pdfUrl,
+  programs,
+  adminClient,
+}: {
+  offer: Record<string, any>;
+  pdfUrl: string | null;
+  programs: string[];
+  adminClient: ReturnType<typeof import("@/lib/supabase/admin").createAdminClient>;
+}) {
+  // Find the Monday item ID — prefer lead, fall back to church_item opp/project
+  let mondayItemId: string | null = null;
+
+  if (offer.lead_id) {
+    const { data: lead } = await adminClient
+      .from("leads")
+      .select("monday_item_id")
+      .eq("id", offer.lead_id)
+      .single();
+    mondayItemId = lead?.monday_item_id || null;
+  }
+
+  if (!mondayItemId && offer.church_item_id) {
+    const { data: item } = await adminClient
+      .from("church_items")
+      .select("monday_opp_id, monday_project_id")
+      .eq("id", offer.church_item_id)
+      .single();
+    mondayItemId = item?.monday_project_id || item?.monday_opp_id || null;
+  }
+
+  if (!mondayItemId) return;
+
+  const lines: string[] = [
+    `📄 **Angebot gesendet: ${offer.offer_number}**`,
+    ``,
+    `Schule: ${offer.school_name || "—"}`,
+    `An: ${offer.contact_name || "—"} <${offer.contact_email || "—"}>`,
+    `Programm: ${programs.join(", ") || "—"}`,
+    `Schüler: ${offer.num_students || "—"} | Gruppen: ${offer.num_groups || "—"} | Tage: ${offer.num_days || "—"}`,
+    offer.total ? `Gesamtbetrag: €${Number(offer.total).toLocaleString("de-DE", { minimumFractionDigits: 2 })}` : "",
+    ``,
+    pdfUrl ? `📎 PDF: ${pdfUrl}` : "",
+    ``,
+    `Gesendet über das InterACT Portal`,
+  ].filter((l) => l !== undefined);
+
+  const body = lines.join("\n").trim();
+
+  await mondayQuery(
+    `mutation ($itemId: ID!, $body: String!) {
+      create_update(item_id: $itemId, body: $body) { id }
+    }`,
+    { itemId: mondayItemId, body }
+  );
 }
