@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/ui";
-import Link from "next/link";
+import { LevelsTable } from "@/components/admin/levels-table";
 
 type InvoiceRow = {
   ta_name_raw: string;
@@ -14,18 +14,9 @@ type InvoiceRow = {
   pdf_filename: string | null;
 };
 
-function calcLevel(n: number): string {
-  if (n === 1) return "1";
-  if (n <= 5)  return `2.${n - 1}`;
-  if (n <= 10) return `3.${n - 5}`;
-  if (n <= 20) return `4.${n - 10}`;
-  return "5";
-}
-
-export default async function UnmatchedInvoicesPage() {
+export default async function LevelsPage() {
   const supabase = await createClient();
 
-  // Deduplicate by (ta_name_raw, pdf_filename) — same PDF sent in multiple emails
   const { data: raw } = await supabase
     .from("ta_invoice_history")
     .select("ta_name_raw, invoice_date, project_name, school, days, level_invoiced, total_amount, pdf_url, pdf_filename")
@@ -34,7 +25,7 @@ export default async function UnmatchedInvoicesPage() {
     .order("ta_name_raw")
     .order("invoice_date");
 
-  // Deduplicate: keep one row per (ta_name_raw, pdf_filename)
+  // Deduplicate by (ta_name_raw, pdf_filename)
   const seen = new Set<string>();
   const deduped = (raw || []).filter((row) => {
     const key = `${row.ta_name_raw}||${row.pdf_filename}`;
@@ -56,197 +47,10 @@ export default async function UnmatchedInvoicesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Invoice History — Not in Portal"
-        description={`${taNames.length} TAs · ${deduped.length} invoices scanned from email`}
-        action={
-          <Link
-            href="/admin/teaching-artists"
-            className="text-sm text-neutral-500 hover:text-neutral-700"
-          >
-            ← Teaching Artists
-          </Link>
-        }
+        title="Levels"
+        description={`${taNames.length} TAs · ${deduped.length} invoices scanned`}
       />
-
-      {taNames.length === 0 ? (
-        <div className="border border-dashed border-neutral-300 bg-white p-12 text-center rounded-sm">
-          <p className="text-neutral-500">No unmatched invoice records yet.</p>
-          <p className="mt-1 text-sm text-neutral-400">Run the invoice scanner to populate this.</p>
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {taNames.map((name) => {
-            const all = byTA[name];
-
-            // Qualifying = 3+ days and has a level on the invoice (i.e. project work)
-            const qualifying = all
-              .filter((r) => (r.days ?? 0) >= 3 && r.level_invoiced)
-              .sort((a, b) => (a.invoice_date ?? "").localeCompare(b.invoice_date ?? ""));
-
-            // Non-qualifying rows (travel, pickup, short stints)
-            const nonQualifying = all.filter(
-              (r) => (r.days ?? 0) < 3 || !r.level_invoiced
-            ).sort((a, b) => (a.invoice_date ?? "").localeCompare(b.invoice_date ?? ""));
-
-            return (
-              <div key={name} className="bg-white border border-neutral-200 rounded-sm overflow-hidden">
-                {/* TA name bar */}
-                <div className="px-5 py-3 bg-neutral-50 border-b border-neutral-200 flex items-center justify-between">
-                  <span className="font-semibold text-neutral-900">{name}</span>
-                  <span className="text-xs text-neutral-400">
-                    {qualifying.length} qualifying project{qualifying.length !== 1 ? "s" : ""}
-                    {" · "}current level should be{" "}
-                    <span className="font-medium text-neutral-700">
-                      {qualifying.length > 0 ? calcLevel(qualifying.length) : "—"}
-                    </span>
-                  </span>
-                </div>
-
-                {/* Qualifying projects table */}
-                {qualifying.length > 0 && (
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="text-xs text-neutral-400 uppercase tracking-wide bg-neutral-50 border-b border-neutral-100">
-                        <th className="text-left px-5 py-2 font-medium w-20">Calc. Level</th>
-                        <th className="text-left px-5 py-2 font-medium">Project</th>
-                        <th className="text-right px-5 py-2 font-medium w-16">Days</th>
-                        <th className="text-right px-5 py-2 font-medium w-28">Amount</th>
-                        <th className="text-right px-5 py-2 font-medium w-24">Invoiced Level</th>
-                        <th className="text-right px-5 py-2 font-medium w-16">PDF</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {qualifying.map((inv, idx) => {
-                        const calcLvl = calcLevel(idx + 1);
-                        const invoicedLvl = inv.level_invoiced ? parseFloat(inv.level_invoiced) : null;
-                        const mismatch = invoicedLvl != null && invoicedLvl !== parseFloat(calcLvl);
-
-                        return (
-                          <tr key={idx} className="border-b border-neutral-50 last:border-0">
-                            <td className="px-5 py-2.5 font-mono font-semibold text-neutral-700">
-                              {calcLvl}
-                            </td>
-                            <td className="px-5 py-2.5">
-                              <p className="text-neutral-800">{inv.project_name ?? "—"}</p>
-                              {inv.school && (
-                                <p className="text-xs text-neutral-400">{inv.school}</p>
-                              )}
-                              {inv.invoice_date && (
-                                <p className="text-xs text-neutral-400">{inv.invoice_date}</p>
-                              )}
-                            </td>
-                            <td className="px-5 py-2.5 text-right tabular-nums font-medium text-neutral-800">
-                              {inv.days ?? "—"}
-                            </td>
-                            <td className="px-5 py-2.5 text-right tabular-nums text-neutral-600">
-                              {inv.total_amount != null
-                                ? `€${Number(inv.total_amount).toLocaleString("de-DE", { minimumFractionDigits: 2 })}`
-                                : "—"}
-                            </td>
-                            <td className="px-5 py-2.5 text-right">
-                              {invoicedLvl != null ? (
-                                <span
-                                  className={`inline-block font-mono font-semibold px-2 py-0.5 rounded text-sm ${
-                                    mismatch
-                                      ? "bg-red-50 text-red-700"
-                                      : "bg-green-50 text-green-700"
-                                  }`}
-                                >
-                                  {inv.level_invoiced}
-                                  {mismatch && (
-                                    <span className="ml-1 text-xs">
-                                      {invoicedLvl > parseFloat(calcLvl) ? "↑" : "↓"}
-                                    </span>
-                                  )}
-                                </span>
-                              ) : (
-                                <span className="text-neutral-300">—</span>
-                              )}
-                            </td>
-                            <td className="px-5 py-2.5 text-right">
-                              {inv.pdf_url ? (
-                                <a
-                                  href={inv.pdf_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:text-blue-800 text-xs underline"
-                                >
-                                  PDF
-                                </a>
-                              ) : (
-                                <span className="text-neutral-300">—</span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                )}
-
-                {/* Non-qualifying rows — full table for crosscheck */}
-                {nonQualifying.length > 0 && (
-                  <div className="border-t border-amber-100 bg-amber-50/40">
-                    <div className="px-5 py-2 border-b border-amber-100">
-                      <span className="text-xs font-medium text-amber-700 uppercase tracking-wide">
-                        Not counted toward level — {nonQualifying.length} row{nonQualifying.length !== 1 ? "s" : ""} (&lt;3 days or no level on invoice)
-                      </span>
-                    </div>
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="text-xs text-amber-600/70 uppercase tracking-wide border-b border-amber-100">
-                          <th className="text-left px-5 py-1.5 font-medium">Date</th>
-                          <th className="text-left px-5 py-1.5 font-medium">Project / Description</th>
-                          <th className="text-right px-5 py-1.5 font-medium w-16">Days</th>
-                          <th className="text-right px-5 py-1.5 font-medium w-28">Amount</th>
-                          <th className="text-right px-5 py-1.5 font-medium w-24">Level on Invoice</th>
-                          <th className="text-right px-5 py-1.5 font-medium w-16">PDF</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {nonQualifying.map((inv, idx) => (
-                          <tr key={idx} className="border-b border-amber-50 last:border-0 text-neutral-500">
-                            <td className="px-5 py-2">{inv.invoice_date ?? "—"}</td>
-                            <td className="px-5 py-2">
-                              <p>{inv.project_name ?? <span className="text-neutral-300">—</span>}</p>
-                              {inv.school && <p className="text-xs text-neutral-400">{inv.school}</p>}
-                            </td>
-                            <td className="px-5 py-2 text-right tabular-nums">
-                              {inv.days != null ? (
-                                <span className="text-amber-600 font-medium">{inv.days}</span>
-                              ) : (
-                                <span className="text-neutral-300">—</span>
-                              )}
-                            </td>
-                            <td className="px-5 py-2 text-right tabular-nums">
-                              {inv.total_amount != null
-                                ? `€${Number(inv.total_amount).toLocaleString("de-DE", { minimumFractionDigits: 2 })}`
-                                : <span className="text-neutral-300">—</span>}
-                            </td>
-                            <td className="px-5 py-2 text-right">
-                              {inv.level_invoiced
-                                ? <span className="font-mono text-neutral-500">{inv.level_invoiced}</span>
-                                : <span className="text-neutral-300">—</span>}
-                            </td>
-                            <td className="px-5 py-2 text-right">
-                              {inv.pdf_url ? (
-                                <a href={inv.pdf_url} target="_blank" rel="noopener noreferrer"
-                                  className="text-blue-500 hover:text-blue-700 text-xs underline">
-                                  PDF
-                                </a>
-                              ) : <span className="text-neutral-300">—</span>}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <LevelsTable byTA={byTA} taNames={taNames} />
     </div>
   );
 }

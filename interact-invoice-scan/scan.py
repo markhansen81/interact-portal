@@ -33,6 +33,16 @@ def load_profiles():
     res = supabase.table("profiles").select("id, first_name, last_name, email").eq("role", "ta").execute()
     return res.data or []
 
+def _sanitize_level(level) -> str | None:
+    """Return level as string if it looks like a valid number, else None."""
+    if level is None:
+        return None
+    try:
+        float(str(level).replace(",", "."))
+        return str(level)
+    except (ValueError, TypeError):
+        return None
+
 def match_ta(name_raw: str, profiles: list) -> str | None:
     name_lower = name_raw.lower().strip()
     for p in profiles:
@@ -268,7 +278,7 @@ def main():
                 "project_name":   data.get("project_name"),
                 "school":         data.get("school"),
                 "days":           int(round(float(data["days"]))) if data.get("days") is not None else None,
-                "level_invoiced": data.get("level"),
+                "level_invoiced": _sanitize_level(data.get("level")),
                 "daily_rate":     data.get("daily_rate"),
                 "total_amount":   data.get("total_amount"),
                 "invoice_number": data.get("invoice_number"),

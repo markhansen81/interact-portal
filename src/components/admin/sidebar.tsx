@@ -23,6 +23,7 @@ const navSections: NavSection[] = [
       { href: "/admin/teaching-artists", label: "Teaching Artists" },
       { href: "/admin/training", label: "Training" },
       { href: "/admin/availability", label: "Availability" },
+      { href: "/admin/teaching-artists/unmatched", label: "Levels" },
     ],
   },
   {

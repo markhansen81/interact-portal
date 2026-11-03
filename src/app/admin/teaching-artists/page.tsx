@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { InviteTAButton } from "@/components/admin/invite-ta-button";
 import { TASearchFilter } from "@/components/admin/ta-search-filter";
 import { PageHeader } from "@/components/ui";
-import Link from "next/link";
 
 export default async function TeachingArtistsPage() {
   const supabase = await createClient();
@@ -57,17 +56,7 @@ export default async function TeachingArtistsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Teaching Artists"
-        action={
-          <div className="flex items-center gap-3">
-            <Link
-              href="/admin/teaching-artists/unmatched"
-              className="text-sm text-neutral-500 hover:text-neutral-700 underline"
-            >
-              Invoice History (Unmatched)
-            </Link>
-            <InviteTAButton />
-          </div>
-        }
+        action={<InviteTAButton />}
       />
 
       {!tas || tas.length === 0 ? (
