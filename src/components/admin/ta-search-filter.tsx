@@ -97,26 +97,30 @@ function getMissing(ta: TAProfile, docs: TADoc[]) {
   return missing;
 }
 
-function getDetailedMissing(ta: TAProfile, docs: TADoc[], prefsCount: number, availCount: number): MissingItem[] {
-  const missing: MissingItem[] = [];
+interface ChecklistItem extends MissingItem {
+  done: boolean;
+  detail?: string;
+}
+
+function getChecklist(ta: TAProfile, docs: TADoc[], prefsCount: number, availCount: number): ChecklistItem[] {
   const uploadedTypes = new Set(docs.filter((d) => d.status !== "not_uploaded").map((d) => d.type));
 
   const personalFields = ["first_name", "last_name", "phone", "date_of_birth", "nationality", "street", "city", "postal_code"] as const;
-  const personalMissing = personalFields.filter((f) => !(ta as any)[f]);
-  if (personalMissing.length > 0) missing.push({ id: "personal", label: `Personal Details (${personalFields.length - personalMissing.length}/${personalFields.length})`, category: "profile" });
-  if (!ta.iban || !ta.tax_number) missing.push({ id: "payroll", label: "Payroll & Banking", category: "profile" });
-  if (!ta.bio || !ta.superpower) missing.push({ id: "school", label: "School Profile", category: "profile" });
-  if (!ta.photo_url) missing.push({ id: "photo", label: "Profile Photo", category: "profile" });
-  if (prefsCount < 29) missing.push({ id: "programs", label: `Programs (${prefsCount}/29)`, category: "profile" });
+  const personalDone = personalFields.filter((f) => !!(ta as any)[f]).length;
 
-  for (const dt of REQUIRED_DOCS_DETAIL) {
-    if (!uploadedTypes.has(dt)) missing.push({ id: `doc_${dt}`, label: DOC_LABELS[dt], category: "document" });
-  }
-  if (!ta.training_online) missing.push({ id: "training_online", label: "Online Onboarding", category: "training" });
-  if (!ta.training_offline) missing.push({ id: "training_offline", label: "Offline Foundation", category: "training" });
-  if (availCount === 0) missing.push({ id: "availability", label: "Set Availability", category: "availability" });
-
-  return missing;
+  return [
+    { id: "personal", label: "Personal Details", detail: `${personalDone}/${personalFields.length}`, done: personalDone === personalFields.length, category: "profile" },
+    { id: "payroll",  label: "Payroll & Banking",  done: !!(ta.iban && ta.tax_number), category: "profile" },
+    { id: "school",   label: "School Profile",     done: !!(ta.bio && ta.superpower), category: "profile" },
+    { id: "photo",    label: "Profile Photo",      done: !!ta.photo_url, category: "profile" },
+    { id: "programs", label: "Programs",           detail: `${prefsCount}/29`, done: prefsCount >= 29, category: "profile" },
+    ...REQUIRED_DOCS_DETAIL.map((dt) => ({
+      id: `doc_${dt}`, label: DOC_LABELS[dt], done: uploadedTypes.has(dt), category: "document" as const,
+    })),
+    { id: "training_online",  label: "Online Onboarding",  done: !!ta.training_online,  category: "training" },
+    { id: "training_offline", label: "Offline Foundation", done: !!ta.training_offline, category: "training" },
+    { id: "availability",     label: "Set Availability",   done: availCount > 0,         category: "availability" },
+  ];
 }
 
 function useDebounce(callback: (value: string) => void, delay: number) {
@@ -271,9 +275,10 @@ export function TASearchFilter({
                 const visaStatus = expiryStatus(visaDoc?.expiry_date ?? null);
                 const policeStatus = expiryStatus(policeDoc?.expiry_date ?? null);
 
-                const detailedMissing = isExpanded
-                  ? getDetailedMissing(ta, docs, prefsByTA[ta.id] || 0, availByTA[ta.id] || 0)
+                const checklist = isExpanded
+                  ? getChecklist(ta, docs, prefsByTA[ta.id] || 0, availByTA[ta.id] || 0)
                   : [];
+                const detailedMissing = checklist.filter((i) => !i.done);
                 const taWorkOrders = workOrdersByTA[ta.id] || [];
 
                 return (
@@ -376,41 +381,42 @@ export function TASearchFilter({
                             {/* Onboarding tasks */}
                             <div>
                               <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-neutral-400">Onboarding Tasks</p>
-                              {detailedMissing.length === 0 ? (
-                                <div className="flex items-center gap-2 text-sm text-green-600">
-                                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                                  All complete
+                              {detailedMissing.length > 0 && (
+                                <div className="mb-2 flex items-center justify-between">
+                                  <span className="text-xs text-neutral-500">{detailedMissing.length} still needed</span>
+                                  <button onClick={() => nudgeAll(ta.id, detailedMissing, taName)} className="rounded-sm border border-neutral-200 bg-white px-2.5 py-1 text-[11px] font-medium text-neutral-600 hover:bg-neutral-50">
+                                    Nudge all
+                                  </button>
                                 </div>
-                              ) : (
-                                <>
-                                  <div className="mb-2 flex items-center justify-between">
-                                    <span className="text-xs text-neutral-500">{detailedMissing.length} still needed</span>
-                                    <button onClick={() => nudgeAll(ta.id, detailedMissing, taName)} className="rounded-sm border border-neutral-200 bg-white px-2.5 py-1 text-[11px] font-medium text-neutral-600 hover:bg-neutral-50">
-                                      Nudge all
-                                    </button>
-                                  </div>
-                                  <div className="divide-y divide-neutral-100 rounded-sm border border-neutral-200 bg-white">
-                                    {detailedMissing.map((item) => {
-                                      const key = `${ta.id}:${item.id}`;
-                                      const isSent = sentNudges.has(key);
-                                      const isLoading = sendingNudge === key;
-                                      return (
-                                        <div key={item.id} className="flex items-center gap-3 px-3 py-2">
-                                          <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${item.category === "document" ? "bg-blue-500" : item.category === "training" ? "bg-purple-500" : item.category === "availability" ? "bg-amber-500" : "bg-neutral-300"}`} />
-                                          <span className="flex-1 text-xs text-neutral-700">{item.label}</span>
-                                          {isSent ? (
-                                            <span className="text-[10px] font-medium text-green-600">Sent ✓</span>
-                                          ) : (
-                                            <button onClick={() => sendNudge(ta.id, item, taName)} disabled={isLoading} className="text-[10px] font-medium text-[#E91E8C] hover:underline disabled:opacity-50">
-                                              {isLoading ? "…" : "Nudge"}
-                                            </button>
-                                          )}
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                </>
                               )}
+                              <div className="divide-y divide-neutral-100 rounded-sm border border-neutral-200 bg-white">
+                                {checklist.map((item) => {
+                                  const key = `${ta.id}:${item.id}`;
+                                  const isSent = sentNudges.has(key);
+                                  const isLoading = sendingNudge === key;
+                                  return (
+                                    <div key={item.id} className={`flex items-center gap-3 px-3 py-2 ${item.done ? "opacity-50" : ""}`}>
+                                      {item.done ? (
+                                        <svg className="h-3.5 w-3.5 shrink-0 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                                      ) : (
+                                        <svg className="h-3.5 w-3.5 shrink-0 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                      )}
+                                      <span className={`flex-1 text-xs ${item.done ? "text-neutral-400 line-through" : "text-neutral-700"}`}>
+                                        {item.label}{item.detail ? ` (${item.detail})` : ""}
+                                      </span>
+                                      {!item.done && (
+                                        isSent ? (
+                                          <span className="text-[10px] font-medium text-green-600">Sent ✓</span>
+                                        ) : (
+                                          <button onClick={() => sendNudge(ta.id, item, taName)} disabled={isLoading} className="text-[10px] font-medium text-[#E91E8C] hover:underline disabled:opacity-50">
+                                            {isLoading ? "…" : "Nudge"}
+                                          </button>
+                                        )
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
                             </div>
 
                             {/* Projects */}
