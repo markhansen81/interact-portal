@@ -107,6 +107,17 @@ export async function POST(
     pdfUrl = urlData.publicUrl;
   }
 
+  // Look up salesperson (offer creator) to CC
+  let ccEmail: string | undefined;
+  if (offer.created_by) {
+    const { data: creator } = await adminClient
+      .from("profiles")
+      .select("email")
+      .eq("id", offer.created_by)
+      .single();
+    ccEmail = creator?.email || undefined;
+  }
+
   // Send email
   const emailContent = offerEmail({
     contactName: offer.contact_name || "",
@@ -119,6 +130,7 @@ export async function POST(
 
   const emailResult = await sendEmail({
     to: offer.contact_email,
+    cc: ccEmail,
     subject: emailContent.subject,
     html: emailContent.html,
     attachments: [
