@@ -3,13 +3,44 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function TALevelEditor({ taId, currentLevel }: { taId: string; currentLevel: number }) {
-  const [level, setLevel] = useState(currentLevel);
+/**
+ * Level formula:
+ * effective = qualifying_projects + floor(pd_credits / 4)
+ * main_level = ceil(effective / 3)
+ * sub_level  = ((effective - 1) % 3) + 1  → .1 / .2 / .3
+ * e.g. 9 projects → main=3, sub=3 → 3.3
+ */
+function calcSuggestedLevel(qualifying: number, pdCredits: number): number | null {
+  const effective = qualifying + Math.floor(pdCredits / 4);
+  if (effective <= 0) return null;
+  const main = Math.ceil(effective / 3);
+  const sub = ((effective - 1) % 3) + 1;
+  return parseFloat(`${main}.${sub}`);
+}
+
+export function TALevelEditor({
+  taId,
+  currentLevel,
+  qualifyingProjects,
+  pdCredits,
+}: {
+  taId: string;
+  currentLevel: number;
+  qualifyingProjects: number;
+  pdCredits: number;
+}) {
+  const [level, setLevel] = useState(currentLevel || 0);
+  const [input, setInput] = useState(currentLevel ? String(currentLevel) : "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const router = useRouter();
 
+  const suggested = calcSuggestedLevel(qualifyingProjects, pdCredits);
+  const pdBonus = Math.floor(pdCredits / 4);
+  const effective = qualifyingProjects + pdBonus;
+
   async function save(newLevel: number) {
+    if (!newLevel || isNaN(newLevel)) return;
     setSaving(true);
     setSaved(false);
     setLevel(newLevel);
@@ -24,30 +55,63 @@ export function TALevelEditor({ taId, currentLevel }: { taId: string; currentLev
     router.refresh();
   }
 
+  function applyInput() {
+    const parsed = parseFloat(input);
+    if (!isNaN(parsed) && parsed > 0) save(parsed);
+  }
+
   return (
     <div>
+      {/* Current level display */}
       {level === 0
-        ? <p className="text-3xl font-bold text-neutral-300 tabular-nums">TBC</p>
-        : <p className="text-5xl font-bold text-neutral-900 tabular-nums">{level}</p>}
+        ? <p className="text-3xl font-bold text-neutral-300">TBC</p>
+        : <p className="text-5xl font-bold text-neutral-900 tabular-nums">{level.toFixed(1)}</p>}
       <p className="text-xs text-neutral-400 mt-0.5 mb-4">{level === 0 ? "Not yet set" : "Current level"}</p>
-      <div className="flex gap-1.5 flex-wrap">
-        {[1, 2, 3, 4, 5, 6].map((l) => (
-          <button
-            key={l}
-            onClick={() => save(l)}
-            disabled={saving}
-            className={`h-8 w-8 rounded-md text-sm font-semibold transition-colors ${
-              l === level
-                ? "bg-neutral-900 text-white"
-                : "border border-neutral-200 text-neutral-500 hover:border-neutral-400 hover:text-neutral-900"
-            }`}
-          >
-            {l}
-          </button>
-        ))}
-        {saved && <span className="self-center text-xs text-green-600 ml-1">Saved</span>}
-        {saving && <span className="self-center text-xs text-neutral-400 ml-1">Saving…</span>}
+
+      {/* Suggested level from projects + PD */}
+      {suggested !== null && (
+        <div className="mb-4 rounded-md bg-blue-50 border border-blue-100 px-3 py-2.5">
+          <p className="text-xs text-blue-600 font-medium">
+            Calculated: <span className="text-blue-800 font-bold">{suggested.toFixed(1)}</span>
+          </p>
+          <p className="text-[11px] text-blue-400 mt-0.5">
+            {effective} qualifying ({qualifyingProjects} projects
+            {pdBonus > 0 ? ` + ${pdBonus} PD bonus` : ""})
+          </p>
+          {suggested !== level && (
+            <button
+              onClick={() => { setInput(String(suggested)); save(suggested); }}
+              className="mt-1.5 text-[11px] text-blue-600 font-medium hover:underline"
+            >
+              Apply suggested level →
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Manual input */}
+      <div className="flex items-center gap-2">
+        <input
+          type="number"
+          step="0.1"
+          min="0"
+          max="9.9"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && applyInput()}
+          placeholder="e.g. 3.3"
+          className="w-24 rounded-md border border-neutral-200 px-3 py-1.5 text-sm font-semibold text-neutral-900 focus:border-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-400"
+        />
+        <button
+          onClick={applyInput}
+          disabled={saving}
+          className="rounded-md bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-neutral-700 disabled:opacity-50 transition-colors"
+        >
+          {saving ? "Saving…" : "Set"}
+        </button>
+        {saved && <span className="text-xs text-green-600">Saved ✓</span>}
       </div>
+      <p className="mt-1.5 text-[11px] text-neutral-300">Level format: 1.1 · 1.2 · 1.3 · 2.1 · 2.2…</p>
     </div>
   );
 }
