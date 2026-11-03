@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui";
 
 interface OfferActionsProps {
@@ -11,8 +11,21 @@ interface OfferActionsProps {
 
 export function OfferActions({ offerId, status }: OfferActionsProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-trigger send when redirected from "Create & Send"
+  useEffect(() => {
+    if (searchParams.get("action") === "send" && status === "draft") {
+      handleAction("send");
+      // Remove the query param without re-render
+      const url = new URL(window.location.href);
+      url.searchParams.delete("action");
+      window.history.replaceState({}, "", url.toString());
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleAction(action: "send" | "accept" | "decline") {
     setLoading(action);

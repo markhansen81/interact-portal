@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/ui";
 import Link from "next/link";
 import { OfferActions } from "@/components/admin/offer-actions";
+import { Suspense } from "react";
 // CRM auto-syncs via Postgres trigger on church_items update
 
 interface Props {
@@ -75,7 +76,9 @@ export default async function OfferDetailPage({ params }: Props) {
             >
               Edit
             </Link>
-            <OfferActions offerId={id} status={offer.status} />
+            <Suspense fallback={null}>
+              <OfferActions offerId={id} status={offer.status} />
+            </Suspense>
           </div>
         }
       />

@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader, Button } from "@/components/ui";
 import { OffersTable } from "@/components/admin/offers-table";
+import { NewOfferButton } from "@/components/admin/new-offer-button";
 import Link from "next/link";
 
 export default async function OffersPage() {
@@ -25,9 +26,7 @@ export default async function OffersPage() {
             <Link href="/admin/offers/content">
               <Button variant="ghost" size="sm">Edit Content</Button>
             </Link>
-            <Link href="/admin/offers/new">
-              <Button>New Offer</Button>
-            </Link>
+            <NewOfferButton />
           </div>
         }
       />
