@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { generateSchoolProfile, generateHomestayProfile, PROFILE_FIELDS } from "@/lib/ta-profile-docs";
 
 const ALLOWED_FIELDS = [
   // Section 1 - Contact
@@ -77,6 +79,37 @@ export async function PATCH(request: Request) {
         .from("profiles")
         .update({ lanes_planes_synced: false })
         .eq("id", user.id);
+    }
+  }
+
+  // Auto-generate profile docs when profile has enough data
+  // Check after every save — only regenerates if key fields are all present
+  if (Object.keys(updates).length > 0) {
+    try {
+      const adminClient = createAdminClient();
+      const { data: fullProfile, error: profileErr } = await adminClient
+        .from("profiles")
+        .select(PROFILE_FIELDS + ", id")
+        .eq("id", user.id)
+        .single();
+
+      const p = fullProfile as any;
+      const isReadyForDocs = !profileErr && !!(p?.first_name && p?.last_name && p?.photo_url && p?.bio);
+
+      if (isReadyForDocs && p) {
+        const schoolDoc = generateSchoolProfile(p);
+        const homestayDoc = generateHomestayProfile(p);
+        await adminClient.from("ta_profile_docs").upsert({
+          ta_id: user.id,
+          school_html: schoolDoc.content,
+          homestay_html: homestayDoc.content,
+          generated_at: new Date().toISOString(),
+          generated_by: user.id,
+        }, { onConflict: "ta_id" });
+      }
+    } catch (e) {
+      // Non-blocking — log but don't fail the save
+      console.error("[PROFILE] Auto-generate docs failed:", e);
     }
   }
 
