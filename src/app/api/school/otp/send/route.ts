@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { randomInt } from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email";
+import { rateLimit, getClientIP, rateLimitResponse } from "@/lib/rate-limit";
 
 function generateOTP(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return randomInt(100000, 1000000).toString();
 }
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIP(req);
+  const { ok: rlOk } = rateLimit(`otp-send:${ip}`, 5, 60_000);
+  if (!rlOk) return rateLimitResponse();
+
   const { token, email } = await req.json();
 
   if (!token || !email) {

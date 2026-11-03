@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { randomBytes } from "crypto";
+import { rateLimit, getClientIP, rateLimitResponse } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIP(req);
+  const { ok: rlOk } = rateLimit(`otp-verify:${ip}`, 10, 60_000);
+  if (!rlOk) return rateLimitResponse();
+
   const { token, email, otp } = await req.json();
 
   if (!token || !email || !otp) {
