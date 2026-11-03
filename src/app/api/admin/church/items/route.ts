@@ -23,7 +23,8 @@ export async function GET() {
       .from("leads")
       .select(
         "id, school_name, first_name, last_name, email, phone, " +
-        "programs, num_students, num_groups, city, state, street, postcode, created_at"
+        "programs, grades, num_students, num_groups, city, state, street, postcode, " +
+        "preferred_dates, school_year, created_at"
       )
       .not("school_name", "is", null)
       .order("created_at", { ascending: false }),
@@ -44,7 +45,9 @@ export async function GET() {
     num_days: null,
     num_tas: null,
     price_pp: null,
-    grade_level: null,
+    grade_level: Array.isArray(l.grades) && l.grades.length > 0
+      ? (l.grades.length === 1 ? l.grades[0] : `${l.grades[0]}-${l.grades[l.grades.length - 1]}`)
+      : null,
     city: l.city,
     state: l.state,
     street: l.street,
