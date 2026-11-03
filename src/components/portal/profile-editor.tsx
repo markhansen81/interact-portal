@@ -316,6 +316,7 @@ const TABS = [
  { id:"personal", label:"Personal"},
  { id:"quals", label:"Qualifications"},
  { id:"payroll", label:"Payroll"},
+ { id:"travel", label:"Travel"},
  { id:"programs", label:"Working with InterACT"},
  { id:"school", label:"School Profile"},
 ];
@@ -507,7 +508,7 @@ export function ProfileEditor({
  {tab ==="payroll"&& (
  <div className="space-y-6">
  <Section title="Bank Details"saving={saving ==="payroll"}
- onSave={() => saveFields("payroll", ["iban","bank_name","tax_number","vat_registered","vat_number","bahncard","bahncard_expiry","deutschlandticket",
+ onSave={() => saveFields("payroll", ["iban","bank_name","tax_number","vat_registered","vat_number",
  ])}>
  <div className="flex flex-col md:flex-row gap-4">
  <Field label="IBAN"value={v("iban")} onChange={(val) => set("iban", val)} half />
@@ -518,13 +519,21 @@ export function ProfileEditor({
  {b("vat_registered") && (
  <Field label="VAT Number (USt-IdNr)"value={v("vat_number")} onChange={(val) => set("vat_number", val)} />
  )}
+ </Section>
+
+ </div>
+ )}
+
+ {tab ==="travel"&& (
+ <div className="space-y-6">
+ <Section title="Rail Travel"saving={saving ==="travel"}
+ onSave={() => saveFields("travel", ["bahncard","bahncard_expiry","deutschlandticket"])}>
  <div className="flex flex-col md:flex-row gap-4">
  <Field label="BahnCard"value={v("bahncard")} options={BAHNCARD_OPTIONS} onChange={(val) => set("bahncard", val)} half />
  <Field label="BahnCard expiry"value={v("bahncard_expiry")} type="date"onChange={(val) => set("bahncard_expiry", val)} half />
  </div>
  <Checkbox label="Deutschlandticket subscription"checked={b("deutschlandticket")} onChange={(val) => set("deutschlandticket", val)} />
  </Section>
-
  </div>
  )}
 
