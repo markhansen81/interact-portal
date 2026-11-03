@@ -135,19 +135,22 @@ function TeacherInviteModal({ job, onClose, onSent }: { job: Job; onClose: () =>
   );
 }
 
-function ProjectHub({ job }: { job: Job }) {
+function ProjectHub({ job, onAssign }: { job: Job; onAssign: () => void }) {
   const router = useRouter();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   // Derived admin checklist
-  const wosSent = job.sent + job.signed > 0;
+  // "Send work orders" = all needed WOs are sent (or signed)
+  const allWOsSent = job.needed > 0 && (job.sent + job.signed >= job.needed);
+  // "Staffed" = all needed WOs are signed
+  const fullyStaffed = job.needed > 0 && job.signed >= job.needed;
   const teacherInvited = !!job.teacher_invited_at;
   const infoPackReceived = !!job.info_pack_submitted_at;
   const scheduleConfirmed = !!job.schedule_confirmed_at;
 
-  // Overall completion: 3 active checklist items (invite is disabled — portal not built yet)
-  const checks = [wosSent, infoPackReceived, scheduleConfirmed];
+  // Overall completion: 3 active checklist items
+  const checks = [allWOsSent, infoPackReceived, scheduleConfirmed];
   const doneCount = checks.filter(Boolean).length;
   const pct = Math.round((doneCount / checks.length) * 100);
 
@@ -157,7 +160,8 @@ function ProjectHub({ job }: { job: Job }) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 py-1 pr-4">
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 py-1">
       {/* Admin Checklist */}
       <div className="space-y-2">
         <div className="flex items-center justify-between mb-1">
@@ -173,30 +177,36 @@ function ProjectHub({ job }: { job: Job }) {
         </div>
 
         <div className="space-y-1.5">
-          {/* 1. WOs sent */}
+          {/* 1. WOs sent — complete only when ALL needed WOs are sent */}
           <div className="flex items-center gap-2">
-            <CheckIcon done={wosSent} />
-            <span className={`text-xs ${wosSent ? "text-neutral-500 line-through" : "text-neutral-700"}`}>
+            <CheckIcon done={allWOsSent} />
+            <span className={`text-xs ${allWOsSent ? "text-neutral-500 line-through" : "text-neutral-700"}`}>
               Send work orders
             </span>
-            {!wosSent && job.needed > 0 && (
-              <Link href={`/admin/jobs/${job.id}`} className="ml-auto text-[10px] font-medium text-[#E91E8C] hover:underline">
+            {!allWOsSent && job.needed > 0 && (
+              <button onClick={onAssign} className="ml-auto text-[10px] font-medium text-[#E91E8C] hover:underline">
                 Assign →
-              </Link>
+              </button>
             )}
-            {wosSent && (
+            {allWOsSent && !fullyStaffed && (
+              <span className="ml-auto text-[10px] text-amber-500">{job.signed}/{job.needed} signed</span>
+            )}
+            {fullyStaffed && (
+              <span className="ml-auto text-[10px] text-green-600">All signed ✓</span>
+            )}
+            {!allWOsSent && (job.sent + job.signed) > 0 && (
               <span className="ml-auto text-[10px] text-neutral-400">{job.sent + job.signed}/{job.needed} sent</span>
             )}
           </div>
 
-          {/* 2. Invite teacher (portal not yet built — coming soon) */}
+          {/* 2. Invite teacher */}
           <div className="flex items-center gap-2">
             <CheckIcon done={false} />
             <span className="text-xs text-neutral-400">Invite teacher</span>
             <span className="ml-auto text-[10px] text-neutral-300">Portal coming soon</span>
           </div>
 
-          {/* 4. Info pack */}
+          {/* 3. Info pack */}
           <div className="flex items-center gap-2">
             <CheckIcon done={infoPackReceived} />
             <span className={`text-xs ${infoPackReceived ? "text-neutral-500 line-through" : "text-neutral-700"}`}>
@@ -207,7 +217,7 @@ function ProjectHub({ job }: { job: Job }) {
             )}
           </div>
 
-          {/* 5. Schedule confirmed */}
+          {/* 4. Schedule confirmed */}
           <div className="flex items-center gap-2">
             <CheckIcon done={scheduleConfirmed} />
             <span className={`text-xs ${scheduleConfirmed ? "text-neutral-500 line-through" : "text-neutral-700"}`}>
@@ -222,7 +232,7 @@ function ProjectHub({ job }: { job: Job }) {
             </button>
           </div>
 
-          {/* 6. Make schedule — coming soon */}
+          {/* 5. Make schedule — coming soon */}
           <div className="flex items-center gap-2">
             <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-dashed border-neutral-200" />
             <span className="text-xs text-neutral-400">Make schedule</span>
@@ -272,6 +282,17 @@ function ProjectHub({ job }: { job: Job }) {
             <p className="text-[10px] text-neutral-300 mt-1">Portal invite coming soon</p>
           </div>
         )}
+      </div>
+    </div>
+
+      {/* Open project link */}
+      <div className="flex justify-end pt-1">
+        <Link
+          href={`/admin/jobs/${job.id}`}
+          className="inline-flex items-center gap-1 text-[11px] font-medium text-neutral-500 hover:text-neutral-900 hover:underline"
+        >
+          Open project →
+        </Link>
       </div>
     </div>
   );
@@ -453,9 +474,9 @@ export function JobsTable({ jobs }: { jobs: Job[] }) {
             const weekBg = job.weekColor === 1 ? "bg-neutral-50" : "bg-white";
             const hoverBg = "hover:bg-neutral-100";
 
-            // Overall progress for summary column (3 items — invite disabled)
+            // Overall progress for summary column
             const checks = [
-              job.sent + job.signed > 0,
+              job.needed > 0 && (job.sent + job.signed >= job.needed),
               !!job.info_pack_submitted_at,
               !!job.schedule_confirmed_at,
             ];
@@ -475,7 +496,7 @@ export function JobsTable({ jobs }: { jobs: Job[] }) {
                       {job.weekNum ?? "—"}
                     </span>
                   </td>
-                  {/* Project name */}
+                  {/* Project name — chevron + name both toggle accordion */}
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <svg
@@ -484,13 +505,9 @@ export function JobsTable({ jobs }: { jobs: Job[] }) {
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
-                      <Link
-                        href={`/admin/jobs/${job.id}`}
-                        className="text-sm font-medium text-neutral-900 hover:text-[#E91E8C] hover:underline"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <span className="text-sm font-medium text-neutral-900">
                         {job.title}
-                      </Link>
+                      </span>
                     </div>
                   </td>
                   {/* Type */}
@@ -569,7 +586,7 @@ export function JobsTable({ jobs }: { jobs: Job[] }) {
                   <tr key={`${job.id}-expanded`} className={weekBg}>
                     <td />
                     <td colSpan={9} className="px-4 pb-4 pt-2">
-                      <ProjectHub job={job} />
+                      <ProjectHub job={job} onAssign={() => setAssigningJob(job)} />
                     </td>
                   </tr>
                 )}
