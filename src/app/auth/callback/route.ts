@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -19,17 +20,18 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}/auth/admin?error=domain`);
       }
 
-      // Check if profile exists
-      const { data: profile } = await supabase
+      // Use admin client to bypass RLS for profile check/upsert
+      const adminClient = createAdminClient();
+      const { data: profile } = await adminClient
         .from("profiles")
         .select("role")
         .eq("id", user.id)
         .single();
 
       if (!profile) {
-        // First login — auto-create admin profile for @interactenglish.de
+        // Trigger didn't fire — create admin profile manually
         const nameParts = (user.user_metadata?.full_name ?? user.email!.split("@")[0]).split(" ");
-        await supabase.from("profiles").insert({
+        await adminClient.from("profiles").insert({
           id: user.id,
           email: user.email,
           first_name: nameParts[0] ?? "",
@@ -37,9 +39,11 @@ export async function GET(request: Request) {
           role: "admin",
         });
       } else if (profile.role !== "admin") {
-        await supabase.auth.signOut();
-        return NextResponse.redirect(`${origin}/auth/admin?error=not_admin`);
+        // Upgrade @interactenglish.de users to admin automatically
+        await adminClient.from("profiles").update({ role: "admin" }).eq("id", user.id);
       }
+
+      return NextResponse.redirect(`${origin}/admin`);
     }
   }
 
