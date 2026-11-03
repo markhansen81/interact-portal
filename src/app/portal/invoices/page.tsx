@@ -1,124 +1,93 @@
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import Link from "next/link";
-import { StatCard, Card, Badge, Button, PageHeader } from "@/components/ui";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { PageHeader, StatCard } from "@/components/ui";
+import { InvoicesPageClient } from "@/components/portal/invoices-page-client";
 
 export default async function TAInvoicesPage() {
   const profile = await requireAuth(["ta"]);
   if (!profile) redirect("/auth/login");
 
   const supabase = await createClient();
+  const adminClient = createAdminClient();
 
+  // Fetch signed work orders (include standby projects too)
   const { data: signedWOs } = await supabase
     .from("work_orders")
-    .select("id, project_name, days, total, program_type")
+    .select("id, project_name, school, days, total, program_type, start_date, end_date, travel_hours, equipment_provided")
     .eq("ta_id", profile.id)
-    .eq("status", "signed");
+    .in("status", ["signed", "standby"]);
 
+  // Fetch submitted invoices
   const { data: invoices } = await supabase
     .from("invoices")
-    .select("*")
+    .select("id, invoice_number, total, status, submitted_at, work_order_id")
     .eq("ta_id", profile.id)
     .order("created_at", { ascending: false });
 
-  const statusVariant: Record<string, "default" | "success" | "warning" | "error" | "info"> = {
-    draft: "default",
-    submitted: "warning",
-    approved: "info",
-    paid: "success",
-    rejected: "error",
-  };
+  // Fetch pay scales to pre-calculate expected fees
+  const { data: payScales } = await adminClient
+    .from("pay_scales")
+    .select("scale_type, level, rates");
+
+  // Fetch travel stipends
+  const { data: travelStipends } = await adminClient
+    .from("travel_stipends")
+    .select("min_hours, max_hours, amount")
+    .order("min_hours");
+
+  // Pre-calculate expected fee + travel stipend for each WO
+  function calcExpectedFee(programType: string, days: number): number | null {
+    if (!payScales) return null;
+    const isCamp = /camp|sommer/i.test(programType || "");
+    const scaleType = isCamp ? "camps" : "programs";
+    const level = isCamp ? (profile.camp_level ?? 1) : (profile.pay_level ?? 1);
+    const scale = payScales.find((s) => s.scale_type === scaleType && s.level === level);
+    if (!scale?.rates) return null;
+    const fee = scale.rates[String(days)];
+    return fee != null ? Number(fee) : null;
+  }
+
+  function calcTravelStipend(travelHours: number | null): number | null {
+    if (!travelHours || !travelStipends) return null;
+    const bracket = travelStipends.find(
+      (ts) => travelHours >= Number(ts.min_hours) && (ts.max_hours == null || travelHours < Number(ts.max_hours))
+    );
+    return bracket ? Number(bracket.amount) : null;
+  }
+
+  const enrichedWOs = (signedWOs || []).map((wo) => ({
+    ...wo,
+    expected_fee: calcExpectedFee(wo.program_type, wo.days),
+    travel_stipend: calcTravelStipend(wo.travel_hours),
+  }));
+
+  // Summary stats
+  const totalPaid = (invoices || [])
+    .filter((i) => i.status === "paid")
+    .reduce((sum, i) => sum + Number(i.total), 0);
+  const pendingCount = (invoices || []).filter((i) =>
+    ["submitted", "approved"].includes(i.status)
+  ).length;
 
   return (
-    <div className="space-y-8">
-      <PageHeader title="Invoices" />
+    <div className="space-y-6">
+      <PageHeader title="Invoices" description="Upload and track your project invoices" />
 
-      {/* Earnings Summary */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="Level" value={profile.pay_level} />
-        <StatCard label="Qualifying Projects" value={profile.qualifying_projects} />
-        <StatCard label="Total Projects" value={profile.total_projects} />
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatCard label="Pay Level" value={`Level ${profile.pay_level ?? "—"}`} />
+        <StatCard label="Qualifying Projects" value={profile.qualifying_projects ?? 0} />
+        <StatCard label="Pending Invoices" value={pendingCount} />
+        <StatCard label="Total Paid" value={`€${totalPaid.toFixed(0)}`} />
       </div>
 
-      {/* Upload Invoice */}
-      <Card>
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold text-neutral-900">
-              Upload Invoice
-            </h3>
-            <p className="mt-1 text-sm text-neutral-500">
-              Upload your own invoice PDF. Our AI will check it has all required information.
-            </p>
-          </div>
-          <Link href="/portal/invoices/upload">
-            <Button variant="secondary" size="sm">Upload PDF</Button>
-          </Link>
-        </div>
-      </Card>
-
-      {/* Or use Calculator */}
-      {signedWOs && signedWOs.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-neutral-900">
-            Or Use Invoice Calculator
-          </h3>
-          <div className="divide-y divide-neutral-100 border border-neutral-200 rounded-sm bg-white">
-            {signedWOs.map((wo) => (
-              <div
-                key={wo.id}
-                className="flex items-center justify-between p-4"
-              >
-                <div>
-                  <p className="text-sm font-medium text-neutral-900">
-                    {wo.project_name}
-                  </p>
-                  <p className="text-xs text-neutral-500">
-                    {wo.program_type} — {wo.days} days — &euro;{Number(wo.total).toFixed(2)}
-                  </p>
-                </div>
-                <Link href={`/portal/invoices/new/${wo.id}`}>
-                  <Button size="sm">Create Invoice</Button>
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Existing Invoices */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-neutral-900">
-          Invoice History
-        </h3>
-        {!invoices || invoices.length === 0 ? (
-          <div className="border border-dashed border-neutral-300 bg-white p-8 text-center rounded-sm">
-            <p className="text-sm text-neutral-500">No invoices yet.</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-neutral-100 border border-neutral-200 rounded-sm bg-white">
-            {invoices.map((inv) => (
-              <div
-                key={inv.id}
-                className="flex items-center justify-between p-4"
-              >
-                <div>
-                  <p className="text-sm font-medium text-neutral-900">
-                    Invoice #{inv.invoice_number || inv.id.slice(0, 8)}
-                  </p>
-                  <p className="text-xs text-neutral-500">
-                    &euro;{Number(inv.total).toFixed(2)} — {inv.submitted_at ? new Date(inv.submitted_at).toLocaleDateString() : "Draft"}
-                  </p>
-                </div>
-                <Badge variant={statusVariant[inv.status] || "default"}>
-                  {inv.status}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <InvoicesPageClient
+        workOrders={enrichedWOs}
+        invoices={invoices || []}
+        profile={profile}
+      />
     </div>
   );
 }
