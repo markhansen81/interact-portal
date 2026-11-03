@@ -47,6 +47,14 @@ const DOC_STATUS: Record<string, string> = {
   not_uploaded: "bg-neutral-100 text-neutral-400",
 };
 
+const DOC_BORDER: Record<string, string> = {
+  verified: "border-l-green-400",
+  expiring: "border-l-amber-400",
+  expired: "border-l-red-400",
+  uploaded: "border-l-blue-400",
+  not_uploaded: "border-l-neutral-200",
+};
+
 const WO_STATUS: Record<string, { bg: string; label: string }> = {
   signed:   { bg: "bg-green-100 text-green-700",   label: "Signed" },
   sent:     { bg: "bg-blue-100 text-blue-600",     label: "Sent" },
@@ -54,31 +62,60 @@ const WO_STATUS: Record<string, { bg: string; label: string }> = {
   declined: { bg: "bg-red-100 text-red-600",       label: "Declined" },
 };
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+/** Section card with small-caps header strip */
+function Section({ title, children, headerRight }: { title: string; children: React.ReactNode; headerRight?: React.ReactNode }) {
   return (
-    <div className="rounded-sm border border-neutral-200 bg-white">
-      <div className="border-b border-neutral-100 px-6 py-4">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-neutral-500">{title}</h3>
+    <div className="bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden">
+      <div className="px-6 py-3 bg-neutral-50 border-b border-neutral-100 flex items-center justify-between">
+        <span className="text-xs font-semibold uppercase tracking-widest text-neutral-400">{title}</span>
+        {headerRight}
       </div>
-      <div className="px-6 py-5">{children}</div>
+      <div>{children}</div>
     </div>
   );
 }
 
-function Field({ label, value, wide }: { label: string; value: React.ReactNode; wide?: boolean }) {
+/** Single inline field row — label left, value right */
+function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className={wide ? "col-span-2" : ""}>
-      <dt className="text-xs text-neutral-400 uppercase tracking-wide">{label}</dt>
-      <dd className="mt-0.5 text-sm text-neutral-900">{value || <span className="text-neutral-300">—</span>}</dd>
+    <div className="flex justify-between items-baseline py-2.5 px-6 border-b border-neutral-50 last:border-b-0">
+      <span className="text-xs text-neutral-400 w-36 shrink-0">{label}</span>
+      <span className="text-sm text-neutral-900 text-right">{children}</span>
     </div>
   );
+}
+
+/** Wide field — label above, value below, full width */
+function WideField({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="px-6 py-3 border-b border-neutral-50 last:border-b-0">
+      <p className="text-xs text-neutral-400 uppercase tracking-wide mb-0.5">{label}</p>
+      <p className="text-sm text-neutral-900 leading-relaxed">{value || <span className="text-neutral-300 italic">—</span>}</p>
+    </div>
+  );
+}
+
+function Empty() {
+  return <span className="text-neutral-300 text-sm italic">—</span>;
 }
 
 function Bool({ val }: { val: boolean | null }) {
-  if (val === null || val === undefined) return <span className="text-neutral-300">—</span>;
+  if (val === null || val === undefined) return <Empty />;
   return val
-    ? <span className="text-green-600">Yes</span>
+    ? <span className="text-green-600 font-medium">Yes</span>
     : <span className="text-neutral-400">No</span>;
+}
+
+/** Right-column card */
+function SideCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-lg border border-neutral-200 bg-white shadow-sm overflow-hidden">
+      <div className="px-5 py-3 bg-neutral-50 border-b border-neutral-100">
+        <span className="text-xs font-semibold uppercase tracking-widest text-neutral-400">{title}</span>
+      </div>
+      <div className="px-5 py-4">{children}</div>
+    </div>
+  );
 }
 
 export default async function TAProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -107,31 +144,55 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
   const DOC_TYPES = ["visa", "passport", "police_check", "measles", "first_aid"];
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* Header */}
-      <div className="flex items-start gap-4">
-        <Link href="/admin/teaching-artists" className="mt-1 text-sm text-neutral-400 hover:text-neutral-700">
-          ← Back
+    <div className="space-y-6 pb-16">
+
+      {/* ── BACK NAV ── */}
+      <div>
+        <Link
+          href="/admin/teaching-artists"
+          className="inline-flex items-center gap-1.5 text-xs text-neutral-400 hover:text-neutral-700 transition-colors"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          Teaching Artists
         </Link>
-        <div className="flex flex-1 items-center gap-5">
+      </div>
+
+      {/* ── HERO HEADER ── */}
+      <div className="w-full rounded-xl bg-gradient-to-br from-neutral-50 to-white border border-neutral-200 shadow-sm px-8 py-7">
+        <div className="flex items-center gap-6">
           {ta.photo_url ? (
-            <img src={ta.photo_url} alt="" className="h-16 w-16 rounded-full object-cover ring-2 ring-neutral-100" />
+            <img
+              src={ta.photo_url}
+              alt=""
+              className="h-20 w-20 rounded-full object-cover ring-2 ring-white ring-offset-2 ring-offset-neutral-100 shadow-sm"
+            />
           ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100 text-xl font-semibold text-neutral-500">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-neutral-200 text-2xl font-bold text-neutral-500 ring-2 ring-white ring-offset-2 ring-offset-neutral-100 shadow-sm">
               {(ta.first_name?.[0] || ta.email[0]).toUpperCase()}
             </div>
           )}
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-neutral-900">{name}</h2>
-              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${ta.is_active ? "bg-green-100 text-green-700" : "bg-neutral-100 text-neutral-500"}`}>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-3xl font-bold text-neutral-900 tracking-tight">{name}</h1>
+              <span
+                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                  ta.is_active ? "bg-green-100 text-green-700" : "bg-neutral-100 text-neutral-500"
+                }`}
+              >
                 {ta.is_active ? "Active" : "Inactive"}
               </span>
-              <span className="inline-flex items-center rounded-full bg-neutral-900 px-2.5 py-0.5 text-xs font-medium text-white">
+              <span className="inline-flex items-center rounded-full bg-neutral-900 px-2.5 py-0.5 text-xs font-semibold text-white">
                 Level {ta.pay_level}
               </span>
+              {ta.onboarding_status && (
+                <span className="inline-flex items-center rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-500 capitalize">
+                  {ta.onboarding_status.replace(/_/g, " ")}
+                </span>
+              )}
             </div>
-            <p className="mt-0.5 text-sm text-neutral-400">{ta.email}</p>
+            <p className="mt-1 text-sm text-neutral-400">{ta.email}</p>
           </div>
         </div>
       </div>
@@ -142,135 +203,164 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
 
           {/* Contact & Identity */}
           <Section title="Contact & Identity">
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
-              <Field label="First name" value={ta.first_name} />
-              <Field label="Last name" value={ta.last_name} />
-              <Field label="Preferred name" value={ta.preferred_name} />
-              <Field label="Phone" value={ta.phone} />
-              <Field label="Date of birth" value={fmtDate(ta.date_of_birth)} />
-              <Field label="Nationality" value={ta.nationality} />
-              <Field label="Gender" value={ta.gender} />
-              <Field label="Pronouns" value={ta.pronouns} />
-              <Field label="Ethnicity" value={ta.ethnicity} />
-              <Field label="LGBTQIA+" value={ta.lgbtqia} />
-              <Field label="Caretaker status" value={ta.caretaker_status} />
-            </dl>
+            <FieldRow label="First name">{ta.first_name || <Empty />}</FieldRow>
+            <FieldRow label="Last name">{ta.last_name || <Empty />}</FieldRow>
+            <FieldRow label="Preferred name">{ta.preferred_name || <Empty />}</FieldRow>
+            <FieldRow label="Phone">{ta.phone || <Empty />}</FieldRow>
+            <FieldRow label="Date of birth">{fmtDate(ta.date_of_birth)}</FieldRow>
+            <FieldRow label="Nationality">{ta.nationality || <Empty />}</FieldRow>
+            <FieldRow label="Gender">{ta.gender || <Empty />}</FieldRow>
+            <FieldRow label="Pronouns">{ta.pronouns || <Empty />}</FieldRow>
+            <FieldRow label="Ethnicity">{ta.ethnicity || <Empty />}</FieldRow>
+            <FieldRow label="LGBTQIA+">{ta.lgbtqia || <Empty />}</FieldRow>
+            <FieldRow label="Caretaker status">{ta.caretaker_status || <Empty />}</FieldRow>
           </Section>
 
           {/* Address */}
           <Section title="Address">
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
-              <Field label="Street" value={ta.street} wide />
-              <Field label="City" value={ta.city} />
-              <Field label="Postal code" value={ta.postal_code} />
-              <Field label="Country" value={ta.country} />
-              <Field label="Hometown" value={[ta.hometown_city, ta.hometown_country].filter(Boolean).join(", ")} />
-              <Field label="In Germany since" value={ta.moved_to_germany_year?.toString()} />
-            </dl>
+            <FieldRow label="Street">{ta.street || <Empty />}</FieldRow>
+            <FieldRow label="City">{ta.city || <Empty />}</FieldRow>
+            <FieldRow label="Postal code">{ta.postal_code || <Empty />}</FieldRow>
+            <FieldRow label="Country">{ta.country || <Empty />}</FieldRow>
+            <FieldRow label="Hometown">
+              {[ta.hometown_city, ta.hometown_country].filter(Boolean).join(", ") || <Empty />}
+            </FieldRow>
+            <FieldRow label="In Germany since">
+              {ta.moved_to_germany_year?.toString() || <Empty />}
+            </FieldRow>
           </Section>
 
           {/* School Profile */}
-          <Section title="School Profile">
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
-              <Field label="Bio" value={ta.bio} wide />
-              <Field label="Superpower" value={ta.superpower} wide />
-              <Field label="Art type" value={ta.art_type} />
-              <Field label="Art profession" value={ta.art_profession} />
-              <Field label="Where from" value={ta.where_from} />
-              <Field label="Likes about Germany" value={ta.likes_germany} />
-              <Field label="Favourite vacation spot" value={ta.vacation_spot} />
-              <Field label="Great at" value={ta.great_at} />
-              <Field label="Not great at" value={ta.not_great_at} />
-              <Field label="Comic strip title" value={ta.comic_title} />
-              <Field label="Famous last words" value={ta.famous_last_words} />
-              <Field label="Favourite food" value={ta.favourite_food} />
-              <Field label="Programs selected" value={`${prefCount} / 29`} />
-            </dl>
+          <Section
+            title="School Profile"
+            headerRight={
+              ta.school_photo_url ? (
+                <img
+                  src={ta.school_photo_url}
+                  alt="School photo"
+                  className="h-8 w-8 rounded-md object-cover ring-1 ring-neutral-200"
+                />
+              ) : undefined
+            }
+          >
+            <WideField label="Bio" value={ta.bio} />
+            <WideField label="Superpower" value={ta.superpower} />
+            <FieldRow label="Art type">{ta.art_type || <Empty />}</FieldRow>
+            <FieldRow label="Art profession">{ta.art_profession || <Empty />}</FieldRow>
+            <FieldRow label="Where from">{ta.where_from || <Empty />}</FieldRow>
+            <FieldRow label="Likes about Germany">{ta.likes_germany || <Empty />}</FieldRow>
+            <FieldRow label="Favourite vacation">{ta.vacation_spot || <Empty />}</FieldRow>
+            <FieldRow label="Great at">{ta.great_at || <Empty />}</FieldRow>
+            <FieldRow label="Not great at">{ta.not_great_at || <Empty />}</FieldRow>
+            <FieldRow label="Comic strip title">{ta.comic_title || <Empty />}</FieldRow>
+            <FieldRow label="Famous last words">{ta.famous_last_words || <Empty />}</FieldRow>
+            <FieldRow label="Favourite food">{ta.favourite_food || <Empty />}</FieldRow>
+            <FieldRow label="Programs selected">{`${prefCount} / 29`}</FieldRow>
           </Section>
 
           {/* Qualifications & Logistics */}
           <Section title="Qualifications & Logistics">
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
-              <Field label="Education" value={ta.education_level} />
-              <Field label="Certifications" value={ta.certifications} />
-              <Field label="TEFL status" value={ta.tefl_status} />
-              <Field label="German level" value={ta.german_level} />
-              <Field label="German professional" value={<Bool val={ta.german_professional} />} />
-              <Field label="Grades 1–4 exp." value={<Bool val={ta.exp_grades_1_4} />} />
-              <Field label="Grades 5–7 exp." value={<Bool val={ta.exp_grades_5_7} />} />
-              <Field label="Grades 8+ exp." value={<Bool val={ta.exp_grades_8_plus} />} />
-              <Field label="Disability experience" value={<Bool val={ta.exp_disabilities} />} />
-              {ta.exp_disabilities && <Field label="Disability types" value={(ta.exp_disability_types as string[] | null)?.join(", ")} />}
-              <Field label="Dietary restrictions" value={ta.dietary_restrictions || (ta.dietary_options as string[] | null)?.join(", ")} />
-              <Field label="Homestay willing" value={<Bool val={ta.homestay_willing} />} />
-              <Field label="Lifeguard cert" value={ta.lifeguard_cert} />
-              <Field label="Driver's licence" value={ta.drivers_licence} />
-              <Field label="BahnCard" value={ta.bahncard} />
-              {ta.bahncard && ta.bahncard !== "none" && <Field label="BahnCard expiry" value={fmtDate(ta.bahncard_expiry)} />}
-              <Field label="Deutschlandticket" value={<Bool val={ta.deutschlandticket} />} />
-            </dl>
+            <FieldRow label="Education">{ta.education_level || <Empty />}</FieldRow>
+            <FieldRow label="Certifications">{ta.certifications || <Empty />}</FieldRow>
+            <FieldRow label="TEFL status">{ta.tefl_status || <Empty />}</FieldRow>
+            <FieldRow label="German level">{ta.german_level || <Empty />}</FieldRow>
+            <FieldRow label="German professional"><Bool val={ta.german_professional} /></FieldRow>
+            <FieldRow label="Grades 1–4 exp."><Bool val={ta.exp_grades_1_4} /></FieldRow>
+            <FieldRow label="Grades 5–7 exp."><Bool val={ta.exp_grades_5_7} /></FieldRow>
+            <FieldRow label="Grades 8+ exp."><Bool val={ta.exp_grades_8_plus} /></FieldRow>
+            <FieldRow label="Disability experience"><Bool val={ta.exp_disabilities} /></FieldRow>
+            {ta.exp_disabilities && (
+              <FieldRow label="Disability types">
+                {(ta.exp_disability_types as string[] | null)?.join(", ") || <Empty />}
+              </FieldRow>
+            )}
+            <FieldRow label="Dietary restrictions">
+              {ta.dietary_restrictions || (ta.dietary_options as string[] | null)?.join(", ") || <Empty />}
+            </FieldRow>
+            <FieldRow label="Homestay willing"><Bool val={ta.homestay_willing} /></FieldRow>
+            <FieldRow label="Lifeguard cert">{ta.lifeguard_cert || <Empty />}</FieldRow>
+            <FieldRow label="Driver's licence">{ta.drivers_licence || <Empty />}</FieldRow>
+            <FieldRow label="BahnCard">{ta.bahncard || <Empty />}</FieldRow>
+            {ta.bahncard && ta.bahncard !== "none" && (
+              <FieldRow label="BahnCard expiry">{fmtDate(ta.bahncard_expiry)}</FieldRow>
+            )}
+            <FieldRow label="Deutschlandticket"><Bool val={ta.deutschlandticket} /></FieldRow>
           </Section>
 
           {/* Documents */}
           <Section title="Documents">
-            <div className="space-y-3">
+            <div className="divide-y divide-neutral-50">
               {DOC_TYPES.map((type) => {
                 const doc = allDocs.find((d) => d.type === type) ||
                   (hasRTW && (type === "visa" || type === "passport") ? allDocs.find((d) => d.type === "right_to_work") : null);
                 const status = doc?.status || "not_uploaded";
+                const borderColor = DOC_BORDER[status] || DOC_BORDER.not_uploaded;
                 return (
-                  <div key={type} className="flex items-center justify-between rounded-sm border border-neutral-100 bg-neutral-50 px-4 py-3">
-                    <span className="text-sm font-medium text-neutral-700">{DOC_LABELS[type]}</span>
-                    <div className="flex items-center gap-4">
-                      {doc?.expiry_date && (
-                        <span className={`text-xs ${expiryColor(doc.expiry_date)}`}>
-                          Expires {fmtDate(doc.expiry_date)}
-                        </span>
-                      )}
-                      {doc?.issue_date && (
-                        <span className="text-xs text-neutral-400">Issued {fmtDate(doc.issue_date)}</span>
-                      )}
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${DOC_STATUS[status] || DOC_STATUS.not_uploaded}`}>
-                        {status === "not_uploaded" ? "Missing" : status.charAt(0).toUpperCase() + status.slice(1)}
-                      </span>
+                  <div
+                    key={type}
+                    className={`flex items-center justify-between px-6 py-3.5 border-l-[3px] ${borderColor}`}
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-neutral-800">{DOC_LABELS[type]}</p>
+                      <div className="flex items-center gap-3 mt-0.5">
+                        {doc?.expiry_date && (
+                          <span className={`text-xs ${expiryColor(doc.expiry_date)}`}>
+                            Expires {fmtDate(doc.expiry_date)}
+                          </span>
+                        )}
+                        {doc?.issue_date && (
+                          <span className="text-xs text-neutral-400">Issued {fmtDate(doc.issue_date)}</span>
+                        )}
+                      </div>
                     </div>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        DOC_STATUS[status] || DOC_STATUS.not_uploaded
+                      }`}
+                    >
+                      {status === "not_uploaded" ? "Missing" : status.charAt(0).toUpperCase() + status.slice(1)}
+                    </span>
                   </div>
                 );
               })}
-              {hasRTW && !allDocs.some((d) => d.type === "visa") && (
-                <p className="text-xs text-neutral-400 italic">* Showing legacy right-to-work document for Visa/Passport slots</p>
-              )}
             </div>
+            {hasRTW && !allDocs.some((d) => d.type === "visa") && (
+              <p className="px-6 py-2 text-xs text-neutral-400 italic border-t border-neutral-50">
+                * Showing legacy right-to-work document for Visa/Passport slots
+              </p>
+            )}
           </Section>
 
           {/* Work Orders */}
           <Section title={`Work Orders (${allWOs.length})`}>
             {allWOs.length === 0 ? (
-              <p className="text-sm text-neutral-400">No work orders yet.</p>
+              <p className="px-6 py-8 text-sm text-neutral-300 italic text-center">No work orders yet.</p>
             ) : (
-              <div className="overflow-hidden rounded-sm border border-neutral-100">
-                <table className="w-full text-sm">
-                  <thead className="bg-neutral-50 text-xs font-medium uppercase tracking-wide text-neutral-400">
-                    <tr>
-                      <th className="px-4 py-2 text-left">Project / School</th>
-                      <th className="px-4 py-2 text-left">Program</th>
-                      <th className="px-4 py-2 text-left">Dates</th>
-                      <th className="px-4 py-2 text-left">Status</th>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-neutral-50 border-b border-neutral-100">
+                      <th className="px-6 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400">Project / School</th>
+                      <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400">Program</th>
+                      <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400">Dates</th>
+                      <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-100">
+                  <tbody className="divide-y divide-neutral-50">
                     {allWOs.map((wo) => {
                       const ws = WO_STATUS[wo.status] || WO_STATUS.draft;
                       return (
-                        <tr key={wo.id} className="hover:bg-neutral-50">
-                          <td className="px-4 py-3">
-                            <p className="font-medium text-neutral-900">{wo.project_name || "—"}</p>
-                            <p className="text-xs text-neutral-400">{wo.school || ""}</p>
+                        <tr key={wo.id} className="hover:bg-neutral-50 transition-colors">
+                          <td className="px-6 py-3.5">
+                            <p className="text-sm font-semibold text-neutral-900">{wo.project_name || "—"}</p>
+                            {wo.school && <p className="text-xs text-neutral-400 mt-0.5">{wo.school}</p>}
                           </td>
-                          <td className="px-4 py-3 text-neutral-500">{wo.program_type || "—"}</td>
-                          <td className="px-4 py-3 text-neutral-500 whitespace-nowrap">{fmtDateRange(wo.start_date, wo.end_date)}</td>
-                          <td className="px-4 py-3">
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${ws.bg}`}>{ws.label}</span>
+                          <td className="px-4 py-3.5 text-xs text-neutral-500">{wo.program_type || "—"}</td>
+                          <td className="px-4 py-3.5 text-xs text-neutral-500 whitespace-nowrap">{fmtDateRange(wo.start_date, wo.end_date)}</td>
+                          <td className="px-4 py-3.5">
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${ws.bg}`}>
+                              {ws.label}
+                            </span>
                           </td>
                         </tr>
                       );
@@ -283,70 +373,122 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
         </div>
 
         {/* ── RIGHT COLUMN ── */}
-        <div className="space-y-6">
+        <div className="space-y-5">
 
-          {/* Pay & Projects */}
-          <div className="rounded-sm border border-neutral-200 bg-white p-6">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Pay Level</h3>
-            <p className="mt-1 text-4xl font-bold text-neutral-900">Level {ta.pay_level}</p>
-            <dl className="mt-4 space-y-2 text-sm">
-              <div className="flex justify-between"><dt className="text-neutral-400">Qualifying projects</dt><dd className="text-neutral-900">{ta.qualifying_projects}</dd></div>
-              <div className="flex justify-between"><dt className="text-neutral-400">Total projects</dt><dd className="text-neutral-900">{ta.total_projects}</dd></div>
-              <div className="flex justify-between"><dt className="text-neutral-400">Camps</dt><dd className="text-neutral-900">{ta.total_camps ?? 0}</dd></div>
-              <div className="flex justify-between"><dt className="text-neutral-400">PD credits</dt><dd className="text-neutral-900">{ta.pd_workshop_credits}</dd></div>
-            </dl>
-          </div>
+          {/* Pay Level */}
+          <SideCard title="Pay Level">
+            <p className="text-5xl font-bold text-neutral-900 tabular-nums">{ta.pay_level}</p>
+            <p className="text-xs text-neutral-400 mt-0.5 mb-4">Current level</p>
+            <div className="space-y-2 text-sm divide-y divide-neutral-50">
+              <div className="flex justify-between items-center pb-2">
+                <span className="text-neutral-400 text-xs">Qualifying projects</span>
+                <span className="font-semibold text-neutral-900">{ta.qualifying_projects ?? <Empty />}</span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-neutral-400 text-xs">Total projects</span>
+                <span className="font-semibold text-neutral-900">{ta.total_projects ?? <Empty />}</span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-neutral-400 text-xs">Camps</span>
+                <span className="font-semibold text-neutral-900">{ta.total_camps ?? 0}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2">
+                <span className="text-neutral-400 text-xs">PD credits</span>
+                <span className="font-semibold text-neutral-900">{ta.pd_workshop_credits ?? <Empty />}</span>
+              </div>
+            </div>
+          </SideCard>
 
           {/* Training */}
-          <div className="rounded-sm border border-neutral-200 bg-white p-6">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">Training</h3>
-            <TrainingRow label="Online Onboarding" done={ta.training_online} />
-            <TrainingRow label="Offline Foundation" done={ta.training_offline} />
-          </div>
+          <SideCard title="Training">
+            <div className="space-y-1">
+              <TrainingRow label="Online Onboarding" done={ta.training_online} />
+              <TrainingRow label="Offline Foundation" done={ta.training_offline} />
+            </div>
+          </SideCard>
 
           {/* Onboarding */}
-          <div className="rounded-sm border border-neutral-200 bg-white p-6">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Onboarding</h3>
-            <p className="mt-2 text-lg font-semibold capitalize text-neutral-900">
-              {ta.onboarding_status?.replace(/_/g, " ") || "—"}
+          <SideCard title="Onboarding">
+            <p className="text-base font-semibold capitalize text-neutral-900">
+              {ta.onboarding_status?.replace(/_/g, " ") || <span className="text-neutral-300 italic font-normal">—</span>}
             </p>
-          </div>
+          </SideCard>
 
-          {/* Payroll */}
-          <div className="rounded-sm border border-neutral-200 bg-white p-6">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">Payroll & Banking</h3>
-            <dl className="space-y-2 text-sm">
-              <div><dt className="text-xs text-neutral-400">IBAN</dt><dd className="text-neutral-900 font-mono text-xs break-all">{ta.iban || "—"}</dd></div>
-              <div><dt className="text-xs text-neutral-400">BIC</dt><dd className="text-neutral-900">{ta.bic || "—"}</dd></div>
-              <div><dt className="text-xs text-neutral-400">Bank</dt><dd className="text-neutral-900">{ta.bank_name || "—"}</dd></div>
-              <div><dt className="text-xs text-neutral-400">Tax number</dt><dd className="text-neutral-900">{ta.tax_number || "—"}</dd></div>
-              <div><dt className="text-xs text-neutral-400">VAT registered</dt><dd className="text-neutral-900">{ta.vat_registered ? `Yes — ${ta.vat_number || "no number"}` : "No"}</dd></div>
+          {/* Payroll & Banking */}
+          <SideCard title="Payroll & Banking">
+            <dl className="space-y-3 text-xs">
+              <div>
+                <dt className="text-neutral-400 mb-0.5">IBAN</dt>
+                <dd className="text-neutral-900 font-mono break-all">{ta.iban || <span className="text-neutral-300 italic not-italic font-sans">—</span>}</dd>
+              </div>
+              <div>
+                <dt className="text-neutral-400 mb-0.5">BIC</dt>
+                <dd className="text-neutral-900">{ta.bic || "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-neutral-400 mb-0.5">Bank</dt>
+                <dd className="text-neutral-900">{ta.bank_name || "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-neutral-400 mb-0.5">Tax number</dt>
+                <dd className="text-neutral-900">{ta.tax_number || "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-neutral-400 mb-0.5">VAT registered</dt>
+                <dd className="text-neutral-900">{ta.vat_registered ? `Yes — ${ta.vat_number || "no number"}` : "No"}</dd>
+              </div>
             </dl>
-          </div>
+          </SideCard>
 
           {/* Lanes & Planes */}
-          <div className="rounded-sm border border-neutral-200 bg-white p-6">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">Lanes & Planes</h3>
-            <dl className="space-y-2 text-sm">
-              <div className="flex justify-between">
+          <SideCard title="Lanes & Planes">
+            <dl className="space-y-3 text-xs">
+              <div className="flex justify-between items-center">
                 <dt className="text-neutral-400">Synced</dt>
-                <dd className={ta.lanes_planes_synced ? "text-green-600" : "text-neutral-400"}>{ta.lanes_planes_synced ? "Yes" : "No"}</dd>
+                <dd className={ta.lanes_planes_synced ? "text-green-600 font-medium" : "text-neutral-400"}>
+                  {ta.lanes_planes_synced ? "Yes" : "No"}
+                </dd>
               </div>
-              {ta.lanes_planes_id && <div><dt className="text-xs text-neutral-400">L&P ID</dt><dd className="text-neutral-900 font-mono text-xs">{ta.lanes_planes_id}</dd></div>}
-              {ta.lanes_planes_synced_at && <div><dt className="text-xs text-neutral-400">Last sync</dt><dd className="text-neutral-600 text-xs">{new Date(ta.lanes_planes_synced_at).toLocaleDateString()}</dd></div>}
+              {ta.lanes_planes_id && (
+                <div>
+                  <dt className="text-neutral-400 mb-0.5">L&amp;P ID</dt>
+                  <dd className="text-neutral-900 font-mono">{ta.lanes_planes_id}</dd>
+                </div>
+              )}
+              {ta.lanes_planes_synced_at && (
+                <div>
+                  <dt className="text-neutral-400 mb-0.5">Last sync</dt>
+                  <dd className="text-neutral-600">{new Date(ta.lanes_planes_synced_at).toLocaleDateString()}</dd>
+                </div>
+              )}
             </dl>
-          </div>
+          </SideCard>
 
           {/* Account */}
-          <div className="rounded-sm border border-neutral-200 bg-white p-6">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">Account</h3>
-            <dl className="space-y-2 text-sm">
-              <div><dt className="text-xs text-neutral-400">Email</dt><dd className="text-neutral-900 break-all">{ta.email}</dd></div>
-              <div><dt className="text-xs text-neutral-400">Status</dt><dd className={ta.is_active ? "text-green-600" : "text-neutral-500"}>{ta.is_active ? "Active" : "Inactive"}</dd></div>
-              <div><dt className="text-xs text-neutral-400">Joined</dt><dd className="text-neutral-900">{new Date(ta.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</dd></div>
-              {ta.gdpr_consent_at && <div><dt className="text-xs text-neutral-400">GDPR consent</dt><dd className="text-neutral-600 text-xs">{new Date(ta.gdpr_consent_at).toLocaleDateString()}</dd></div>}
+          <SideCard title="Account">
+            <dl className="space-y-3 text-xs">
+              <div>
+                <dt className="text-neutral-400 mb-0.5">Email</dt>
+                <dd className="text-neutral-900 break-all">{ta.email}</dd>
+              </div>
+              <div className="flex justify-between items-center">
+                <dt className="text-neutral-400">Status</dt>
+                <dd className={ta.is_active ? "text-green-600 font-medium" : "text-neutral-500"}>
+                  {ta.is_active ? "Active" : "Inactive"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-neutral-400 mb-0.5">Joined</dt>
+                <dd className="text-neutral-900">{new Date(ta.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</dd>
+              </div>
+              {ta.gdpr_consent_at && (
+                <div>
+                  <dt className="text-neutral-400 mb-0.5">GDPR consent</dt>
+                  <dd className="text-neutral-600">{new Date(ta.gdpr_consent_at).toLocaleDateString()}</dd>
+                </div>
+              )}
             </dl>
-          </div>
+          </SideCard>
 
           {/* Edit */}
           <TAProfileEditor ta={ta as any} compact />
@@ -358,9 +500,13 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
 
 function TrainingRow({ label, done }: { label: string; done: boolean }) {
   return (
-    <div className="flex items-center justify-between py-1.5">
+    <div className="flex items-center justify-between py-2">
       <span className="text-sm text-neutral-700">{label}</span>
-      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${done ? "bg-green-100 text-green-700" : "bg-neutral-100 text-neutral-400"}`}>
+      <span
+        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+          done ? "bg-green-100 text-green-700" : "bg-neutral-100 text-neutral-400"
+        }`}
+      >
         {done ? "Complete" : "Not complete"}
       </span>
     </div>
