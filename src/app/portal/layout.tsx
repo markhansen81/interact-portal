@@ -16,20 +16,28 @@ export default async function PortalLayout({
     redirect("/auth/login");
   }
 
-  // Fetch unread notification count for bottom nav badge
   const supabase = await createClient();
-  const { count: unreadCount } = await supabase
-    .from("notifications")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", profile.id)
-    .eq("read", false);
+
+  // Fetch unread notification count and unread message count in parallel
+  const [{ count: unreadCount }, { count: unreadMessages }] = await Promise.all([
+    supabase
+      .from("notifications")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", profile.id)
+      .eq("read", false),
+    supabase
+      .from("messages")
+      .select("*", { count: "exact", head: true })
+      .eq("to_user_id", profile.id)
+      .is("read_at", null),
+  ]);
 
   // No gate — dashboard shows onboarding tasks for everyone
 
   return (
     <div className="flex h-screen bg-white">
       <PWARegister />
-      <PortalSidebar profile={profile} unreadCount={unreadCount ?? 0} />
+      <PortalSidebar profile={profile} unreadCount={unreadCount ?? 0} unreadMessages={unreadMessages ?? 0} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <PortalHeader profile={profile} />
         <main className="flex-1 overflow-y-auto">

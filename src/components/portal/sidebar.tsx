@@ -75,7 +75,7 @@ function NavIcon({ icon, className }: { icon: string; className?: string }) {
 
 /* ─────────────── Bottom Navigation (Mobile) ─────────────── */
 
-function PortalBottomNav({ unreadCount = 0 }: { unreadCount?: number }) {
+function PortalBottomNav({ unreadCount = 0, unreadMessages = 0 }: { unreadCount?: number; unreadMessages?: number }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
 
@@ -98,21 +98,29 @@ function PortalBottomNav({ unreadCount = 0 }: { unreadCount?: number }) {
             <nav className="grid grid-cols-2 sm:grid-cols-3 gap-1 px-4 pb-4 pt-2">
               {overflowNavItems.map((item) => {
                 const active = isActive(item.href);
+                const showMsgBadge = item.href === "/portal/messages" && unreadMessages > 0;
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
                     onClick={() => setMoreOpen(false)}
-                    className={`flex flex-col items-center gap-1.5 px-2 py-3 text-[11px] font-medium transition-colors ${
+                    className={`relative flex flex-col items-center gap-1.5 px-2 py-3 text-[11px] font-medium transition-colors ${
                       active
                         ? "text-amber-700"
                         : "text-neutral-500 hover:text-neutral-900"
                     }`}
                   >
-                    <NavIcon
-                      icon={item.icon}
-                      className={`h-5 w-5 ${active ? "text-amber-600" : ""}`}
-                    />
+                    <div className="relative">
+                      <NavIcon
+                        icon={item.icon}
+                        className={`h-5 w-5 ${active ? "text-amber-600" : ""}`}
+                      />
+                      {showMsgBadge && (
+                        <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white">
+                          {unreadMessages > 9 ? "9+" : unreadMessages}
+                        </span>
+                      )}
+                    </div>
                     {item.label}
                   </Link>
                 );
@@ -172,7 +180,7 @@ function PortalBottomNav({ unreadCount = 0 }: { unreadCount?: number }) {
 
 /* ─────────────── Desktop Sidebar ─────────────── */
 
-function DesktopSidebar({ profile }: { profile: Profile }) {
+function DesktopSidebar({ profile, unreadMessages = 0 }: { profile: Profile; unreadMessages?: number }) {
   const pathname = usePathname();
   const initials = [profile.first_name?.[0], profile.last_name?.[0]].filter(Boolean).join("").toUpperCase() || "?";
 
@@ -196,18 +204,24 @@ function DesktopSidebar({ profile }: { profile: Profile }) {
             item.href === "/portal"
               ? pathname === "/portal"
               : pathname.startsWith(item.href);
+          const showMsgBadge = item.href === "/portal/messages" && unreadMessages > 0;
 
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium transition-colors ${
+              className={`relative flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium transition-colors ${
                 isActive
                   ? "text-neutral-900 underline underline-offset-4"
                   : "text-neutral-500 hover:text-neutral-900"
               }`}
             >
               {item.label}
+              {showMsgBadge && (
+                <span className="ml-auto flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+                  {unreadMessages > 9 ? "9+" : unreadMessages}
+                </span>
+              )}
             </Link>
           );
         })}
@@ -237,11 +251,11 @@ function DesktopSidebar({ profile }: { profile: Profile }) {
 
 /* ─────────────── Exported Component ─────────────── */
 
-export function PortalSidebar({ profile, unreadCount = 0 }: { profile: Profile; unreadCount?: number }) {
+export function PortalSidebar({ profile, unreadCount = 0, unreadMessages = 0 }: { profile: Profile; unreadCount?: number; unreadMessages?: number }) {
   return (
     <>
-      <DesktopSidebar profile={profile} />
-      <PortalBottomNav unreadCount={unreadCount} />
+      <DesktopSidebar profile={profile} unreadMessages={unreadMessages} />
+      <PortalBottomNav unreadCount={unreadCount} unreadMessages={unreadMessages} />
     </>
   );
 }

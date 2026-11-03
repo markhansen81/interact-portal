@@ -184,33 +184,62 @@ export default async function UnmatchedInvoicesPage() {
                   </table>
                 )}
 
-                {/* Non-qualifying rows (collapsed, faded) */}
+                {/* Non-qualifying rows — full table for crosscheck */}
                 {nonQualifying.length > 0 && (
-                  <div className="border-t border-neutral-100 px-5 py-2">
-                    <p className="text-xs text-neutral-400 mb-1">
-                      {nonQualifying.length} non-qualifying (travel / &lt;3 days / no level):
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {nonQualifying.map((inv, idx) => (
-                        <span key={idx} className="text-xs text-neutral-400">
-                          {inv.invoice_date ?? "?"}{" "}
-                          {inv.project_name ? `· ${inv.project_name.slice(0, 30)}` : ""}
-                          {inv.pdf_url && (
-                            <>
-                              {" "}
-                              <a
-                                href={inv.pdf_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-400 underline"
-                              >
-                                PDF
-                              </a>
-                            </>
-                          )}
-                        </span>
-                      ))}
+                  <div className="border-t border-amber-100 bg-amber-50/40">
+                    <div className="px-5 py-2 border-b border-amber-100">
+                      <span className="text-xs font-medium text-amber-700 uppercase tracking-wide">
+                        Not counted toward level — {nonQualifying.length} row{nonQualifying.length !== 1 ? "s" : ""} (&lt;3 days or no level on invoice)
+                      </span>
                     </div>
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-xs text-amber-600/70 uppercase tracking-wide border-b border-amber-100">
+                          <th className="text-left px-5 py-1.5 font-medium">Date</th>
+                          <th className="text-left px-5 py-1.5 font-medium">Project / Description</th>
+                          <th className="text-right px-5 py-1.5 font-medium w-16">Days</th>
+                          <th className="text-right px-5 py-1.5 font-medium w-28">Amount</th>
+                          <th className="text-right px-5 py-1.5 font-medium w-24">Level on Invoice</th>
+                          <th className="text-right px-5 py-1.5 font-medium w-16">PDF</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {nonQualifying.map((inv, idx) => (
+                          <tr key={idx} className="border-b border-amber-50 last:border-0 text-neutral-500">
+                            <td className="px-5 py-2">{inv.invoice_date ?? "—"}</td>
+                            <td className="px-5 py-2">
+                              <p>{inv.project_name ?? <span className="text-neutral-300">—</span>}</p>
+                              {inv.school && <p className="text-xs text-neutral-400">{inv.school}</p>}
+                            </td>
+                            <td className="px-5 py-2 text-right tabular-nums">
+                              {inv.days != null ? (
+                                <span className="text-amber-600 font-medium">{inv.days}</span>
+                              ) : (
+                                <span className="text-neutral-300">—</span>
+                              )}
+                            </td>
+                            <td className="px-5 py-2 text-right tabular-nums">
+                              {inv.total_amount != null
+                                ? `€${Number(inv.total_amount).toLocaleString("de-DE", { minimumFractionDigits: 2 })}`
+                                : <span className="text-neutral-300">—</span>}
+                            </td>
+                            <td className="px-5 py-2 text-right">
+                              {inv.level_invoiced
+                                ? <span className="font-mono text-neutral-500">{inv.level_invoiced}</span>
+                                : <span className="text-neutral-300">—</span>}
+                            </td>
+                            <td className="px-5 py-2 text-right">
+                              {inv.pdf_url ? (
+                                <a href={inv.pdf_url} target="_blank" rel="noopener noreferrer"
+                                  className="text-blue-500 hover:text-blue-700 text-xs underline">
+                                  PDF
+                                </a>
+                              ) : <span className="text-neutral-300">—</span>}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>
