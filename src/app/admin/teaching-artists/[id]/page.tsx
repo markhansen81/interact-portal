@@ -425,7 +425,6 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
               taId={ta.id}
               currentLevel={Number(ta.pay_level) || 0}
               qualifyingProjects={ta.qualifying_projects ?? 0}
-              pdCredits={ta.pd_workshop_credits ?? 0}
             />
             <div className="mt-4 space-y-2 text-sm divide-y divide-neutral-50">
               <div className="flex justify-between items-center pb-2">
