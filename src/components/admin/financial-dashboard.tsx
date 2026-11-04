@@ -284,12 +284,6 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
                     {inv.ai_check_passed === null && (
                       <Badge variant="default">No check</Badge>
                     )}
-                    {pdfUrl && (
-                      <a href={pdfUrl} target="_blank" rel="noopener noreferrer"
-                        className="text-[10px] font-medium text-neutral-500 underline hover:text-neutral-900">
-                        PDF
-                      </a>
-                    )}
                     {hasAiDetails && (
                       <button
                         onClick={() => setExpandedId(isExpanded ? null : inv.id)}
@@ -355,7 +349,17 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
                   {loadingId === inv.id ? (
                     <span className="text-xs text-neutral-400">...</span>
                   ) : (
-                    <div className="flex items-center justify-end gap-1">
+                    <div className="flex items-center justify-end gap-2">
+                      {(inv.pdf_url || inv.uploaded_pdf_url) && (
+                        <a
+                          href={`/api/admin/invoices/${inv.id}/pdf`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-neutral-500 underline hover:text-neutral-900"
+                        >
+                          View PDF
+                        </a>
+                      )}
                       {inv.status === "submitted" && (
                         <>
                           <Button
@@ -602,7 +606,7 @@ function ExpensesTable({ expenses, defaultFilter }: { expenses: Expense[]; defau
                     ) : (
                       <div className="flex items-center justify-end gap-1 flex-wrap">
                         {exp.pdf_url && (
-                          <a href={exp.pdf_url} target="_blank" rel="noopener noreferrer"
+                          <a href={`/api/admin/expenses/${exp.id}/pdf`} target="_blank" rel="noopener noreferrer"
                             className="text-[11px] font-medium text-neutral-500 underline hover:text-neutral-900">
                             View PDF
                           </a>
