@@ -62,9 +62,19 @@ export default async function ExpensesPage() {
                     {claim.total && ` — \u20AC${Number(claim.total).toFixed(2)}`}
                   </p>
                 </div>
-                <Badge variant={statusVariant[claim.status] || "default"}>
-                  {claim.status}
-                </Badge>
+                <div className="flex items-center gap-4">
+                  <a
+                    href={`/api/portal/expenses/${claim.id}/pdf`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-neutral-500 underline hover:text-neutral-700"
+                  >
+                    View PDF
+                  </a>
+                  <Badge variant={statusVariant[claim.status] || "default"}>
+                    {claim.status}
+                  </Badge>
+                </div>
               </div>
             );
           })}
