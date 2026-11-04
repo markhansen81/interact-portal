@@ -27,6 +27,8 @@ interface Invoice {
   status: string;
   submitted_at: string | null;
   work_order_id: string | null;
+  pdf_url: string | null;
+  uploaded_pdf_url: string | null;
 }
 
 interface Profile {
@@ -269,6 +271,16 @@ export function InvoicesPageClient({
                       </p>
                     </div>
                     <span className="text-sm font-semibold text-neutral-800">{fmt(inv.total)}</span>
+                    {(inv.pdf_url || inv.uploaded_pdf_url) && (
+                      <a
+                        href={`/api/portal/invoices/${inv.id}/pdf`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-neutral-500 underline hover:text-neutral-700"
+                      >
+                        View PDF
+                      </a>
+                    )}
                     <Badge variant={statusVariant[inv.status] || "default"}>{statusLabel[inv.status] || inv.status}</Badge>
                   </div>
                 );
@@ -287,6 +299,16 @@ export function InvoicesPageClient({
                       </p>
                     </div>
                     <span className="text-sm font-semibold text-neutral-800">{fmt(inv.total)}</span>
+                    {(inv.pdf_url || inv.uploaded_pdf_url) && (
+                      <a
+                        href={`/api/portal/invoices/${inv.id}/pdf`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-neutral-500 underline hover:text-neutral-700"
+                      >
+                        View PDF
+                      </a>
+                    )}
                     <Badge variant={statusVariant[inv.status] || "default"}>{statusLabel[inv.status] || inv.status}</Badge>
                   </div>
                 ))}

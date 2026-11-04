@@ -38,7 +38,7 @@ export default async function TAInvoicesPage() {
   // Fetch submitted invoices
   const { data: invoices } = await supabase
     .from("invoices")
-    .select("id, invoice_number, total, status, submitted_at, work_order_id")
+    .select("id, invoice_number, total, status, submitted_at, work_order_id, pdf_url, uploaded_pdf_url")
     .eq("ta_id", profile.id)
     .order("created_at", { ascending: false });
 
