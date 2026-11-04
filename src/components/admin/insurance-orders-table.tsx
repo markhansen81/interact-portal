@@ -115,6 +115,57 @@ function ResendButton({
   );
 }
 
+function RepairBanner({ affectedCount, onRepaired }: { affectedCount: number; onRepaired: () => void }) {
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleRepair() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/insurance-orders/repair", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Repair failed");
+      setDone(true);
+      onRepaired();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (done) {
+    return (
+      <div className="rounded-sm border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+        ✓ Repair complete — corrected PDFs resent to all affected customers.
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-sm border border-red-200 bg-red-50 px-4 py-3 flex items-center justify-between gap-4">
+      <div>
+        <p className="text-sm font-medium text-red-800">
+          {affectedCount} order{affectedCount !== 1 ? "s" : ""} with wrong participation fee (€12,900 instead of €129)
+        </p>
+        <p className="text-xs text-red-600 mt-0.5">
+          Caused by a number parsing bug (now fixed). Click to correct the data, regenerate PDFs, and resend to customers.
+        </p>
+        {error && <p className="text-xs text-red-700 mt-1 font-medium">{error}</p>}
+      </div>
+      <button
+        onClick={handleRepair}
+        disabled={loading}
+        className="shrink-0 rounded-sm bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+      >
+        {loading ? "Repairing…" : "Fix & Resend All"}
+      </button>
+    </div>
+  );
+}
+
 export function InsuranceOrdersTable({ orders: initialOrders }: { orders: InsuranceOrder[] }) {
   const [search, setSearch] = useState("");
   const [orders, setOrders] = useState(initialOrders);
@@ -136,11 +187,22 @@ export function InsuranceOrdersTable({ orders: initialOrders }: { orders: Insura
   const totalRevenue = orders.reduce((s, o) => s + Number(o.total), 0);
   const failedCount = orders.filter((o) => getDeliveryStatus(o) === "failed").length;
   const lastOrder = orders.length > 0 ? orders[0] : null; // orders are sorted desc by created_at
+  const affectedOrders = orders.filter((o) => Number(o.participation_fee) === 12900).length;
 
   function markDelivered(orderId: string) {
     setOrders((prev) =>
       prev.map((o) =>
         o.id === orderId ? { ...o, email_sent_at: new Date().toISOString() } : o
+      )
+    );
+  }
+
+  function markAllRepaired() {
+    setOrders((prev) =>
+      prev.map((o) =>
+        Number(o.participation_fee) === 12900
+          ? { ...o, participation_fee: 129, email_sent_at: new Date().toISOString() }
+          : o
       )
     );
   }
@@ -174,6 +236,11 @@ export function InsuranceOrdersTable({ orders: initialOrders }: { orders: Insura
           />
         </div>
       </div>
+
+      {/* Repair banner for corrupted orders */}
+      {affectedOrders > 0 && (
+        <RepairBanner affectedCount={affectedOrders} onRepaired={markAllRepaired} />
+      )}
 
       {/* Search */}
       <div>
