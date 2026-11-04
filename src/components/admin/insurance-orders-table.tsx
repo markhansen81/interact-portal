@@ -288,7 +288,7 @@ export function InsuranceOrdersTable({ orders: initialOrders }: { orders: Insura
                     <td className="py-4 pr-6">
                       {order.invoice_pdf_url ? (
                         <a
-                          href={order.invoice_pdf_url}
+                          href={`/api/admin/insurance-orders/${order.id}/pdf`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-sm text-neutral-900 underline hover:text-neutral-600"

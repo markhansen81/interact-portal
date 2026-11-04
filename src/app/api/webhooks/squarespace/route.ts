@@ -83,8 +83,16 @@ function extractFormFields(
       if (dbColumn === "agb_accepted" || dbColumn === "data_privacy_accepted") {
         fields[dbColumn] = true;
       } else if (dbColumn === "participation_fee" || dbColumn === "num_project_days") {
-        // Handle German number format: "109,00" → 109
-        const cleaned = field.value.replace(/\./g, "").replace(",", ".");
+        // Handle both German format (1.234,56 or 129,00) and decimal (129.00)
+        let cleaned = field.value;
+        if (cleaned.includes(".") && cleaned.includes(",")) {
+          // German thousands+decimal: 1.234,56 → 1234.56
+          cleaned = cleaned.replace(/\./g, "").replace(",", ".");
+        } else if (cleaned.includes(",")) {
+          // German decimal only: 129,00 → 129.00
+          cleaned = cleaned.replace(",", ".");
+        }
+        // else: already decimal dot format (129.00) or plain integer
         const num = Number(cleaned);
         fields[dbColumn] = isNaN(num) ? field.value : num;
       } else {
