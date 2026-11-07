@@ -38,6 +38,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "file_url and doc_type required" }, { status: 400 });
   }
 
+  // Restrict to Supabase storage to prevent SSRF
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!supabaseUrl || !file_url.startsWith(`${supabaseUrl}/storage/`)) {
+    return NextResponse.json({ error: "Invalid file URL" }, { status: 400 });
+  }
+
   const expectedDoc = DOC_TYPE_DESCRIPTIONS[doc_type] || "An official document";
 
   try {
