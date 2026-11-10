@@ -64,15 +64,16 @@ export async function POST(request: Request) {
   // Set temp password (works for both new and existing users)
   await adminClient.auth.admin.updateUserById(userId, { password: tempPassword });
 
-  // Update profile: set admin role + name
+  // Upsert profile — handles case where trigger rollback left no profile row
   await adminClient
     .from("profiles")
-    .update({
+    .upsert({
+      id: userId,
+      email,
       first_name: firstName || null,
       last_name: lastName || null,
       role: "admin",
-    })
-    .eq("id", userId);
+    }, { onConflict: "id" });
 
   // Send invite email
   const displayName = firstName || "Admin";
