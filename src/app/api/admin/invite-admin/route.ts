@@ -41,23 +41,24 @@ export async function POST(request: Request) {
     Math.random().toString(36).slice(-8).toUpperCase() +
     "!1";
 
-  // Try generateLink first; if user already exists, look them up and reset password instead
+  // Check if user already exists first (avoids trigger issues with generateLink on existing users)
   let userId: string;
-  const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-    type: "invite",
-    email,
-    options: { redirectTo: `${appUrl}/auth/callback?source=admin` },
-  });
+  const { data: listData } = await adminClient.auth.admin.listUsers({ perPage: 1000 });
+  const existing = listData?.users?.find((u) => u.email?.toLowerCase() === email.toLowerCase());
 
-  if (linkError || !linkData?.user) {
-    // User likely already exists — find them by email
-    const { data: listData } = await adminClient.auth.admin.listUsers();
-    const existing = listData?.users?.find((u) => u.email === email);
-    if (!existing) {
-      return NextResponse.json({ error: linkError?.message ?? "Failed to create user" }, { status: 400 });
-    }
+  if (existing) {
     userId = existing.id;
   } else {
+    // New user — create via generateLink
+    const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+      type: "invite",
+      email,
+      options: { redirectTo: `${appUrl}/auth/callback?source=admin` },
+    });
+
+    if (linkError || !linkData?.user) {
+      return NextResponse.json({ error: linkError?.message ?? "Failed to create user" }, { status: 400 });
+    }
     userId = linkData.user.id;
   }
 
