@@ -34,38 +34,41 @@ export async function POST(request: Request) {
   }
 
   const adminClient = createAdminClient();
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://interact-portal.vercel.app";
 
+  // Use generateLink (same flow as TA invite) to avoid DB trigger issues with createUser
+  const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+    type: "invite",
+    email,
+    options: { redirectTo: `${appUrl}/auth/callback?source=admin` },
+  });
+
+  if (linkError || !linkData?.user) {
+    return NextResponse.json({ error: linkError?.message ?? "Failed to create user" }, { status: 400 });
+  }
+
+  const userId = linkData.user.id;
+
+  // Set a temp password so they can log in with credentials (not just the magic link)
   const tempPassword =
     Math.random().toString(36).slice(-8) +
     Math.random().toString(36).slice(-8).toUpperCase() +
     "!1";
 
-  const { data: newUser, error: createError } =
-    await adminClient.auth.admin.createUser({
-      email,
-      password: tempPassword,
-      email_confirm: true,
-      user_metadata: { role: "admin" },
-    });
+  await adminClient.auth.admin.updateUserById(userId, { password: tempPassword });
 
-  if (createError) {
-    return NextResponse.json({ error: createError.message }, { status: 400 });
-  }
-
-  if (newUser.user) {
-    await adminClient
-      .from("profiles")
-      .update({
-        first_name: firstName || null,
-        last_name: lastName || null,
-        role: "admin",
-      })
-      .eq("id", newUser.user.id);
-  }
+  // Update profile: set admin role + name
+  await adminClient
+    .from("profiles")
+    .update({
+      first_name: firstName || null,
+      last_name: lastName || null,
+      role: "admin",
+    })
+    .eq("id", userId);
 
   // Send invite email
   const displayName = firstName || "Admin";
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://interact-portal.vercel.app";
 
   await sendEmail({
     to: email,
@@ -99,7 +102,7 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     success: true,
-    userId: newUser.user?.id,
+    userId,
     tempPassword,
   });
 }
