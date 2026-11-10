@@ -129,15 +129,6 @@ export function AdminSidebar({
         ))}
       </nav>
 
-      {/* Bottom */}
-      <div className="border-t border-neutral-200 px-6 py-4">
-        <Link
-          href="/admin/users"
-          className="text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
-        >
-          Settings
-        </Link>
-      </div>
     </aside>
   );
 }
