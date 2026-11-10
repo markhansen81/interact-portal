@@ -36,7 +36,13 @@ export async function POST(request: Request) {
   const adminClient = createAdminClient();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://interact-portal.vercel.app";
 
-  // Use generateLink (same flow as TA invite) to avoid DB trigger issues with createUser
+  const tempPassword =
+    Math.random().toString(36).slice(-8) +
+    Math.random().toString(36).slice(-8).toUpperCase() +
+    "!1";
+
+  // Try generateLink first; if user already exists, look them up and reset password instead
+  let userId: string;
   const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
     type: "invite",
     email,
@@ -44,17 +50,18 @@ export async function POST(request: Request) {
   });
 
   if (linkError || !linkData?.user) {
-    return NextResponse.json({ error: linkError?.message ?? "Failed to create user" }, { status: 400 });
+    // User likely already exists — find them by email
+    const { data: listData } = await adminClient.auth.admin.listUsers();
+    const existing = listData?.users?.find((u) => u.email === email);
+    if (!existing) {
+      return NextResponse.json({ error: linkError?.message ?? "Failed to create user" }, { status: 400 });
+    }
+    userId = existing.id;
+  } else {
+    userId = linkData.user.id;
   }
 
-  const userId = linkData.user.id;
-
-  // Set a temp password so they can log in with credentials (not just the magic link)
-  const tempPassword =
-    Math.random().toString(36).slice(-8) +
-    Math.random().toString(36).slice(-8).toUpperCase() +
-    "!1";
-
+  // Set temp password (works for both new and existing users)
   await adminClient.auth.admin.updateUserById(userId, { password: tempPassword });
 
   // Update profile: set admin role + name
