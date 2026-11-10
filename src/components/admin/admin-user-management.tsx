@@ -12,6 +12,8 @@ interface Admin {
  is_super_admin: boolean;
 }
 
+type SuccessState = { email: string; password: string | null };
+
 export function AdminUserManagement({ admins, currentUserId }: { admins: Admin[]; currentUserId: string }) {
  const [showInvite, setShowInvite] = useState(false);
  const [email, setEmail] = useState("");
@@ -19,7 +21,7 @@ export function AdminUserManagement({ admins, currentUserId }: { admins: Admin[]
  const [lastName, setLastName] = useState("");
  const [loading, setLoading] = useState(false);
  const [error, setError] = useState<string | null>(null);
- const [success, setSuccess] = useState<{ email: string; password: string } | null>(null);
+ const [success, setSuccess] = useState<SuccessState | null>(null);
  const router = useRouter();
 
  async function handleInvite(e: React.FormEvent) {
