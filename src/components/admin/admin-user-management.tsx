@@ -46,7 +46,7 @@ export function AdminUserManagement({ admins, currentUserId }: { admins: Admin[]
  return;
  }
 
- setSuccess({ email, password: data.tempPassword });
+ setSuccess({ email, password: null });
  setLoading(false);
  } catch {
  setError("Network error. Please try again.");
@@ -88,13 +88,8 @@ export function AdminUserManagement({ admins, currentUserId }: { admins: Admin[]
  <div className="mt-4 space-y-3">
  <div className="rounded-sm bg-green-50 p-4">
  <p className="text-sm font-medium text-green-700">Admin account created!</p>
+ <p className="mt-1 text-sm text-green-600">An invite email has been sent to <strong>{success.email}</strong>. They can log in at <strong>/auth/admin</strong> using their InterACT Google account.</p>
  </div>
- <div className="rounded-sm bg-neutral-50 p-4">
- <p className="text-xs text-neutral-500">Credentials:</p>
- <p className="mt-1 text-sm font-mono text-neutral-900">Email: {success.email}</p>
- <p className="text-sm font-mono text-neutral-900">Password: {success.password}</p>
- </div>
- <p className="text-xs text-neutral-400">Share these credentials securely. They should change their password after first login.</p>
  <button onClick={handleClose}
  className="w-full rounded-sm bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800">
  Done
