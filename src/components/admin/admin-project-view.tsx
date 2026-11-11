@@ -9,6 +9,7 @@ import { StaffingWizard } from"@/components/admin/staffing-wizard";
 interface Project {
  id: string;
  name: string;
+ ta_id: string | null;
  school: string | null;
  school_address: string | null;
  location: string | null;
@@ -569,7 +570,11 @@ export function AdminProjectView({
  <div>
  <h1 className="text-2xl font-bold text-neutral-900">{project.name}</h1>
  <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-neutral-500">
- <span>TA: {project.ta_name}</span>
+ <span>TA: {project.ta_id ? (
+   <Link href={`/admin/teaching-artists/${project.ta_id}`} className="hover:text-[#E91E8C] hover:underline">
+     {project.ta_name}
+   </Link>
+ ) : project.ta_name}</span>
  {project.school && <span>School: {project.school}</span>}
  {project.program_type && <span>Program: {project.program_type}</span>}
  {project.start_date && project.end_date && (
