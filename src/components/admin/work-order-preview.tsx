@@ -191,17 +191,23 @@ export function WorkOrderPreview({ workOrder: initialWO }: { workOrder: WorkOrde
         </div>
       </div>
 
-      {/* Linked Project */}
-      {wo.project_id && (
-        <div className="mx-auto max-w-3xl">
+      {/* Quick links */}
+      <div className="mx-auto max-w-3xl flex flex-wrap gap-2">
+        <Link
+          href={`/admin/teaching-artists/${wo.ta_id}`}
+          className="inline-flex items-center gap-2 rounded-sm border border-neutral-200 bg-neutral-50 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
+        >
+          View TA Profile: {taName} &rarr;
+        </Link>
+        {wo.project_id && (
           <Link
             href={`/admin/projects/${wo.project_id}`}
             className="inline-flex items-center gap-2 rounded-sm border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100"
           >
             View Linked Project &rarr;
           </Link>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Rendered Work Order Document */}
       <div className="mx-auto max-w-3xl rounded-sm border border-neutral-200 bg-white">
