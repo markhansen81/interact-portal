@@ -97,6 +97,15 @@ export async function POST(request: Request) {
     }
   }
 
+  // Log the sync result
+  await adminClient.from("monday_sync_logs").insert({
+    total: allItems.length,
+    created,
+    updated,
+    skipped,
+    ran_by: user.id,
+  });
+
   return NextResponse.json({
     success: true,
     created,

@@ -34,7 +34,7 @@ function getMondayOfCurrentWeek(): Date {
 export default async function JobsPage() {
  const supabase = await createClient();
 
- const [{ data: rawJobs }, { data: taProfiles }] = await Promise.all([
+ const [{ data: rawJobs }, { data: taProfiles }, { data: lastSync }] = await Promise.all([
  supabase
  .from("jobs")
  .select("*, work_orders(id, ta_id, status)")
@@ -43,6 +43,12 @@ export default async function JobsPage() {
  .from("profiles")
  .select("id, full_name, first_name, last_name")
  .eq("role", "ta"),
+ supabase
+ .from("monday_sync_logs")
+ .select("ran_at, total, created, updated, skipped, error")
+ .order("ran_at", { ascending: false })
+ .limit(1)
+ .single(),
  ]);
 
  const taNameMap = new Map((taProfiles || []).map((p) => [p.id, p.full_name ?? (p.first_name && p.last_name ? `${p.first_name} ${p.last_name}` : null)]));
@@ -122,6 +128,14 @@ export default async function JobsPage() {
   Click a row to expand — admin tasks, TA status &amp; teacher progress.
  </p>
  </div>
+ <div className="flex flex-col items-end gap-2">
+ {lastSync && (
+ <p className="text-xs text-neutral-400">
+ Last sync: {new Date(lastSync.ran_at).toLocaleString("de-DE")} —
+ {" "}{lastSync.created} created, {lastSync.updated} updated, {lastSync.skipped} skipped
+ {lastSync.error && <span className="ml-2 text-red-500">Error: {lastSync.error}</span>}
+ </p>
+ )}
  <div className="flex gap-3">
  <SyncJobsButton />
  <Link
@@ -131,6 +145,7 @@ export default async function JobsPage() {
  >
  Monday Board
  </Link>
+ </div>
  </div>
  </div>
 
