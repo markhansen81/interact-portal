@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { DeleteTAButton } from "@/components/admin/delete-ta-button";
+import { DeactivateTAButton } from "@/components/admin/deactivate-ta-button";
 import { Badge } from "@/components/ui";
 
 // ── Date helpers ───────────────────────────────────────────────────────────
@@ -381,9 +382,12 @@ export function TASearchFilter({
                         })()}
                       </td>
 
-                      {/* Delete */}
+                      {/* Actions */}
                       <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                        <DeleteTAButton id={ta.id} name={ta.first_name ? `${ta.first_name} ${ta.last_name}` : ta.email} />
+                        <div className="flex items-center justify-end gap-1">
+                          <DeactivateTAButton id={ta.id} name={ta.first_name ? `${ta.first_name} ${ta.last_name}` : ta.email} isActive={ta.is_active ?? true} />
+                          <DeleteTAButton id={ta.id} name={ta.first_name ? `${ta.first_name} ${ta.last_name}` : ta.email} />
+                        </div>
                       </td>
                     </tr>
 
