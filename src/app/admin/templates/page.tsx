@@ -40,6 +40,13 @@ export default async function TemplatesPage() {
 
  const templates = [
  {
+  title: "Email Templates",
+  description: "Transactional email templates sent via Resend for all platform events — work orders, invoices, nudges, leads, and more.",
+  href: "/admin/templates/emails",
+  version: "13 templates",
+  icon: "mail",
+ },
+ {
  title: "Work Order Template",
  description: "The template sent to TAs when assigning projects. Includes variable substitution for TA details, project info, and pay.",
  href: "/admin/work-orders/template",
@@ -148,6 +155,8 @@ export default async function TemplatesPage() {
 function TemplateIcon({ type }: { type: string }) {
  const cls = "h-5 w-5";
  switch (type) {
+ case "mail":
+ return <svg className={cls} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>;
  case "file-text":
  return <svg className={cls} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>;
  case "pen-tool":

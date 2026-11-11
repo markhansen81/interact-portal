@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notify } from "@/lib/notifications";
 import { workOrderSentEmail } from "@/lib/email";
+import { sendTemplatedEmail } from "@/lib/email-templates";
 import { notifyWorkOrderEvent } from "@/lib/slack";
 
 export async function POST(
@@ -50,15 +51,24 @@ export async function POST(
   // Notify TA
   const ta = wo.profiles as { id: string; first_name: string; last_name: string; email: string };
   const taName = `${ta.first_name || ""} ${ta.last_name || ""}`.trim() || ta.email;
-  const emailTemplate = workOrderSentEmail(taName, wo.project_name, wo.sign_by, id);
-
   await notify({
     userId: ta.id,
     type: "work_order_sent",
     title: "New Work Order",
     body: `You have a new work order for ${wo.project_name}`,
     payload: { link: `/portal/work-orders/${id}` },
-    email: { to: ta.email, ...emailTemplate },
+  });
+
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
+  await sendTemplatedEmail({
+    templateId: "work-order-sent",
+    vars: {
+      TA_NAME: taName,
+      PROJECT_NAME: wo.project_name ?? "",
+      WO_URL: `${APP_URL}/portal/work-orders/${id}`,
+    },
+    fallback: workOrderSentEmail(taName, wo.project_name, wo.sign_by, id),
+    to: ta.email,
   });
 
   // Slack notification
