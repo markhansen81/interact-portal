@@ -483,17 +483,26 @@ function ExpensesTable({ expenses, defaultFilter }: { expenses: Expense[]; defau
   const [datevLoadingId, setDatevLoadingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<ExpenseFilter>(defaultFilter);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
-  const flaggedExpenses = expenses.filter((e) => e.needs_review === true);
-  const submittedExpenses = expenses.filter((e) => e.status === "submitted");
-  const approvedExpenses = expenses.filter((e) => e.status === "approved");
-  const paidExpenses = expenses.filter((e) => e.status === "paid");
+  const afterSearch = search
+    ? expenses.filter((e) => {
+        const ta = e.profiles;
+        const name = `${ta?.first_name ?? ""} ${ta?.last_name ?? ""} ${ta?.email ?? ""}`.toLowerCase();
+        return name.includes(search.toLowerCase());
+      })
+    : expenses;
+
+  const flaggedExpenses = afterSearch.filter((e) => e.needs_review === true);
+  const submittedExpenses = afterSearch.filter((e) => e.status === "submitted");
+  const approvedExpenses = afterSearch.filter((e) => e.status === "approved");
+  const paidExpenses = afterSearch.filter((e) => e.status === "paid");
   const displayedExpenses =
     filter === "flagged" ? flaggedExpenses
     : filter === "submitted" ? submittedExpenses
     : filter === "approved" ? approvedExpenses
     : filter === "paid" ? paidExpenses
-    : expenses;
+    : afterSearch;
 
   async function updateStatus(id: string, status: string) {
     setLoadingId(id);
@@ -530,10 +539,24 @@ function ExpensesTable({ expenses, defaultFilter }: { expenses: Expense[]; defau
 
   return (
     <div className="space-y-3">
+      {/* Search */}
+      <div className="relative w-64">
+        <svg className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by TA name…"
+          className="w-full rounded-sm border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-[#E91E8C] focus:outline-none"
+        />
+      </div>
+
       {/* Sub-filter tabs — underline style */}
       <div className="flex gap-6 overflow-x-auto border-b border-neutral-200">
         {([
-          { key: "all", label: `All (${expenses.length})` },
+          { key: "all", label: `All (${afterSearch.length})` },
           { key: "submitted", label: `Pending (${submittedExpenses.length})` },
           { key: "approved", label: `Approved (${approvedExpenses.length})` },
           { key: "paid", label: `Paid (${paidExpenses.length})` },
