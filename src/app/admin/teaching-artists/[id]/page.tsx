@@ -458,6 +458,7 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
                       <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400">Program</th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400">Dates</th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400">Status</th>
+                      <th className="px-4 py-2.5 text-right text-xs font-semibold uppercase tracking-wider text-neutral-400"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-50">
@@ -475,6 +476,14 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
                             <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${ws.bg}`}>
                               {ws.label}
                             </span>
+                          </td>
+                          <td className="px-4 py-3.5 text-right">
+                            <Link
+                              href={`/admin/work-orders/${wo.id}`}
+                              className="text-xs text-neutral-400 hover:text-neutral-700 hover:underline"
+                            >
+                              View →
+                            </Link>
                           </td>
                         </tr>
                       );

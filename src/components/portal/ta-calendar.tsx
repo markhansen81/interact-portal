@@ -336,11 +336,6 @@ export function TACalendar({ workOrders }: { workOrders: WorkOrder[] }) {
  )}
  </div>
 
- {/* Team Meetings placeholder */}
- <div className="rounded-sm border border-neutral-200 bg-white p-4">
- <h4 className="mb-3 text-sm font-semibold text-neutral-900">Team Meetings</h4>
- <p className="text-sm text-neutral-500">No upcoming meetings.</p>
- </div>
  </div>
  </div>
  </div>

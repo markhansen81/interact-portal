@@ -45,7 +45,9 @@ export default async function ExpensesPage() {
       ) : (
         <div className="divide-y divide-neutral-100 border border-neutral-200 rounded-sm bg-white">
           {claims.map((claim) => {
-            const itemCount = (claim.expense_items as unknown[])?.length || 0;
+            const items = (claim.expense_items as { category?: string }[]) || [];
+            const itemCount = items.length;
+            const categories = Array.from(new Set(items.map((i) => i.category).filter(Boolean))).slice(0, 3).join(", ");
             return (
               <div
                 key={claim.id}
@@ -54,6 +56,7 @@ export default async function ExpensesPage() {
                 <div>
                   <p className="text-sm font-medium text-neutral-900">
                     Expense Claim — {itemCount} item{itemCount !== 1 ? "s" : ""}
+                    {categories && <span className="ml-1 font-normal text-neutral-500">({categories})</span>}
                   </p>
                   <p className="text-xs text-neutral-500">
                     {claim.submitted_at
