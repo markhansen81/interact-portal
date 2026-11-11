@@ -551,10 +551,17 @@ export function AdminProjectView({
 
  return (
  <div className="space-y-8">
- {/* Back link */}
- <Link href="/admin/projects"className="text-sm text-neutral-500 hover:text-neutral-700">
- &larr; Back to Projects
- </Link>
+ {/* Back link + WO link */}
+ <div className="flex items-center gap-4">
+   <Link href="/admin/projects" className="text-sm text-neutral-500 hover:text-neutral-700">
+     &larr; Back to Projects
+   </Link>
+   {project.work_order_id && (
+     <Link href={`/admin/work-orders/${project.work_order_id}`} className="text-sm text-neutral-500 hover:text-neutral-700">
+       View Work Order &rarr;
+     </Link>
+   )}
+ </div>
 
  {/* Project header */}
  <div className="rounded-sm border border-neutral-200 bg-white p-6">
