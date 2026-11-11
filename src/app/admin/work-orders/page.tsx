@@ -8,7 +8,7 @@ export default async function WorkOrdersPage() {
 
   const { data: workOrders } = await supabase
     .from("work_orders")
-    .select("id, project_name, school, start_date, end_date, days, total, status, profiles!work_orders_ta_id_fkey(first_name, last_name, email)")
+    .select("id, ta_id, project_name, school, start_date, end_date, days, total, status, profiles!work_orders_ta_id_fkey(first_name, last_name, email)")
     .order("start_date", { ascending: false });
 
   return (

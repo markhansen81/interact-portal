@@ -24,6 +24,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 interface WorkOrder {
   id: string;
+  ta_id: string | null;
   project_name: string | null;
   school: string | null;
   start_date: string | null;
@@ -149,7 +150,13 @@ export function WorkOrdersTable({ workOrders }: { workOrders: WorkOrder[] }) {
                         {wo.project_name || "—"}
                       </Link>
                     </td>
-                    <td className="py-3.5 pr-6 text-neutral-600">{taName}</td>
+                    <td className="py-3.5 pr-6 text-neutral-600">
+                      {wo.ta_id ? (
+                        <Link href={`/admin/teaching-artists/${wo.ta_id}`} className="hover:text-[#E91E8C] hover:underline">
+                          {taName}
+                        </Link>
+                      ) : taName}
+                    </td>
                     <td className="py-3.5 pr-6 text-neutral-500">{wo.school || "—"}</td>
                     <td className="py-3.5 pr-6 text-neutral-500 whitespace-nowrap">
                       {fmtDateRange(wo.start_date, wo.end_date)}
