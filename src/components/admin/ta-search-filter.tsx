@@ -87,11 +87,12 @@ interface WorkOrderEntry {
 
 function getMissing(ta: TAProfile, docs: TADoc[]) {
   const uploadedTypes = new Set(docs.filter((d) => d.status !== "not_uploaded").map((d) => d.type));
-  // treat legacy right_to_work as satisfying both visa + passport
+  // Right-to-work: visa OR passport (or legacy right_to_work) is sufficient
   const hasRightToWork = uploadedTypes.has("right_to_work");
   const missing: string[] = [];
-  if (!uploadedTypes.has("visa") && !hasRightToWork) missing.push("Visa");
-  if (!uploadedTypes.has("passport") && !hasRightToWork) missing.push("Passport");
+  const hasVisa = uploadedTypes.has("visa") || hasRightToWork;
+  const hasPassport = uploadedTypes.has("passport") || hasRightToWork;
+  if (!hasVisa && !hasPassport) missing.push("Visa or Passport");
   if (!uploadedTypes.has("police_check")) missing.push("Police Check");
   if (!uploadedTypes.has("measles")) missing.push("Measles");
   if (!ta.training_online || !ta.training_offline) missing.push("Training");

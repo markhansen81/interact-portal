@@ -40,9 +40,9 @@ interface MissingItem {
 
 type Filter = "all" | "incomplete" | "complete";
 
-const REQUIRED_DOCS = ["right_to_work", "police_check", "measles", "first_aid"];
+const REQUIRED_DOCS = ["police_check", "measles", "first_aid"];
 const DOC_LABELS: Record<string, string> = {
-  right_to_work: "Right to Work", police_check: "Police Check",
+  police_check: "Police Check",
   measles: "Measles Vaccination", first_aid: "First Aid",
 };
 
@@ -68,7 +68,10 @@ function getMissingItems(ta: TA, docs: Record<string, string>, prefsCount: numbe
   // Programs
   if (prefsCount < 29) missing.push({ id: "programs", label: `Programs (${prefsCount}/29)`, category: "profile" });
 
-  // Documents
+  // Documents — right-to-work: visa OR passport (or legacy right_to_work) is sufficient
+  const hasRtw = ["right_to_work", "visa", "passport"].some(t => docs[t] && docs[t] !== "not_uploaded");
+  if (!hasRtw) missing.push({ id: "doc_right_to_work", label: "Visa or Passport", category: "document" });
+
   for (const docType of REQUIRED_DOCS) {
     const status = docs[docType];
     if (!status || status === "not_uploaded") {

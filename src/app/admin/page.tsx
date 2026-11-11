@@ -38,7 +38,7 @@ export default async function AdminDashboard() {
   const { count: activeWOs } = await supabase
     .from("work_orders")
     .select("*", { count: "exact", head: true })
-    .in("status", ["sent", "signed"]);
+    .eq("status", "sent");
 
   // --- Alert counts ---
   // Expiring documents (within 30 days)
@@ -83,7 +83,8 @@ export default async function AdminDashboard() {
   const { count: failedInsurance } = await supabase
     .from("insurance_orders")
     .select("*", { count: "exact", head: true })
-    .is("email_sent_at", null);
+    .is("email_sent_at", null)
+    .gt("total", 0);
 
   // Pending reviews
   const { data: pendingReviews } = await supabase
@@ -146,7 +147,7 @@ export default async function AdminDashboard() {
           />
         </Link>
         <Link href="/admin/work-orders" className="pl-6 block">
-          <StatCard label="Active Work Orders" value={activeWOs ?? 0} />
+          <StatCard label="Pending Signatures" value={activeWOs ?? 0} />
         </Link>
       </div>
 
