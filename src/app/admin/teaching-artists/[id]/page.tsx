@@ -5,6 +5,7 @@ import { TAProfileEditor } from "@/components/admin/ta-profile-editor";
 import { TALevelEditor } from "@/components/admin/ta-level-editor";
 import { GenerateDocsButton } from "@/components/admin/generate-docs-button";
 import { TrainingToggle } from "@/components/admin/training-toggle";
+import { DeactivateTAButton } from "@/components/admin/deactivate-ta-button";
 import { logAudit } from "@/lib/audit";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -237,6 +238,7 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
                   {ta.onboarding_status.replace(/_/g, " ")}
                 </span>
               )}
+              <DeactivateTAButton id={ta.id} name={name} isActive={ta.is_active} />
             </div>
             <p className="mt-1 text-sm text-neutral-400">{ta.email}</p>
           </div>

@@ -59,6 +59,7 @@ const navSections: NavSection[] = [
     items: [
       { href: "/admin/lanes-planes", label: "Lanes & Planes" },
       { href: "/admin/users", label: "Admin Users" },
+      { href: "/admin/activity-log", label: "Activity Log" },
     ],
   },
 ];
