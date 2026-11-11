@@ -53,6 +53,10 @@ export function WorkOrderPreview({ workOrder: initialWO }: { workOrder: WorkOrde
     : ta.email;
 
   async function handleSend() {
+    if (!wo.total || wo.total <= 0) {
+      alert("Cannot send a work order with a €0 total. Please edit the total before sending.");
+      return;
+    }
     setLoading(true);
     await fetch(`/api/admin/work-orders/${wo.id}/send`, { method: "POST" });
     setLoading(false);

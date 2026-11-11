@@ -237,6 +237,7 @@ export default async function OfferDetailPage({ params }: Props) {
           contactEmail={offer.contact_email}
           contactName={offer.contact_name}
           creatorEmail={creatorEmail}
+          offerTotal={offer.total ?? null}
         />
       )}
 

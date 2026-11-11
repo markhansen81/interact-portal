@@ -9,6 +9,7 @@ interface SendOfferPanelProps {
   contactEmail: string;
   contactName: string | null;
   creatorEmail: string | null;
+  offerTotal: number | null;
 }
 
 export function SendOfferPanel({
@@ -17,6 +18,7 @@ export function SendOfferPanel({
   contactEmail,
   contactName,
   creatorEmail,
+  offerTotal,
 }: SendOfferPanelProps) {
   const router = useRouter();
   const [cc, setCc] = useState(creatorEmail || "");
@@ -26,6 +28,10 @@ export function SendOfferPanel({
   const [declining, setDeclining] = useState(false);
 
   async function handleSend() {
+    if (!offerTotal || offerTotal <= 0) {
+      setError("Cannot send an offer with a €0 total. Please edit the offer and add line items.");
+      return;
+    }
     setSending(true);
     setError(null);
     try {

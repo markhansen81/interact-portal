@@ -4,6 +4,7 @@ import Link from "next/link";
 import { TAProfileEditor } from "@/components/admin/ta-profile-editor";
 import { TALevelEditor } from "@/components/admin/ta-level-editor";
 import { GenerateDocsButton } from "@/components/admin/generate-docs-button";
+import { TrainingToggle } from "@/components/admin/training-toggle";
 import { logAudit } from "@/lib/audit";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -611,8 +612,14 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
           {/* Training */}
           <SideCard title="Training">
             <div className="space-y-1">
-              <TrainingRow label="Online Onboarding" done={ta.training_online} />
-              <TrainingRow label="Offline Foundation" done={ta.training_offline} />
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-neutral-700">Online Onboarding</span>
+                <TrainingToggle taId={ta.id} field="training_online" checked={ta.training_online ?? false} />
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-neutral-700">Offline Foundation</span>
+                <TrainingToggle taId={ta.id} field="training_offline" checked={ta.training_offline ?? false} />
+              </div>
             </div>
           </SideCard>
 
@@ -707,17 +714,3 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
   );
 }
 
-function TrainingRow({ label, done }: { label: string; done: boolean }) {
-  return (
-    <div className="flex items-center justify-between py-2">
-      <span className="text-sm text-neutral-700">{label}</span>
-      <span
-        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-          done ? "bg-green-100 text-green-700" : "bg-neutral-100 text-neutral-400"
-        }`}
-      >
-        {done ? "Complete" : "Not complete"}
-      </span>
-    </div>
-  );
-}
