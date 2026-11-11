@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ServicesTable } from "@/components/admin/services-table";
+import { PayScalesEditor } from "@/components/admin/pay-scales-editor";
 
 export default async function ServicesPage() {
  const profile = await requireAuth(["admin"]);
@@ -41,34 +42,8 @@ export default async function ServicesPage() {
  {/* Pay Scales */}
  <div>
  <h2 className="text-lg font-semibold text-neutral-900 mb-3">Pay Scales</h2>
- <div className="overflow-hidden rounded-sm border border-neutral-200 bg-white">
- <table className="w-full">
- <thead>
- <tr className="border-b border-neutral-100">
- <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Type</th>
- <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Level</th>
- <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Label</th>
- <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Min Projects</th>
- <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Rates</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-neutral-50">
- {(payScales || []).map((ps) => (
- <tr key={ps.id} className="hover:bg-neutral-50/50">
- <td className="px-5 py-3 text-sm font-medium text-neutral-900 capitalize">{ps.scale_type}</td>
- <td className="px-5 py-3 text-sm text-neutral-500">{ps.level}</td>
- <td className="px-5 py-3 text-sm text-neutral-500">{ps.level_label}</td>
- <td className="px-5 py-3 text-sm text-neutral-500">{ps.min_projects ?? "—"}</td>
- <td className="px-5 py-3 text-xs text-neutral-500 font-mono">
- {Object.entries(ps.rates as Record<string, number>).map(([days, rate]) => (
- <span key={days} className="inline-block mr-3">{days}d: €{rate}</span>
- ))}
- </td>
- </tr>
- ))}
- </tbody>
- </table>
- </div>
+ <p className="mb-4 text-sm text-neutral-500">Edit rates and labels inline. Changes apply to new work orders immediately.</p>
+ <PayScalesEditor payScales={payScales || []} />
  </div>
 
  {/* Travel Stipends */}

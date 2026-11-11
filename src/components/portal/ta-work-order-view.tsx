@@ -19,6 +19,7 @@ interface WorkOrder {
  end_date: string;
  days: number;
  program_type: string;
+ camp_role: string | null;
  special_conditions: string;
  co_taught: boolean;
  grade: string;
@@ -153,6 +154,7 @@ export function TAWorkOrderView({
  {wo.school_address && <Row label="Address"value={wo.school_address} />}
  {wo.school_state && <Row label="State"value={wo.school_state} />}
  <Row label="Project type"value={wo.program_type} />
+ {wo.camp_role && <Row label="Camp role"value={wo.camp_role} />}
  {wo.special_conditions && <Row label="Special conditions"value={wo.special_conditions} />}
  <Row label="Co taught"value={wo.co_taught ?"Co taught":"Not co taught"} />
  {wo.grade && <Row label="Grade"value={wo.grade} />}

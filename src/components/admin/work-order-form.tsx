@@ -75,6 +75,7 @@ export function WorkOrderForm({
     end_date: "",
     days: 1,
     program_type: "",
+    camp_role: "",
     special_conditions: "",
     co_taught: false,
     grade: "",
@@ -118,6 +119,7 @@ export function WorkOrderForm({
       body: JSON.stringify({
         ...form,
         project_id: form.project_id || null,
+        camp_role: form.camp_role || null,
         daily_rate: calculatedRate ? calculatedRate / form.days : null,
         total: calculatedRate,
       }),
@@ -235,6 +237,26 @@ export function WorkOrderForm({
               ))}
             </select>
           </div>
+          {iscamp && (
+            <div>
+              <Label>Camp Role</Label>
+              <select
+                value={form.camp_role}
+                onChange={(e) => update("camp_role", e.target.value)}
+                className="input"
+              >
+                <option value="">Select role...</option>
+                <option value="Camp Director">Camp Director</option>
+                <option value="Co-Director">Co-Director</option>
+                <option value="Teaching Artist">Teaching Artist</option>
+                <option value="Film Editor">Film Editor</option>
+                <option value="Drama Lead">Drama Lead</option>
+                <option value="Music Lead">Music Lead</option>
+                <option value="Art Lead">Art Lead</option>
+                <option value="Sports Lead">Sports Lead</option>
+              </select>
+            </div>
+          )}
           <div>
             <Label>Number of Days</Label>
             <input

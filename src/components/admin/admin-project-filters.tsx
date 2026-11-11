@@ -12,6 +12,7 @@ interface Project {
   end_date: string | null;
   status: string;
   ta_name: string;
+  team_names: string[];
   total_tasks: number;
   completed_tasks: number;
 }
@@ -43,6 +44,7 @@ export function AdminProjectFilters({ projects }: { projects: Project[] }) {
         const q = search.toLowerCase();
         return (
           (p.name || "").toLowerCase().includes(q) ||
+          (p.team_names || []).some((n) => n.toLowerCase().includes(q)) ||
           (p.ta_name || "").toLowerCase().includes(q) ||
           (p.school || "").toLowerCase().includes(q)
         );
@@ -120,7 +122,11 @@ export function AdminProjectFilters({ projects }: { projects: Project[] }) {
                       {p.name}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">{p.ta_name}</td>
+                  <td className="px-4 py-3 text-neutral-600">
+                    {p.team_names.length > 0
+                      ? p.team_names.join(", ")
+                      : p.ta_name}
+                  </td>
                   <td className="px-4 py-3 text-neutral-600">{p.program_type || "—"}</td>
                   <td className="px-4 py-3 text-neutral-600">{p.school || "—"}</td>
                   <td className="px-4 py-3 text-neutral-600 whitespace-nowrap">

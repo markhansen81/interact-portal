@@ -33,6 +33,51 @@ export async function POST(
 
   const adminClient = createAdminClient();
 
+  // Fetch WO to get ta_id
+  const { data: woDraft } = await adminClient
+    .from("work_orders")
+    .select("ta_id")
+    .eq("id", id)
+    .single();
+
+  if (woDraft?.ta_id) {
+    // Check compliance docs: RTW (visa/passport/right_to_work), police_check, measles
+    const { data: docs } = await adminClient
+      .from("documents")
+      .select("type, status, expiry_date")
+      .eq("ta_id", woDraft.ta_id)
+      .in("status", ["approved", "uploaded"]);
+
+    const today = new Date().toISOString().split("T")[0];
+    const docMap: Record<string, { status: string; expiry_date: string | null }> = {};
+    for (const d of docs || []) {
+      // Keep the most recently processed one (approved preferred over uploaded)
+      if (!docMap[d.type] || d.status === "approved") {
+        docMap[d.type] = { status: d.status, expiry_date: d.expiry_date };
+      }
+    }
+
+    const isValid = (type: string) => {
+      const d = docMap[type];
+      if (!d) return false;
+      if (d.expiry_date && d.expiry_date < today) return false;
+      return true;
+    };
+
+    const missingDocs: string[] = [];
+    const hasRtw = isValid("right_to_work") || isValid("visa") || isValid("passport");
+    if (!hasRtw) missingDocs.push("Right to Work (visa or passport)");
+    if (!isValid("police_check")) missingDocs.push("Police Check");
+    if (!isValid("measles")) missingDocs.push("Measles Vaccination");
+
+    if (missingDocs.length > 0) {
+      return NextResponse.json(
+        { error: `Cannot send: TA is missing or has expired: ${missingDocs.join(", ")}` },
+        { status: 400 }
+      );
+    }
+  }
+
   // Update status to sent
   const { data: wo, error } = await adminClient
     .from("work_orders")

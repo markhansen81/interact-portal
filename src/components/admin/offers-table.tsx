@@ -156,7 +156,7 @@ export function OffersTable({ offers }: { offers: Offer[] }) {
                 Status
               </th>
               <th className="pb-3 pr-6 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">
-                Created
+                Valid Until
               </th>
               <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">
                 Actions
@@ -173,10 +173,14 @@ export function OffersTable({ offers }: { offers: Offer[] }) {
             ) : (
               filtered.map((offer) => {
                 const status = (offer.status || "draft") as OfferStatus;
+                const today = new Date().toISOString().split("T")[0];
+                const sevenDays = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
+                const isExpiringSoon = offer.status === "sent" && offer.valid_until && offer.valid_until <= sevenDays && offer.valid_until >= today;
+                const isPastDue = offer.status === "sent" && offer.valid_until && offer.valid_until < today;
                 return (
                   <tr
                     key={offer.id}
-                    className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors"
+                    className={`border-b border-neutral-100 hover:bg-neutral-50 transition-colors ${isPastDue ? "bg-red-50/40" : isExpiringSoon ? "bg-amber-50/40" : ""}`}
                   >
                     <td className="py-4 pr-6 font-medium text-neutral-900">
                       {offer.offer_number || "-"}
@@ -205,8 +209,16 @@ export function OffersTable({ offers }: { offers: Offer[] }) {
                         {statusLabel[status] || status}
                       </Badge>
                     </td>
-                    <td className="py-4 pr-6 text-neutral-600">
-                      {new Date(offer.created_at).toLocaleDateString("de-DE")}
+                    <td className="py-4 pr-6">
+                      {offer.valid_until ? (
+                        <span className={isPastDue ? "text-red-600 font-medium" : isExpiringSoon ? "text-amber-600 font-medium" : "text-neutral-600"}>
+                          {new Date(offer.valid_until + "T00:00:00").toLocaleDateString("de-DE")}
+                          {isPastDue && " (expired)"}
+                          {isExpiringSoon && " (soon)"}
+                        </span>
+                      ) : (
+                        <span className="text-neutral-400">—</span>
+                      )}
                     </td>
                     <td className="py-4">
                       <Link

@@ -86,6 +86,15 @@ export default async function AdminDashboard() {
     .is("email_sent_at", null)
     .gt("total", 0);
 
+  // Sent offers expiring within 7 days
+  const sevenDaysFromNow = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
+  const { count: expiringOffers } = await supabase
+    .from("offers")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "sent")
+    .lte("valid_until", sevenDaysFromNow)
+    .gte("valid_until", new Date().toISOString().split("T")[0]);
+
   // Pending reviews
   const { data: pendingReviews } = await supabase
     .from("admin_review_tasks")
@@ -159,6 +168,7 @@ export default async function AdminDashboard() {
         stalledOnboarding={stalledOnboarding ?? 0}
         pendingExpenses={pendingExpenses ?? 0}
         failedInsurance={failedInsurance ?? 0}
+        expiringOffers={expiringOffers ?? 0}
       />
 
       {/* Review Queue */}
@@ -213,6 +223,7 @@ function AlertsPanel({
   stalledOnboarding,
   pendingExpenses,
   failedInsurance,
+  expiringOffers,
 }: {
   expiringDocs: number;
   unsignedWOs: number;
@@ -220,6 +231,7 @@ function AlertsPanel({
   stalledOnboarding: number;
   pendingExpenses: number;
   failedInsurance: number;
+  expiringOffers: number;
 }) {
   const urgent = [
     {
@@ -255,6 +267,16 @@ function AlertsPanel({
   ].filter((a) => a.count > 0);
 
   const warnings = [
+    {
+      label: "Sent offers expiring within 7 days",
+      count: expiringOffers,
+      href: "/admin/offers",
+      icon: (
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+    },
     {
       label: "Pending invoice approvals",
       count: pendingInvoices,
