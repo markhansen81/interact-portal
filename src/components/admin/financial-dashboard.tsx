@@ -212,6 +212,7 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
   const router = useRouter();
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   async function updateStatus(id: string, status: string) {
     setLoadingId(id);
@@ -224,6 +225,15 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
     router.refresh();
   }
 
+  const filtered = search
+    ? invoices.filter((inv) => {
+        const ta = inv.profiles;
+        const name = `${ta?.first_name ?? ""} ${ta?.last_name ?? ""} ${ta?.email ?? ""}`.toLowerCase();
+        const q = search.toLowerCase();
+        return name.includes(q) || (inv.invoice_number || "").toLowerCase().includes(q);
+      })
+    : invoices;
+
   if (invoices.length === 0) {
     return (
       <div className="border border-dashed border-neutral-300 bg-white p-12 text-center rounded-sm">
@@ -233,6 +243,19 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
   }
 
   return (
+    <div className="space-y-3">
+      <div className="relative">
+        <svg className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by TA name or invoice number…"
+          className="w-72 rounded-sm border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-[#E91E8C] focus:outline-none"
+        />
+      </div>
     <div className="overflow-hidden border border-neutral-200 bg-white rounded-sm">
       <table className="w-full">
         <thead>
@@ -248,7 +271,14 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-neutral-100">
-          {invoices.map((inv) => {
+          {filtered.length === 0 ? (
+            <tr>
+              <td colSpan={8} className="py-10 text-center text-sm text-neutral-400">
+                No invoices match your search
+              </td>
+            </tr>
+          ) : null}
+          {filtered.map((inv) => {
             const ta = inv.profiles;
             const taName = ta?.first_name && ta?.last_name ? `${ta.first_name} ${ta.last_name}` : ta?.email || "\u2014";
             const initials = [ta?.first_name?.[0], ta?.last_name?.[0]].filter(Boolean).join("").toUpperCase() || "?";
@@ -442,6 +472,7 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
           </div>
         );
       })}
+    </div>
     </div>
   );
 }
