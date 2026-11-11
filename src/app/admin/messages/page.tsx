@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import Link from "next/link";
+import { MessagesList } from "@/components/admin/messages-list";
 
 export default async function MessagesPage() {
  const profile = await requireAuth(["admin"]);
@@ -51,6 +51,11 @@ export default async function MessagesPage() {
  return 0;
  });
 
+ const statsRecord: Record<string, { lastMessage: string; lastTime: string; unread: number }> = {};
+ for (const [id, s] of taStats.entries()) {
+   statsRecord[id] = s;
+ }
+
  return (
  <div className="space-y-6">
  <div>
@@ -63,78 +68,8 @@ export default async function MessagesPage() {
  <p className="text-neutral-500">No teaching artists to message yet.</p>
  </div>
  ) : (
- <div className="overflow-hidden rounded-sm border border-neutral-200 bg-white">
- {sortedTAs.map((ta, i) => {
- const stats = taStats.get(ta.id);
- const name = ta.first_name && ta.last_name ? `${ta.first_name} ${ta.last_name}` : ta.email;
- const initials = [ta.first_name?.[0], ta.last_name?.[0]].filter(Boolean).join("").toUpperCase() || "?";
-
- return (
- <Link
- href={`/admin/messages/${ta.id}`}
- key={ta.id}
- className={`flex items-center gap-4 px-5 py-4 transition-colors hover:bg-neutral-50 ${
- i < sortedTAs.length - 1 ? "border-b border-neutral-100" : ""
- } ${stats?.unread ? "bg-blue-50/30" : ""}`}
- >
- {/* Avatar */}
- <div className="relative">
- {ta.photo_url ? (
- <img src={ta.photo_url} alt="" className="h-11 w-11 rounded-full object-cover" />
- ) : (
- <div className="flex h-11 w-11 items-center justify-center rounded-full bg-neutral-100 text-sm font-semibold text-neutral-500">
- {initials}
- </div>
- )}
- {(stats?.unread || 0) > 0 && (
- <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-blue-500 px-1 text-[10px] font-bold text-white">
- {stats!.unread}
- </span>
- )}
- </div>
-
- {/* Content */}
- <div className="flex-1 min-w-0">
- <div className="flex items-center justify-between">
- <p className={`text-sm ${stats?.unread ? "font-bold text-neutral-900" : "font-medium text-neutral-900"}`}>
- {name}
- </p>
- {stats?.lastTime && (
- <span className="text-[11px] text-neutral-400">
- {formatTime(stats.lastTime)}
- </span>
- )}
- </div>
- {stats?.lastMessage ? (
- <p className={`mt-0.5 truncate text-[13px] ${stats.unread ? "font-medium text-neutral-700" : "text-neutral-500"}`}>
- {stats.lastMessage}
- </p>
- ) : (
- <p className="mt-0.5 text-[13px] text-neutral-400 italic">No messages yet</p>
- )}
- </div>
-
- {/* Arrow */}
- <svg className="h-4 w-4 shrink-0 text-neutral-300" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
- <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
- </svg>
- </Link>
- );
- })}
- </div>
+   <MessagesList tas={sortedTAs} taStats={statsRecord} />
  )}
  </div>
  );
-}
-
-function formatTime(dateStr: string): string {
- const d = new Date(dateStr);
- const now = new Date();
- const diffMs = now.getTime() - d.getTime();
- const diffDays = Math.floor(diffMs / 86400000);
-
- if (diffDays === 0) return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
- if (diffDays === 1) return "Yesterday";
- if (diffDays < 7) return d.toLocaleDateString("en-GB", { weekday: "short" });
- return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }

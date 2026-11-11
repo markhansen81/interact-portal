@@ -147,6 +147,7 @@ export function TAWorkOrderView({
  Project Details
  </h3>
  <dl className="mt-4 space-y-2">
+ {wo.project_name && <Row label="Project"value={wo.project_name} />}
  <Row label="Date"value={`${wo.start_date} — ${wo.end_date}, ${wo.days} day${wo.days > 1 ?"s":""}`} />
  <Row label="Organisation"value={wo.school} />
  {wo.school_address && <Row label="Address"value={wo.school_address} />}

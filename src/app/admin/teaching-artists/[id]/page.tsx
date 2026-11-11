@@ -606,6 +606,12 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
                 <span className="text-neutral-400 text-xs">PD credits</span>
                 <span className="font-semibold text-neutral-900">{ta.pd_workshop_credits ?? <Empty />}</span>
               </div>
+              {ta.category && (
+                <div className="flex justify-between items-center pt-2">
+                  <span className="text-neutral-400 text-xs">Category</span>
+                  <span className="font-semibold text-neutral-900 text-xs">{ta.category}</span>
+                </div>
+              )}
             </div>
           </SideCard>
 
