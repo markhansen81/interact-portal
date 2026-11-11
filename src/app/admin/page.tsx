@@ -105,12 +105,14 @@ export default async function AdminDashboard() {
   (allDocs || []).forEach((d) => docMap.set(`${d.ta_id}:${d.type}`, d));
 
   // Attach docs to reviews
-  const reviewsWithDocs = (pendingReviews || []).map((r) => ({
-    ...r,
-    document: r.type === "document_upload" && r.reference_id
-      ? docMap.get(`${r.ta_id}:${r.reference_id}`) || null
-      : null,
-  }));
+  const reviewsWithDocs = (pendingReviews || [])
+    .filter((r) => r.ta !== null)
+    .map((r) => ({
+      ...r,
+      document: r.type === "document_upload" && r.reference_id
+        ? docMap.get(`${r.ta_id}:${r.reference_id}`) || null
+        : null,
+    }));
 
   const reviewCount = reviewsWithDocs.length;
 

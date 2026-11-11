@@ -118,7 +118,21 @@ export async function DELETE(
     }
     await adminClient.from("expense_claims").delete().eq("ta_id", id);
 
+    // Clear activity_log and church_ta_slots referencing this TA's work orders before deleting work orders
+    const { data: workOrders } = await adminClient
+      .from("work_orders")
+      .select("id")
+      .eq("ta_id", id);
+    if (workOrders && workOrders.length > 0) {
+      const woIds = workOrders.map((wo) => wo.id);
+      await adminClient.from("activity_log").delete().in("work_order_id", woIds);
+      await adminClient.from("church_ta_slots").delete().in("work_order_id", woIds);
+    }
     await adminClient.from("work_orders").delete().eq("ta_id", id);
+
+    await adminClient.from("contracts").delete().eq("ta_id", id);
+    await adminClient.from("project_tas").delete().eq("ta_id", id);
+    await adminClient.from("church_ta_slots").delete().eq("ta_id", id);
     await adminClient.from("documents").delete().eq("ta_id", id);
     await adminClient.from("ta_program_preferences").delete().eq("ta_id", id);
     await adminClient.from("availability").delete().eq("ta_id", id);
@@ -126,6 +140,15 @@ export async function DELETE(
     await adminClient.from("messages").delete().eq("from_user_id", id);
     await adminClient.from("messages").delete().eq("to_user_id", id);
     await adminClient.from("activity_log").delete().eq("ta_id", id);
+
+    // Nullify projects.ta_id and auditing refs
+    await adminClient.from("projects").update({ ta_id: null }).eq("ta_id", id);
+    await adminClient.from("project_documents").update({ uploaded_by: null }).eq("uploaded_by", id);
+    await adminClient.from("documents").update({ verified_by: null }).eq("verified_by", id);
+    await adminClient.from("admin_review_tasks").update({ reviewed_by: null }).eq("reviewed_by", id);
+    await adminClient.from("admin_project_tasks").update({ completed_by: null }).eq("completed_by", id);
+    await adminClient.from("school_invoices").update({ created_by: null }).eq("created_by", id);
+    await adminClient.from("ta_profile_docs").update({ generated_by: null }).eq("generated_by", id);
 
     // Delete profile
     const { error: profileError } = await adminClient
