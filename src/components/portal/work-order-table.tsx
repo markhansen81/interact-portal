@@ -164,6 +164,11 @@ export function WorkOrderTable({ workOrders, projectMap = {} }: { workOrders: Wo
                         {wo.status === "sent" ? "Sign" : "View"}
                       </Button>
                     </Link>
+                    {wo.status === "signed" && projectMap[wo.id] && (
+                      <Link href={`/portal/projects/${projectMap[wo.id]}`}>
+                        <Button variant="primary" size="sm" className="bg-blue-600 hover:bg-blue-700">Project</Button>
+                      </Link>
+                    )}
                   </div>
                 </div>
               </Card>
