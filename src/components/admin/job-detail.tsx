@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 function fmtDate(d: string) { const [,m,day] = d.split("-"); return `${parseInt(day)} ${MONTHS[parseInt(m)-1]}`; }
@@ -175,9 +176,9 @@ export function JobDetail({
                 return (
                   <div key={wo.id} className="flex items-center gap-4 py-3">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-neutral-900">
+                      <Link href={`/admin/teaching-artists/${wo.ta_id}`} className="text-sm font-medium text-neutral-900 hover:underline">
                         {ta.first_name} {ta.last_name}
-                      </p>
+                      </Link>
                       <p className="text-xs text-neutral-400">
                         Level {ta.pay_level} · {ta.email}
                       </p>
@@ -193,6 +194,9 @@ export function JobDetail({
                     <span className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${s.cls}`}>
                       {s.label}
                     </span>
+                    <Link href={`/admin/work-orders/${wo.id}`} className="text-xs text-neutral-400 hover:text-neutral-700 shrink-0">
+                      WO →
+                    </Link>
                   </div>
                 );
               })}
