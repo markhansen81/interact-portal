@@ -478,12 +478,22 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
                             </span>
                           </td>
                           <td className="px-4 py-3.5 text-right">
-                            <Link
-                              href={`/admin/work-orders/${wo.id}`}
-                              className="text-xs text-neutral-400 hover:text-neutral-700 hover:underline"
-                            >
-                              View →
-                            </Link>
+                            <div className="flex items-center justify-end gap-3">
+                              {wo.project_id && (
+                                <Link
+                                  href={`/admin/projects/${wo.project_id}`}
+                                  className="text-xs text-blue-500 hover:text-blue-700 hover:underline"
+                                >
+                                  Project →
+                                </Link>
+                              )}
+                              <Link
+                                href={`/admin/work-orders/${wo.id}`}
+                                className="text-xs text-neutral-400 hover:text-neutral-700 hover:underline"
+                              >
+                                WO →
+                              </Link>
+                            </div>
                           </td>
                         </tr>
                       );

@@ -39,19 +39,44 @@ function formatDate(dateStr: string): string {
 
 export function ProjectTable({ projects }: { projects: Project[] }) {
   const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
 
-  const filtered = filter === "all" ? projects : projects.filter((p) => p.status === filter);
+  const afterSearch = search
+    ? projects.filter((p) => {
+        const q = search.toLowerCase();
+        return (
+          (p.name || "").toLowerCase().includes(q) ||
+          (p.school || "").toLowerCase().includes(q)
+        );
+      })
+    : projects;
+
+  const filtered = filter === "all" ? afterSearch : afterSearch.filter((p) => p.status === filter);
 
   const counts = {
-    all: projects.length,
-    upcoming: projects.filter((p) => p.status === "upcoming").length,
-    active: projects.filter((p) => p.status === "active").length,
-    completed: projects.filter((p) => p.status === "completed").length,
+    all: afterSearch.length,
+    upcoming: afterSearch.filter((p) => p.status === "upcoming").length,
+    active: afterSearch.filter((p) => p.status === "active").length,
+    completed: afterSearch.filter((p) => p.status === "completed").length,
   };
 
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold tracking-tight text-neutral-900">My Projects</h2>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h2 className="text-3xl font-bold tracking-tight text-neutral-900">My Projects</h2>
+        <div className="relative">
+          <svg className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search project or school…"
+            className="w-64 rounded-sm border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none"
+          />
+        </div>
+      </div>
 
       {/* Filter tabs */}
       <div className="flex gap-1 border-b border-neutral-200">

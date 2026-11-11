@@ -70,19 +70,44 @@ function DeadlineBadge({ signBy, status }: { signBy: string | null; status: stri
 
 export function WorkOrderTable({ workOrders, projectMap = {} }: { workOrders: WorkOrder[]; projectMap?: Record<string, string> }) {
   const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
 
-  const filtered = filter === "all" ? workOrders : workOrders.filter((wo) => wo.status === filter);
+  const afterSearch = search
+    ? workOrders.filter((wo) => {
+        const q = search.toLowerCase();
+        return (
+          (wo.project_name || "").toLowerCase().includes(q) ||
+          (wo.school || "").toLowerCase().includes(q)
+        );
+      })
+    : workOrders;
+
+  const filtered = filter === "all" ? afterSearch : afterSearch.filter((wo) => wo.status === filter);
 
   const counts = {
-    all: workOrders.length,
-    sent: workOrders.filter((wo) => wo.status === "sent").length,
-    signed: workOrders.filter((wo) => wo.status === "signed").length,
-    declined: workOrders.filter((wo) => wo.status === "declined").length,
+    all: afterSearch.length,
+    sent: afterSearch.filter((wo) => wo.status === "sent").length,
+    signed: afterSearch.filter((wo) => wo.status === "signed").length,
+    declined: afterSearch.filter((wo) => wo.status === "declined").length,
   };
 
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold tracking-tight text-neutral-900">My Work Orders</h2>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h2 className="text-3xl font-bold tracking-tight text-neutral-900">My Work Orders</h2>
+        <div className="relative">
+          <svg className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search project or school…"
+            className="w-64 rounded-sm border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none"
+          />
+        </div>
+      </div>
 
       {/* Filter tabs */}
       <div className="flex gap-1 border-b border-neutral-200">
