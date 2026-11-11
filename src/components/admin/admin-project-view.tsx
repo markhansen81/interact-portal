@@ -632,7 +632,7 @@ export function AdminProjectView({
  hometown_country: m.profile.hometown_country,
  };
  return (
- <TAProfileCard key={m.ta_id} profile={taProfile} variant="school"/>
+ <TAProfileCard key={m.ta_id} profile={taProfile} variant="school" adminProfileLink={`/admin/teaching-artists/${m.ta_id}`}/>
  );
  })}
  </div>
@@ -666,7 +666,7 @@ export function AdminProjectView({
  hometown_country: m.profile.hometown_country,
  };
  return (
- <TAProfileCard key={m.ta_id} profile={taProfile} variant="homestay"/>
+ <TAProfileCard key={m.ta_id} profile={taProfile} variant="homestay" adminProfileLink={`/admin/teaching-artists/${m.ta_id}`}/>
  );
  })}
  </div>
