@@ -21,8 +21,8 @@ export function GenerateDocsButton({ taId, onSuccess }: { taId: string; onSucces
       onSuccess?.();
       // Reload page to show updated docs
       setTimeout(() => window.location.reload(), 800);
-    } catch (e: any) {
-      setError(e.message || "Failed to generate");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Failed to generate");
     } finally {
       setLoading(false);
     }

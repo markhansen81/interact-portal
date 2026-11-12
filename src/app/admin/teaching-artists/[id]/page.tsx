@@ -734,7 +734,7 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
           </SideCard>
 
           {/* Edit */}
-          <TAProfileEditor ta={ta as any} compact />
+          <TAProfileEditor ta={ta} compact />
         </div>
       </div>
     </div>

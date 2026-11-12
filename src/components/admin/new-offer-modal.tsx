@@ -113,8 +113,8 @@ export function NewOfferModal({ onClose }: NewOfferModalProps) {
       } else {
         router.push(`/admin/offers/${offerId}`);
       }
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Something went wrong");
       setCreating(false);
     }
   }

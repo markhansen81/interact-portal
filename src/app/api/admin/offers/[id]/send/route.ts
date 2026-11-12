@@ -186,7 +186,7 @@ async function postMondayUpdate({
   programs,
   adminClient,
 }: {
-  offer: Record<string, any>;
+  offer: Record<string, unknown>;
   pdfUrl: string | null;
   programs: string[];
   adminClient: ReturnType<typeof import("@/lib/supabase/admin").createAdminClient>;

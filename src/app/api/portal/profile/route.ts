@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { generateSchoolProfile, generateHomestayProfile, PROFILE_FIELDS } from "@/lib/ta-profile-docs";
+import { generateSchoolProfile, generateHomestayProfile, PROFILE_FIELDS, ProfileData } from "@/lib/ta-profile-docs";
 
 const ALLOWED_FIELDS = [
   // Section 1 - Contact
@@ -93,7 +93,7 @@ export async function PATCH(request: Request) {
         .eq("id", user.id)
         .single();
 
-      const p = fullProfile as any;
+      const p = fullProfile as ProfileData | null;
       const isReadyForDocs = !profileErr && !!(p?.first_name && p?.last_name && p?.photo_url && p?.bio);
 
       if (isReadyForDocs && p) {

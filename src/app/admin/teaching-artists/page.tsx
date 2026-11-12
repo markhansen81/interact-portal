@@ -66,8 +66,8 @@ export default async function TeachingArtistsPage() {
         </div>
       ) : (
         <TASearchFilter
-          tas={tas as any}
-          docsByTA={docsByTA as any}
+          tas={tas || []}
+          docsByTA={docsByTA}
           prefsByTA={prefsByTA}
           availByTA={availByTA}
           workOrdersByTA={workOrdersByTA}

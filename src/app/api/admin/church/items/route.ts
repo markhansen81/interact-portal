@@ -31,7 +31,7 @@ export async function GET() {
   ]);
 
   // Normalise leads into the same shape as church_items
-  const leads = ((leadsResult.data || []) as any[]).map((l) => ({
+  const leads = ((leadsResult.data || []) as unknown as Record<string, unknown>[]).map((l) => ({
     id: l.id,
     name: l.school_name,
     school_name: l.school_name,
@@ -40,12 +40,12 @@ export async function GET() {
     opp_status: null,
     program_type: Array.isArray(l.programs) ? (l.programs[0] as string | null) : null,
     programs: l.programs,
-    num_students: l.num_students ? parseInt(l.num_students, 10) || null : null,
+    num_students: l.num_students ? parseInt(String(l.num_students), 10) || null : null,
     num_groups: l.num_groups ? parseInt(l.num_groups as string, 10) || null : null,
     num_days: (() => {
       if (l.num_days) return l.num_days;
       if (l.preferred_dates && l.end_date) {
-        const diff = Math.ceil((new Date(l.end_date).getTime() - new Date(l.preferred_dates).getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        const diff = Math.ceil((new Date(l.end_date as string).getTime() - new Date(l.preferred_dates as string).getTime()) / (1000 * 60 * 60 * 24)) + 1;
         return diff > 0 ? diff : null;
       }
       return null;
