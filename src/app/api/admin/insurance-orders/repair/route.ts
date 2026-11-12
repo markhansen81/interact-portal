@@ -41,13 +41,9 @@ export async function POST() {
 
   for (const order of orders) {
     try {
-      // 1. Fix the fee in DB
-      await adminClient
-        .from("insurance_orders")
-        .update({ participation_fee: 129 })
-        .eq("id", order.id);
-
-      // 2. Regenerate PDF with corrected data
+      // 1. Regenerate PDF with corrected data
+      // NOTE: fee DB update happens LAST so a mid-flight failure leaves the order
+      // still matchable by participation_fee=12900 on the next repair run.
       const orderDate = new Date(order.created_at).toLocaleDateString("en-GB", {
         year: "numeric", month: "long", day: "numeric",
       });
@@ -79,21 +75,25 @@ export async function POST() {
       const orderNum = order.order_number || order.squarespace_order_id;
       const storagePath = `insurance-invoices/${dateStr}_${orderNum}_${surname}.pdf`;
 
-      await adminClient.storage.from("documents").upload(storagePath, pdfBuffer, {
+      const { error: uploadError } = await adminClient.storage.from("documents").upload(storagePath, pdfBuffer, {
         contentType: "application/pdf",
         upsert: true,
       });
+      if (uploadError) throw new Error(`Storage upload: ${uploadError.message}`);
 
       const newPdfUrl = await getSecureUrl("documents", storagePath);
 
       // 4. Update invoice_pdf_url
-      await adminClient
+      const { error: urlError } = await adminClient
         .from("insurance_orders")
         .update({ invoice_pdf_url: newPdfUrl })
         .eq("id", order.id);
+      if (urlError) throw new Error(`DB update url: ${urlError.message}`);
 
-      // 5. Resend email if customer email exists
-      if (order.customer_email) {
+      // 5. Send correction email — skipped if already delivered in a prior attempt
+      // (repair_email_sent_at is set before fee update, so a failed fee update
+      //  leaves the order retryable but won't re-send the email)
+      if (order.customer_email && !order.repair_email_sent_at) {
         const currencySymbol = (order.currency || "EUR") === "EUR" ? "€" : order.currency;
         const parentName = `${order.customer_first_name || ""} ${order.customer_last_name || ""}`.trim() || "Kunde";
         const insuredName = [order.insured_first_name, order.insured_last_name].filter(Boolean).join(" ") || "Ihr Kind";
@@ -107,18 +107,28 @@ export async function POST() {
           order.school_name || ""
         );
 
-        await sendEmail({
+        const sent = await sendEmail({
           to: order.customer_email,
           subject: `[Korrektur] ${emailData.subject}`,
           html: emailData.html,
           attachments: [{ filename: `${dateStr}_${orderNum}_${surname}.pdf`, content: pdfBuffer }],
         });
+        if (!sent.ok) throw new Error(`Email delivery failed: ${JSON.stringify(sent.error)}`);
 
-        await adminClient
+        // Persist delivery state before the final fee update so a retry skips re-sending
+        const { error: repairEmailError } = await adminClient
           .from("insurance_orders")
-          .update({ email_sent_at: new Date().toISOString() })
+          .update({ repair_email_sent_at: new Date().toISOString() })
           .eq("id", order.id);
+        if (repairEmailError) throw new Error(`DB update repair_email_sent_at: ${repairEmailError.message}`);
       }
+
+      // Final step: mark the fee as corrected — only reached if everything above succeeded
+      const { error: feeError } = await adminClient
+        .from("insurance_orders")
+        .update({ participation_fee: 129 })
+        .eq("id", order.id);
+      if (feeError) throw new Error(`DB update fee: ${feeError.message}`);
 
       results.push({ id: order.id, order_number: String(orderNum), email: order.customer_email || "-", status: "repaired" });
     } catch (err) {

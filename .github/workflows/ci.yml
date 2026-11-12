@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main, stg]
+  pull_request:
+    branches: [main, stg]
+
+jobs:
+  ci:
+    name: Lint, Test & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Full lint run — surfaces existing issues but does not block CI.
+      # TODO: resolve pre-existing lint debt (74 errors) and promote to strict.
+      - name: Lint (informational)
+        run: npm run lint
+        continue-on-error: true
+
+      # Lint new test files strictly — these must be clean.
+      - name: Lint test files (strict)
+        run: npx eslint src/__tests__
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Next.js build
+        run: npm run build
+        env:
+          # Dummy env vars so Next.js build succeeds without real secrets
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+          SUPABASE_SERVICE_ROLE_KEY: placeholder
+          RESEND_API_KEY: placeholder
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
