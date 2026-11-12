@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Playwright trace artifacts — minified vendor JS, not application code
+    "test-results/**",
   ]),
 ]);
 

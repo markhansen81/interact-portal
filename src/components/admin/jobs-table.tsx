@@ -111,7 +111,7 @@ function TeacherInviteModal({ job, onClose, onSent }: { job: Job; onClose: () =>
             />
           </div>
           <p className="text-[10px] text-neutral-400">
-            An invite email will be sent to the teacher. You will be CC'd at mark@interactenglish.de.
+            An invite email will be sent to the teacher. You will be CC&apos;d at mark@interactenglish.de.
           </p>
           {done ? (
             <p className="text-xs font-medium text-green-600">Sent ✓</p>

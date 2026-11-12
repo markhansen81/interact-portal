@@ -517,9 +517,9 @@ export function SchoolProjectView({
  : [];
 
  // Find column indices
- let firstNameIdx = headers.findIndex(
+ const firstNameIdx = headers.findIndex(
  (h) => h.includes("first") || h ==="vorname");
- let lastNameIdx = headers.findIndex(
+ const lastNameIdx = headers.findIndex(
  (h) => h.includes("last") || h ==="nachname"|| h ==="surname");
  const nameIdx = headers.findIndex(
  (h) => h ==="name"|| h ==="student"|| h ==="student name");

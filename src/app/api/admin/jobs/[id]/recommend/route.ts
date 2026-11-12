@@ -62,7 +62,7 @@ export async function GET(
   });
 
   // Get availability for the job date range
-  let availableTAs = new Set<string>();
+  const availableTAs = new Set<string>();
   let unavailableTAs = new Set<string>();
   if (job.start_date && job.end_date) {
     const { data: availRows } = await adminClient
