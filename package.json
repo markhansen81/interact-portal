@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "npx playwright test",
-    "test:unit": "vitest run",
+    "test:unit": "vitest run src/__tests__",
     "test:admin": "npx playwright test --grep @admin",
     "test:ta": "npx playwright test --grep @ta",
     "test:teacher": "npx playwright test --grep @teacher",
