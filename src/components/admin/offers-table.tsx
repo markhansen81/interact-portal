@@ -77,6 +77,11 @@ export function OffersTable({ offers }: { offers: Offer[] }) {
     .filter((o) => o.status === "accepted")
     .reduce((sum, o) => sum + Number(o.total || 0), 0);
 
+  // eslint-disable-next-line react-hooks/purity -- component needs current date for expiry display
+  const now = Date.now();
+  const today = new Date(now).toISOString().split("T")[0];
+  const sevenDays = new Date(now + 7 * 86400000).toISOString().split("T")[0];
+
   return (
     <div className="space-y-8">
       {/* Summary cards */}
@@ -173,8 +178,6 @@ export function OffersTable({ offers }: { offers: Offer[] }) {
             ) : (
               filtered.map((offer) => {
                 const status = (offer.status || "draft") as OfferStatus;
-                const today = new Date().toISOString().split("T")[0];
-                const sevenDays = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
                 const isExpiringSoon = offer.status === "sent" && offer.valid_until && offer.valid_until <= sevenDays && offer.valid_until >= today;
                 const isPastDue = offer.status === "sent" && offer.valid_until && offer.valid_until < today;
                 return (

@@ -42,16 +42,19 @@ export default async function AdminDashboard() {
 
   // --- Alert counts ---
   // Expiring documents (within 30 days)
-  const thirtyDaysFromNow = new Date(Date.now() + 30 * 86400000).toISOString();
+  // eslint-disable-next-line react-hooks/purity -- server component: Date.now() runs once per request, not on client re-render
+  const now = Date.now();
+  const thirtyDaysFromNow = new Date(now + 30 * 86400000).toISOString();
+  const nowISO = new Date(now).toISOString();
   const { count: expiringDocs } = await supabase
     .from("documents")
     .select("*", { count: "exact", head: true })
     .lt("expiry_date", thirtyDaysFromNow)
-    .gt("expiry_date", new Date().toISOString())
+    .gt("expiry_date", nowISO)
     .eq("status", "approved");
 
   // Unsigned WOs >14 days
-  const fourteenDaysAgo = new Date(Date.now() - 14 * 86400000).toISOString();
+  const fourteenDaysAgo = new Date(now - 14 * 86400000).toISOString();
   const { count: unsignedWOs } = await supabase
     .from("work_orders")
     .select("*", { count: "exact", head: true })
@@ -65,7 +68,7 @@ export default async function AdminDashboard() {
     .eq("status", "submitted");
 
   // Onboarding stalled >30 days
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+  const thirtyDaysAgo = new Date(now - 30 * 86400000).toISOString();
   const { count: stalledOnboarding } = await supabase
     .from("profiles")
     .select("*", { count: "exact", head: true })
@@ -87,7 +90,7 @@ export default async function AdminDashboard() {
     .gt("total", 0);
 
   // Sent offers expiring within 7 days
-  const sevenDaysFromNow = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
+  const sevenDaysFromNow = new Date(now + 7 * 86400000).toISOString().split("T")[0];
   const { count: expiringOffers } = await supabase
     .from("offers")
     .select("*", { count: "exact", head: true })

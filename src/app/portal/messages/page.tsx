@@ -73,6 +73,7 @@ export default async function TAMessagesPage() {
 
   function timeAgo(iso: string) {
     if (!iso) return "";
+    // eslint-disable-next-line react-hooks/purity -- server component: Date.now() runs once per request
     const diff = Date.now() - new Date(iso).getTime();
     const m = Math.floor(diff / 60000);
     if (m < 60) return `${m}m`;

@@ -59,10 +59,6 @@ export function StaffingWizard({
   const [result, setResult] = useState<{ created: string[]; errors?: string[] } | null>(null);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetchAvailableTAs();
-  }, [project.id]);
-
   async function fetchAvailableTAs() {
     setLoading(true);
     try {
@@ -82,6 +78,10 @@ export function StaffingWizard({
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    fetchAvailableTAs();
+  }, [project.id]);
 
   function toggleTA(taId: string) {
     setSelected((prev) => {
