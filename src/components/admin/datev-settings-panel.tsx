@@ -36,7 +36,7 @@ export function DatevSettingsPanel({
  // Fetch available clients when connected
  useEffect(() => {
  if (isConnected && !isExpired) {
- setLoadingClients(true);
+ setLoadingClients(true); // eslint-disable-line react-hooks/set-state-in-effect -- loading flag before async fetch
  fetch("/api/auth/datev/clients")
  .then((res) => res.json())
  .then((data) => {

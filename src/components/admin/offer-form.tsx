@@ -97,6 +97,25 @@ const inputClass =
   "w-full border border-neutral-300 rounded-sm px-4 py-2 text-sm focus:outline-none focus:border-black focus:ring-0";
 const labelClass = "block text-sm font-medium text-neutral-700 mb-1";
 
+/** Apply rate lookup to program lines — returns new array with matched prices. */
+export function applyRatesToLines(
+  lines: ProgramLine[],
+  rates: OfferRate[],
+  tariff: number
+): ProgramLine[] {
+  return lines.map((line) => {
+    if (!line.num_days) return line;
+    const matched = rates.find(
+      (r) =>
+        r.program_type === line.program_type &&
+        r.num_days === Number(line.num_days) &&
+        r.tariff === tariff
+    );
+    if (matched) return { ...line, price_pp: matched.price_pp };
+    return line;
+  });
+}
+
 function emptyLine(programType: string): ProgramLine {
   return {
     program_type: programType,
@@ -190,23 +209,11 @@ export function OfferForm({ prefill, rates, offerId }: OfferFormProps) {
     );
   }
 
-  // Auto-fill price when num_days or tariff changes for a line
+  // Auto-fill price when tariff or rates change
   useEffect(() => {
-    setProgramLines((prev) =>
-      prev.map((line) => {
-        if (!line.num_days) return line;
-        const matched = rates.find(
-          (r) =>
-            r.program_type === line.program_type &&
-            r.num_days === Number(line.num_days) &&
-            r.tariff === tariff
-        );
-        if (matched) return { ...line, price_pp: matched.price_pp };
-        return line;
-      })
-    );
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tariff]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- derived state: sync programLines prices when tariff/rates change
+    setProgramLines((prev) => applyRatesToLines(prev, rates, tariff));
+  }, [tariff, rates]);
 
   function handleDaysChange(index: number, days: number | "") {
     updateLine(index, "num_days", days === "" ? "" : days);

@@ -80,7 +80,7 @@ export function StaffingWizard({
   }
 
   useEffect(() => {
-    fetchAvailableTAs();
+    fetchAvailableTAs(); // eslint-disable-line react-hooks/set-state-in-effect -- async fetch when project changes
   }, [project.id]);
 
   function toggleTA(taId: string) {

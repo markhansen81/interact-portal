@@ -125,7 +125,7 @@ export function NotificationBell() {
  }
 
  useEffect(() => {
- fetchNotifications();
+ fetchNotifications(); // eslint-disable-line react-hooks/set-state-in-effect -- async fetch + 30s polling
  const interval = setInterval(fetchNotifications, 30000);
  return () => clearInterval(interval);
  }, []);

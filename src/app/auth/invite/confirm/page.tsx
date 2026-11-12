@@ -30,6 +30,7 @@ export default function InviteConfirmPage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const hash = window.location.hash.substring(1);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-only: parse URL hash once on page load
     if (!hash) { setSessionReady(true); return; }
     const params = new URLSearchParams(hash);
     const accessToken = params.get("access_token");

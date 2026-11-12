@@ -134,7 +134,7 @@ export function FeedbackForm({ project, token, teamMembers }: FeedbackFormProps)
  try {
  const draft = JSON.parse(saved);
  if (draft.formData) {
- setFormData((prev) => ({ ...prev, ...draft.formData }));
+ setFormData((prev) => ({ ...prev, ...draft.formData })); // eslint-disable-line react-hooks/set-state-in-effect -- mount-only: restore localStorage draft
  }
  if (typeof draft.currentStep ==="number"&& draft.currentStep > 0) {
  setCurrentStep(draft.currentStep);

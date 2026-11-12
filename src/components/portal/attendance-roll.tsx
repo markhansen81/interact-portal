@@ -149,7 +149,7 @@ export function AttendanceRoll({
  }, [projectId, activeGroupId]);
 
  useEffect(() => {
- fetchData();
+ fetchData(); // eslint-disable-line react-hooks/set-state-in-effect -- async fetch on mount
  }, [fetchData]);
 
  async function toggleAttendance(studentId: string, date: string) {
