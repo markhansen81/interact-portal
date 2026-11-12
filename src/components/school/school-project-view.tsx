@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from"react";
+import { useState } from"react";
 import { RichTextViewer } from"@/components/shared/rich-text-viewer";
 import { TAProfileCard, type TAProfile } from"@/components/shared/ta-profile-card";
 
@@ -294,9 +294,7 @@ export function SchoolProjectView({
 
  // --- Student actions ---
 
- const addStudent = useCallback(
- // eslint-disable-next-line react-hooks/preserve-manual-memoization -- complex component with many callbacks; refactoring deferred
- async (groupId: string) => {
+ async function addStudent(groupId: string) {
  const input = newStudents[groupId];
  if (!input?.first_name?.trim()) return;
 
@@ -327,9 +325,7 @@ export function SchoolProjectView({
  } catch {
  // ignore
  }
- },
- [newStudents, apiBase]
- );
+ }
 
  async function deleteStudent(groupId: string, studentId: string) {
  try {

@@ -190,9 +190,9 @@ export function OfferForm({ prefill, rates, offerId }: OfferFormProps) {
     );
   }
 
-  // Auto-fill price when num_days or tariff changes for a line
+  // Auto-fill price when tariff or rates change
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- derived state: sync programLines prices when tariff changes
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- derived state: sync programLines prices when tariff/rates change
     setProgramLines((prev) =>
       prev.map((line) => {
         if (!line.num_days) return line;
@@ -206,8 +206,7 @@ export function OfferForm({ prefill, rates, offerId }: OfferFormProps) {
         return line;
       })
     );
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tariff]);
+  }, [tariff, rates]);
 
   function handleDaysChange(index: number, days: number | "") {
     updateLine(index, "num_days", days === "" ? "" : days);
