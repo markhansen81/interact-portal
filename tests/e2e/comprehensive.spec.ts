@@ -1,12 +1,12 @@
 import { test, expect } from "@playwright/test";
 import { loginAsAdmin, loginAsTA, adminGoto, BASE_URL } from "./helpers";
 
-// Danielle TA credentials (separate from Mark's TA account in helpers)
-const DANIELLE_EMAIL = "danielle.musick@test.com";
-const DANIELLE_PASS = "TestTA2026!";
+// TA B credentials from environment (separate from primary TA in helpers)
+const DANIELLE_EMAIL = process.env.E2E_TA_B_EMAIL || "";
+const DANIELLE_PASS = process.env.E2E_TA_B_PASS || "";
 
-// Teacher/school token (no login required)
-const SCHOOL_TOKEN = "5e758ca9-3a7e-4185-a2bb-ce94c749bc79";
+// School token from environment
+const SCHOOL_TOKEN = process.env.E2E_SCHOOL_PROJECT_TOKEN || "";
 
 const SCREENSHOT_DIR = "test-results/comprehensive";
 
