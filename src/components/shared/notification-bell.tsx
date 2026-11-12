@@ -111,12 +111,6 @@ export function NotificationBell() {
  const [unread, setUnread] = useState(0);
  const router = useRouter();
 
- useEffect(() => {
- fetchNotifications();
- const interval = setInterval(fetchNotifications, 30000);
- return () => clearInterval(interval);
- }, []);
-
  async function fetchNotifications() {
  try {
  const res = await fetch("/api/notifications");
@@ -129,6 +123,12 @@ export function NotificationBell() {
  // Silently ignore
  }
  }
+
+ useEffect(() => {
+ fetchNotifications();
+ const interval = setInterval(fetchNotifications, 30000);
+ return () => clearInterval(interval);
+ }, []);
 
  async function markAllRead() {
  try {

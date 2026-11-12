@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from"react";
+import { useState, useRef, useEffect, useMemo } from"react";
 import { useRouter } from"next/navigation";
 import Link from"next/link";
 
@@ -83,8 +83,16 @@ export function ChatThread({
  }
  }
 
- // Group messages by date
- let lastDate ="";
+ // Pre-compute which messages start a new date group
+ const dateBreaks = useMemo(() => {
+ const set = new Set<number>();
+ let prev = "";
+ messages.forEach((msg, i) => {
+ const d = new Date(msg.created_at).toDateString();
+ if (d !== prev) { set.add(i); prev = d; }
+ });
+ return set;
+ }, [messages]);
  const initials = otherName.split(" ").map((n) => n[0]).filter(Boolean).join("").toUpperCase().slice(0, 2);
 
  return (
@@ -120,14 +128,9 @@ export function ChatThread({
  </div>
  )}
  <div className="space-y-1">
- {messages.map((msg) => {
+ {messages.map((msg, i) => {
  const isMe = msg.from_user_id === currentUserId;
- const msgDate = new Date(msg.created_at).toDateString();
- let showDate = false;
- if (msgDate !== lastDate) {
- showDate = true;
- lastDate = msgDate;
- }
+ const showDate = dateBreaks.has(i);
 
  return (
  <div key={msg.id}>
