@@ -33,49 +33,47 @@ export async function POST(
 
   const adminClient = createAdminClient();
 
-  // Fetch WO to get ta_id
-  const { data: woDraft } = await adminClient
+  // Fetch WO to get ta_id — fail closed: must have a TA assigned
+  const { data: woDraft, error: woDraftError } = await adminClient
     .from("work_orders")
     .select("ta_id")
     .eq("id", id)
     .single();
 
-  if (woDraft?.ta_id) {
-    // Check compliance docs: RTW (visa/passport/right_to_work), police_check, measles
-    const { data: docs } = await adminClient
-      .from("documents")
-      .select("type, status, expiry_date")
-      .eq("ta_id", woDraft.ta_id)
-      .in("status", ["approved", "uploaded"]);
+  if (woDraftError || !woDraft?.ta_id) {
+    return NextResponse.json({ error: "Work order not found or has no TA assigned" }, { status: 400 });
+  }
 
-    const today = new Date().toISOString().split("T")[0];
-    const docMap: Record<string, { status: string; expiry_date: string | null }> = {};
-    for (const d of docs || []) {
-      // Keep the most recently processed one (approved preferred over uploaded)
-      if (!docMap[d.type] || d.status === "approved") {
-        docMap[d.type] = { status: d.status, expiry_date: d.expiry_date };
-      }
+  // Compliance check: only APPROVED docs count — uploaded/pending are not verified
+  const { data: docs, error: docsError } = await adminClient
+    .from("documents")
+    .select("type, expiry_date")
+    .eq("ta_id", woDraft.ta_id)
+    .eq("status", "approved");
+
+  if (docsError) {
+    return NextResponse.json({ error: "Failed to verify TA compliance documents" }, { status: 500 });
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+  const validTypes = new Set<string>();
+  for (const d of docs || []) {
+    if (!d.expiry_date || d.expiry_date >= today) {
+      validTypes.add(d.type);
     }
+  }
 
-    const isValid = (type: string) => {
-      const d = docMap[type];
-      if (!d) return false;
-      if (d.expiry_date && d.expiry_date < today) return false;
-      return true;
-    };
+  const missingDocs: string[] = [];
+  const hasRtw = validTypes.has("right_to_work") || validTypes.has("visa") || validTypes.has("passport");
+  if (!hasRtw) missingDocs.push("Right to Work (visa or passport)");
+  if (!validTypes.has("police_check")) missingDocs.push("Police Check");
+  if (!validTypes.has("measles")) missingDocs.push("Measles Vaccination");
 
-    const missingDocs: string[] = [];
-    const hasRtw = isValid("right_to_work") || isValid("visa") || isValid("passport");
-    if (!hasRtw) missingDocs.push("Right to Work (visa or passport)");
-    if (!isValid("police_check")) missingDocs.push("Police Check");
-    if (!isValid("measles")) missingDocs.push("Measles Vaccination");
-
-    if (missingDocs.length > 0) {
-      return NextResponse.json(
-        { error: `Cannot send: TA is missing or has expired: ${missingDocs.join(", ")}` },
-        { status: 400 }
-      );
-    }
+  if (missingDocs.length > 0) {
+    return NextResponse.json(
+      { error: `Cannot send: TA is missing approved/non-expired: ${missingDocs.join(", ")}` },
+      { status: 400 }
+    );
   }
 
   // Update status to sent

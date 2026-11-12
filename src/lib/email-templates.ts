@@ -3,8 +3,23 @@ import { sendEmail } from "@/lib/email";
 
 // --- Variable rendering ---
 
+// Variables that are intentionally pre-built HTML fragments (admin-controlled, not user input)
+const HTML_SAFE_VARS = new Set(["LEAD_TABLE"]);
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export function renderVars(template: string, vars: Record<string, string>): string {
-  return template.replace(/\{\{([A-Z_]+)\}\}/g, (_, key) => vars[key] ?? "");
+  return template.replace(/\{\{([A-Z_]+)\}\}/g, (_, key) => {
+    const value = vars[key] ?? "";
+    return HTML_SAFE_VARS.has(key) ? value : escapeHtml(value);
+  });
 }
 
 // --- DB access ---
