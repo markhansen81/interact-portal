@@ -137,6 +137,7 @@ export function ChurchView({ groups, availableTAs }: ChurchViewProps) {
  new Set(Object.keys(groups))
  );
  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+ const [search, setSearch] = useState("");
 
  const toggleGroup = (key: string) => {
  setExpandedGroups((prev) => {
@@ -154,10 +155,37 @@ export function ChurchView({ groups, availableTAs }: ChurchViewProps) {
  });
  };
 
+ const filteredGroups: Record<string, ChurchItem[]> = search
+   ? Object.fromEntries(
+       (Object.entries(groups) as [string, ChurchItem[]][])
+         .map(([k, items]) => [k, items.filter((item) => {
+           const q = search.toLowerCase();
+           return (
+             (item.name || "").toLowerCase().includes(q) ||
+             (item.school_name || "").toLowerCase().includes(q) ||
+             (item.state || "").toLowerCase().includes(q)
+           );
+         })])
+         .filter(([, items]) => (items as ChurchItem[]).length > 0)
+     )
+   : groups;
+
  return (
  <>
  <div className="space-y-3">
- {Object.entries(groups).map(([kwLabel, items]) => (
+ <div className="relative">
+   <svg className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+   </svg>
+   <input
+     type="search"
+     value={search}
+     onChange={(e) => setSearch(e.target.value)}
+     placeholder="Search by school, name, state…"
+     className="w-72 rounded-sm border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-[#E91E8C] focus:outline-none"
+   />
+ </div>
+ {Object.entries(filteredGroups).map(([kwLabel, items]) => (
  <div key={kwLabel} className="rounded-sm border border-neutral-200 bg-white overflow-hidden">
  {/* KW Header */}
  <button

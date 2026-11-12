@@ -10,6 +10,7 @@ import { TAProfileCard, type TAProfile } from"@/components/shared/ta-profile-car
 interface Project {
  id: string;
  name: string;
+ work_order_id: string | null;
  school: string | null;
  school_address: string | null;
  location: string | null;
@@ -160,9 +161,16 @@ export function TAProjectView({
  return (
  <div className="space-y-6">
  {/* Back link */}
- <Link href="/portal/projects"className="text-sm text-neutral-500 hover:text-neutral-700">
- &larr; Back to Projects
- </Link>
+ <div className="flex items-center gap-4">
+   <Link href="/portal/projects" className="text-sm text-neutral-500 hover:text-neutral-700">
+     &larr; Back to Projects
+   </Link>
+   {project.work_order_id && (
+     <Link href={`/portal/work-orders/${project.work_order_id}`} className="text-sm text-neutral-500 hover:text-neutral-700">
+       View Work Order &rarr;
+     </Link>
+   )}
+ </div>
 
  {/* Project header with countdown */}
  <div className="rounded-sm border border-neutral-200 bg-white p-6">

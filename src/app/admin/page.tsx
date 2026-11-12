@@ -38,7 +38,7 @@ export default async function AdminDashboard() {
   const { count: activeWOs } = await supabase
     .from("work_orders")
     .select("*", { count: "exact", head: true })
-    .in("status", ["sent", "signed"]);
+    .eq("status", "sent");
 
   // --- Alert counts ---
   // Expiring documents (within 30 days)
@@ -83,7 +83,17 @@ export default async function AdminDashboard() {
   const { count: failedInsurance } = await supabase
     .from("insurance_orders")
     .select("*", { count: "exact", head: true })
-    .is("email_sent_at", null);
+    .is("email_sent_at", null)
+    .gt("total", 0);
+
+  // Sent offers expiring within 7 days
+  const sevenDaysFromNow = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
+  const { count: expiringOffers } = await supabase
+    .from("offers")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "sent")
+    .lte("valid_until", sevenDaysFromNow)
+    .gte("valid_until", new Date().toISOString().split("T")[0]);
 
   // Pending reviews
   const { data: pendingReviews } = await supabase
@@ -105,12 +115,14 @@ export default async function AdminDashboard() {
   (allDocs || []).forEach((d) => docMap.set(`${d.ta_id}:${d.type}`, d));
 
   // Attach docs to reviews
-  const reviewsWithDocs = (pendingReviews || []).map((r) => ({
-    ...r,
-    document: r.type === "document_upload" && r.reference_id
-      ? docMap.get(`${r.ta_id}:${r.reference_id}`) || null
-      : null,
-  }));
+  const reviewsWithDocs = (pendingReviews || [])
+    .filter((r) => r.ta !== null)
+    .map((r) => ({
+      ...r,
+      document: r.type === "document_upload" && r.reference_id
+        ? docMap.get(`${r.ta_id}:${r.reference_id}`) || null
+        : null,
+    }));
 
   const reviewCount = reviewsWithDocs.length;
 
@@ -144,7 +156,7 @@ export default async function AdminDashboard() {
           />
         </Link>
         <Link href="/admin/work-orders" className="pl-6 block">
-          <StatCard label="Active Work Orders" value={activeWOs ?? 0} />
+          <StatCard label="Pending Signatures" value={activeWOs ?? 0} />
         </Link>
       </div>
 
@@ -156,6 +168,7 @@ export default async function AdminDashboard() {
         stalledOnboarding={stalledOnboarding ?? 0}
         pendingExpenses={pendingExpenses ?? 0}
         failedInsurance={failedInsurance ?? 0}
+        expiringOffers={expiringOffers ?? 0}
       />
 
       {/* Review Queue */}
@@ -210,6 +223,7 @@ function AlertsPanel({
   stalledOnboarding,
   pendingExpenses,
   failedInsurance,
+  expiringOffers,
 }: {
   expiringDocs: number;
   unsignedWOs: number;
@@ -217,6 +231,7 @@ function AlertsPanel({
   stalledOnboarding: number;
   pendingExpenses: number;
   failedInsurance: number;
+  expiringOffers: number;
 }) {
   const urgent = [
     {
@@ -253,6 +268,16 @@ function AlertsPanel({
 
   const warnings = [
     {
+      label: "Sent offers expiring within 7 days",
+      count: expiringOffers,
+      href: "/admin/offers",
+      icon: (
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+    },
+    {
       label: "Pending invoice approvals",
       count: pendingInvoices,
       href: "/admin/invoices",
@@ -275,7 +300,7 @@ function AlertsPanel({
     {
       label: "Expense claims pending review",
       count: pendingExpenses,
-      href: "#",
+      href: "/admin/invoices",
       icon: (
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185z" />

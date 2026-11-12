@@ -44,6 +44,7 @@ export async function POST(request: Request) {
       end_date: body.end_date,
       days: body.days,
       program_type: body.program_type,
+      camp_role: body.camp_role || null,
       daily_rate: body.daily_rate,
       total: body.total,
       special_conditions: body.special_conditions,

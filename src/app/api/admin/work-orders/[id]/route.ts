@@ -91,7 +91,7 @@ export async function PATCH(
   // Regular field updates
   const allowedFields = [
     "project_name", "school", "school_address", "school_state", "location",
-    "start_date", "end_date", "days", "program_type", "daily_rate", "total",
+    "start_date", "end_date", "days", "program_type", "camp_role", "daily_rate", "total",
     "special_conditions", "co_taught", "grade", "accommodation", "sign_by", "notes",
   ];
 

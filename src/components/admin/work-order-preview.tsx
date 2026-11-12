@@ -19,6 +19,7 @@ interface WorkOrder {
   end_date: string;
   days: number;
   program_type: string;
+  camp_role: string | null;
   daily_rate: number;
   total: number;
   special_conditions: string;
@@ -52,9 +53,22 @@ export function WorkOrderPreview({ workOrder: initialWO }: { workOrder: WorkOrde
     ? `${ta.first_name} ${ta.last_name}`
     : ta.email;
 
+  const [sendError, setSendError] = useState<string | null>(null);
+
   async function handleSend() {
+    if (!wo.total || wo.total <= 0) {
+      setSendError("Cannot send a work order with a €0 total. Please edit the total before sending.");
+      return;
+    }
+    setSendError(null);
     setLoading(true);
-    await fetch(`/api/admin/work-orders/${wo.id}/send`, { method: "POST" });
+    const res = await fetch(`/api/admin/work-orders/${wo.id}/send`, { method: "POST" });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      setSendError(json.error || "Failed to send work order.");
+      setLoading(false);
+      return;
+    }
     setLoading(false);
     router.refresh();
   }
@@ -95,6 +109,11 @@ export function WorkOrderPreview({ workOrder: initialWO }: { workOrder: WorkOrde
 
   return (
     <div className="space-y-6">
+      {sendError && (
+        <div className="rounded-sm border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {sendError}
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/admin/work-orders" className="text-sm text-neutral-500 hover:text-neutral-700">&larr; Back</Link>
@@ -187,17 +206,23 @@ export function WorkOrderPreview({ workOrder: initialWO }: { workOrder: WorkOrde
         </div>
       </div>
 
-      {/* Linked Project */}
-      {wo.project_id && (
-        <div className="mx-auto max-w-3xl">
+      {/* Quick links */}
+      <div className="mx-auto max-w-3xl flex flex-wrap gap-2">
+        <Link
+          href={`/admin/teaching-artists/${wo.ta_id}`}
+          className="inline-flex items-center gap-2 rounded-sm border border-neutral-200 bg-neutral-50 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
+        >
+          View TA Profile: {taName} &rarr;
+        </Link>
+        {wo.project_id && (
           <Link
             href={`/admin/projects/${wo.project_id}`}
             className="inline-flex items-center gap-2 rounded-sm border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100"
           >
             View Linked Project &rarr;
           </Link>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Rendered Work Order Document */}
       <div className="mx-auto max-w-3xl rounded-sm border border-neutral-200 bg-white">
@@ -265,6 +290,7 @@ export function WorkOrderPreview({ workOrder: initialWO }: { workOrder: WorkOrde
               {wo.school_address && <DetailRow label="" value={wo.school_address} />}
               {wo.school_state && <DetailRow label="" value={wo.school_state} />}
               <DetailRow label="Project type" value={wo.program_type} />
+              {wo.camp_role && <DetailRow label="Camp role" value={wo.camp_role} />}
               <DetailRow label="Special conditions" value={wo.special_conditions || "None"} italic />
               <DetailRow label="Co taught / Not co taught" value={wo.co_taught ? "Co taught" : "Not co taught"} />
               <DetailRow label="Grade" value={wo.grade || "—"} />

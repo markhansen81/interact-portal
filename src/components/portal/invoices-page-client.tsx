@@ -171,7 +171,7 @@ export function InvoicesPageClient({
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-neutral-900 truncate">{wo.project_name}</p>
                       <p className="mt-0.5 text-xs text-neutral-500">
-                        {wo.program_type} · {wo.days} {wo.days === 1 ? "day" : "days"} · {wo.start_date}
+                        {wo.program_type} · {wo.days} {wo.days === 1 ? "day" : "days"} · {wo.start_date}{wo.end_date && wo.end_date !== wo.start_date ? ` – ${wo.end_date}` : ""}
                         {wo.school ? ` · ${wo.school}` : ""}
                       </p>
                     </div>

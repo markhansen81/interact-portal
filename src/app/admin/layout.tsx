@@ -15,7 +15,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="flex h-screen bg-white" style={{ colorScheme: "light" }}>
       <AdminSidebar isSuperAdmin={!!profile.is_super_admin} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <AdminHeader email={profile.email} />

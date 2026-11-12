@@ -439,8 +439,24 @@ function AssignWOsModal({ job, onClose, onAssigned }: { job: Job; onClose: () =>
 export function JobsTable({ jobs }: { jobs: Job[] }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [assigningJob, setAssigningJob] = useState<Job | null>(null);
+  const [search, setSearch] = useState("");
+  const [staffingFilter, setStaffingFilter] = useState<"all" | "needs_attention" | "fully_staffed">("all");
 
   const router = useRouter();
+
+  const filteredJobs = jobs.filter((job) => {
+    if (search) {
+      const q = search.toLowerCase();
+      const matches =
+        (job.title || "").toLowerCase().includes(q) ||
+        (job.school_state || "").toLowerCase().includes(q) ||
+        (job.program_type || "").toLowerCase().includes(q);
+      if (!matches) return false;
+    }
+    if (staffingFilter === "needs_attention" && !job.needsAttention) return false;
+    if (staffingFilter === "fully_staffed" && !job.isFullyStaffed) return false;
+    return true;
+  });
 
   function toggle(id: string) {
     setExpanded((prev) => {
@@ -451,7 +467,44 @@ export function JobsTable({ jobs }: { jobs: Job[] }) {
     });
   }
 
+  const needsAttentionCount = jobs.filter((j) => j.needsAttention).length;
+  const fullyStaffedCount = jobs.filter((j) => j.isFullyStaffed).length;
+
   return (
+    <div className="space-y-3">
+      {/* Search + filter bar */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="relative">
+          <svg className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search projects…"
+            className="w-64 rounded-sm border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-[#E91E8C] focus:outline-none"
+          />
+        </div>
+        <div className="flex gap-1 rounded-sm bg-neutral-100 p-1">
+          {([
+            { key: "all", label: `All (${jobs.length})` },
+            { key: "needs_attention", label: `Needs attention (${needsAttentionCount})` },
+            { key: "fully_staffed", label: `Fully staffed (${fullyStaffedCount})` },
+          ] as { key: typeof staffingFilter; label: string }[]).map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setStaffingFilter(f.key)}
+              className={`rounded-sm px-3 py-1 text-xs font-medium transition-colors ${
+                staffingFilter === f.key ? "bg-white text-neutral-900" : "text-neutral-500 hover:text-neutral-700"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
     <div className="overflow-hidden rounded-sm border border-neutral-200 bg-white">
       <table className="w-full">
         <thead>
@@ -469,7 +522,14 @@ export function JobsTable({ jobs }: { jobs: Job[] }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-neutral-200">
-          {jobs.map((job) => {
+          {filteredJobs.length === 0 && (
+            <tr>
+              <td colSpan={10} className="py-12 text-center text-sm text-neutral-400">
+                {search ? "No projects match your search." : "No projects found."}
+              </td>
+            </tr>
+          )}
+          {filteredJobs.map((job) => {
             const isExpanded = expanded.has(job.id);
             const weekBg = job.weekColor === 1 ? "bg-neutral-50" : "bg-white";
             const hoverBg = "hover:bg-neutral-100";
@@ -612,6 +672,7 @@ export function JobsTable({ jobs }: { jobs: Job[] }) {
           onAssigned={() => router.refresh()}
         />
       )}
+    </div>
     </div>
   );
 }

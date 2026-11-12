@@ -24,10 +24,13 @@ const STATUS_STYLES: Record<string, string> = {
 
 interface WorkOrder {
   id: string;
+  ta_id: string | null;
   project_name: string | null;
   school: string | null;
   start_date: string | null;
   end_date: string | null;
+  days: number | null;
+  total: number | null;
   status: string;
   profiles: { first_name: string; last_name: string; email: string } | null;
 }
@@ -35,6 +38,7 @@ interface WorkOrder {
 export function WorkOrdersTable({ workOrders }: { workOrders: WorkOrder[] }) {
   const [schoolSearch, setSchoolSearch] = useState("");
   const [taSearch, setTaSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   // Build unique lists for datalists
   const schools = Array.from(new Set(
@@ -55,10 +59,11 @@ export function WorkOrdersTable({ workOrders }: { workOrders: WorkOrder[] }) {
     const taName = p?.first_name && p?.last_name ? `${p.first_name} ${p.last_name}` : (p?.email || "");
     const schoolMatch = !sq || (wo.school || "").toLowerCase().includes(sq) || (wo.project_name || "").toLowerCase().includes(sq);
     const taMatch = !tq || taName.toLowerCase().includes(tq);
-    return schoolMatch && taMatch;
+    const statusMatch = !statusFilter || wo.status === statusFilter;
+    return schoolMatch && taMatch && statusMatch;
   });
 
-  const hasFilter = schoolSearch || taSearch;
+  const hasFilter = schoolSearch || taSearch || statusFilter;
 
   return (
     <div className="space-y-4">
@@ -96,8 +101,20 @@ export function WorkOrdersTable({ workOrders }: { workOrders: WorkOrder[] }) {
             {tas.map(t => <option key={t} value={t} />)}
           </datalist>
         </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="rounded-sm border border-neutral-200 bg-white py-1.5 px-3 text-sm text-neutral-600 focus:border-[#E91E8C] focus:outline-none"
+        >
+          <option value="">All statuses</option>
+          <option value="draft">Draft</option>
+          <option value="sent">Sent</option>
+          <option value="signed">Signed</option>
+          <option value="declined">Declined</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
         {hasFilter && (
-          <button onClick={() => { setSchoolSearch(""); setTaSearch(""); }} className="text-xs text-neutral-400 hover:text-neutral-600">
+          <button onClick={() => { setSchoolSearch(""); setTaSearch(""); setStatusFilter(""); }} className="text-xs text-neutral-400 hover:text-neutral-600">
             Clear
           </button>
         )}
@@ -117,6 +134,7 @@ export function WorkOrdersTable({ workOrders }: { workOrders: WorkOrder[] }) {
                 <th className="pb-3 pr-6 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">TA</th>
                 <th className="pb-3 pr-6 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">School</th>
                 <th className="pb-3 pr-6 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">Dates</th>
+                <th className="pb-3 pr-6 text-right text-xs font-medium uppercase tracking-wider text-neutral-400">Total</th>
                 <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">Status</th>
               </tr>
             </thead>
@@ -132,10 +150,21 @@ export function WorkOrdersTable({ workOrders }: { workOrders: WorkOrder[] }) {
                         {wo.project_name || "—"}
                       </Link>
                     </td>
-                    <td className="py-3.5 pr-6 text-neutral-600">{taName}</td>
+                    <td className="py-3.5 pr-6 text-neutral-600">
+                      {wo.ta_id ? (
+                        <Link href={`/admin/teaching-artists/${wo.ta_id}`} className="hover:text-[#E91E8C] hover:underline">
+                          {taName}
+                        </Link>
+                      ) : taName}
+                    </td>
                     <td className="py-3.5 pr-6 text-neutral-500">{wo.school || "—"}</td>
                     <td className="py-3.5 pr-6 text-neutral-500 whitespace-nowrap">
                       {fmtDateRange(wo.start_date, wo.end_date)}
+                    </td>
+                    <td className="py-3.5 pr-6 text-right tabular-nums text-neutral-600">
+                      {wo.total != null
+                        ? `€${Number(wo.total).toLocaleString("de-DE", { minimumFractionDigits: 0 })}`
+                        : <span className="text-neutral-300">—</span>}
                     </td>
                     <td className="py-3.5">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${s}`}>

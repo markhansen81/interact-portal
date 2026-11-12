@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export interface TAProfile {
  id: string;
  first_name: string;
@@ -37,9 +39,11 @@ interface ProfileField {
 export function TAProfileCard({
  profile,
  variant,
+ adminProfileLink,
 }: {
  profile: TAProfile;
  variant:"school"|"homestay";
+ adminProfileLink?: string;
 }) {
  const displayName = profile.preferred_name || profile.first_name;
 
@@ -85,9 +89,14 @@ export function TAProfileCard({
  <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
  Teaching Artist Profile
  </p>
- <h3 className="mb-6 text-center text-2xl font-bold text-neutral-900">
+ <h3 className="mb-1 text-center text-2xl font-bold text-neutral-900">
  {displayName}
  </h3>
+ {adminProfileLink && (
+   <Link href={adminProfileLink} className="mb-5 text-[10px] text-neutral-400 hover:text-neutral-700 hover:underline">
+     View Admin Profile →
+   </Link>
+ )}
  {profile.photo_url ? (
  <img
  src={profile.photo_url}

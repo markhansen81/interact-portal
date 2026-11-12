@@ -4,6 +4,8 @@ import Link from "next/link";
 import { TAProfileEditor } from "@/components/admin/ta-profile-editor";
 import { TALevelEditor } from "@/components/admin/ta-level-editor";
 import { GenerateDocsButton } from "@/components/admin/generate-docs-button";
+import { TrainingToggle } from "@/components/admin/training-toggle";
+import { DeactivateTAButton } from "@/components/admin/deactivate-ta-button";
 import { logAudit } from "@/lib/audit";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -236,6 +238,7 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
                   {ta.onboarding_status.replace(/_/g, " ")}
                 </span>
               )}
+              <DeactivateTAButton id={ta.id} name={name} isActive={ta.is_active} />
             </div>
             <p className="mt-1 text-sm text-neutral-400">{ta.email}</p>
           </div>
@@ -457,6 +460,7 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
                       <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400">Program</th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400">Dates</th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400">Status</th>
+                      <th className="px-4 py-2.5 text-right text-xs font-semibold uppercase tracking-wider text-neutral-400"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-50">
@@ -474,6 +478,24 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
                             <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${ws.bg}`}>
                               {ws.label}
                             </span>
+                          </td>
+                          <td className="px-4 py-3.5 text-right">
+                            <div className="flex items-center justify-end gap-3">
+                              {wo.project_id && (
+                                <Link
+                                  href={`/admin/projects/${wo.project_id}`}
+                                  className="text-xs text-blue-500 hover:text-blue-700 hover:underline"
+                                >
+                                  Project →
+                                </Link>
+                              )}
+                              <Link
+                                href={`/admin/work-orders/${wo.id}`}
+                                className="text-xs text-neutral-400 hover:text-neutral-700 hover:underline"
+                              >
+                                WO →
+                              </Link>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -605,14 +627,26 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
                 <span className="text-neutral-400 text-xs">PD credits</span>
                 <span className="font-semibold text-neutral-900">{ta.pd_workshop_credits ?? <Empty />}</span>
               </div>
+              {ta.category && (
+                <div className="flex justify-between items-center pt-2">
+                  <span className="text-neutral-400 text-xs">Category</span>
+                  <span className="font-semibold text-neutral-900 text-xs">{ta.category}</span>
+                </div>
+              )}
             </div>
           </SideCard>
 
           {/* Training */}
           <SideCard title="Training">
             <div className="space-y-1">
-              <TrainingRow label="Online Onboarding" done={ta.training_online} />
-              <TrainingRow label="Offline Foundation" done={ta.training_offline} />
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-neutral-700">Online Onboarding</span>
+                <TrainingToggle taId={ta.id} field="training_online" checked={ta.training_online ?? false} />
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-neutral-700">Offline Foundation</span>
+                <TrainingToggle taId={ta.id} field="training_offline" checked={ta.training_offline ?? false} />
+              </div>
             </div>
           </SideCard>
 
@@ -707,17 +741,3 @@ export default async function TAProfilePage({ params }: { params: Promise<{ id: 
   );
 }
 
-function TrainingRow({ label, done }: { label: string; done: boolean }) {
-  return (
-    <div className="flex items-center justify-between py-2">
-      <span className="text-sm text-neutral-700">{label}</span>
-      <span
-        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-          done ? "bg-green-100 text-green-700" : "bg-neutral-100 text-neutral-400"
-        }`}
-      >
-        {done ? "Complete" : "Not complete"}
-      </span>
-    </div>
-  );
-}

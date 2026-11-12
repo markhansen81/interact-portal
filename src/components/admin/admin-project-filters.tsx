@@ -12,6 +12,7 @@ interface Project {
   end_date: string | null;
   status: string;
   ta_name: string;
+  team_names: string[];
   total_tasks: number;
   completed_tasks: number;
 }
@@ -36,19 +37,46 @@ function formatDate(dateStr: string): string {
 
 export function AdminProjectFilters({ projects }: { projects: Project[] }) {
   const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
 
-  const filtered = filter === "all" ? projects : projects.filter((p) => p.status === filter);
+  const afterSearch = search
+    ? projects.filter((p) => {
+        const q = search.toLowerCase();
+        return (
+          (p.name || "").toLowerCase().includes(q) ||
+          (p.team_names || []).some((n) => n.toLowerCase().includes(q)) ||
+          (p.ta_name || "").toLowerCase().includes(q) ||
+          (p.school || "").toLowerCase().includes(q)
+        );
+      })
+    : projects;
+
+  const filtered = filter === "all" ? afterSearch : afterSearch.filter((p) => p.status === filter);
 
   const counts = {
-    all: projects.length,
-    upcoming: projects.filter((p) => p.status === "upcoming").length,
-    active: projects.filter((p) => p.status === "active").length,
-    completed: projects.filter((p) => p.status === "completed").length,
+    all: afterSearch.length,
+    upcoming: afterSearch.filter((p) => p.status === "upcoming").length,
+    active: afterSearch.filter((p) => p.status === "active").length,
+    completed: afterSearch.filter((p) => p.status === "completed").length,
   };
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-neutral-900">TA Projects</h2>
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="text-2xl font-bold text-neutral-900">TA Projects</h2>
+        <div className="relative">
+          <svg className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search projects, TA, school…"
+            className="w-72 rounded-sm border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-[#E91E8C] focus:outline-none"
+          />
+        </div>
+      </div>
 
       <div className="flex gap-1 rounded-sm bg-neutral-100 p-1">
         {filters.map((f) => (
@@ -69,7 +97,7 @@ export function AdminProjectFilters({ projects }: { projects: Project[] }) {
 
       {filtered.length === 0 ? (
         <div className="rounded-sm border border-dashed border-neutral-300 bg-white p-12 text-center">
-          <p className="text-neutral-500">No projects found.</p>
+          <p className="text-neutral-500">{search ? "No projects match your search." : "No projects found."}</p>
         </div>
       ) : (
         <div className="overflow-hidden rounded-sm border border-neutral-200 bg-white">
@@ -94,7 +122,11 @@ export function AdminProjectFilters({ projects }: { projects: Project[] }) {
                       {p.name}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">{p.ta_name}</td>
+                  <td className="px-4 py-3 text-neutral-600">
+                    {p.team_names.length > 0
+                      ? p.team_names.join(", ")
+                      : p.ta_name}
+                  </td>
                   <td className="px-4 py-3 text-neutral-600">{p.program_type || "—"}</td>
                   <td className="px-4 py-3 text-neutral-600">{p.school || "—"}</td>
                   <td className="px-4 py-3 text-neutral-600 whitespace-nowrap">

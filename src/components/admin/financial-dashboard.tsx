@@ -79,7 +79,7 @@ interface AdminUpload {
 }
 
 type Tab = "all" | "pending" | "approved" | "paid" | "rejected" | "expenses" | "admin-uploads";
-type ExpenseFilter = "all" | "flagged";
+type ExpenseFilter = "all" | "flagged" | "submitted" | "approved" | "paid";
 
 const STATUS_STYLES: Record<string, string> = {
   draft: "bg-neutral-100 text-neutral-600",
@@ -212,6 +212,7 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
   const router = useRouter();
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   async function updateStatus(id: string, status: string) {
     setLoadingId(id);
@@ -224,6 +225,15 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
     router.refresh();
   }
 
+  const filtered = search
+    ? invoices.filter((inv) => {
+        const ta = inv.profiles;
+        const name = `${ta?.first_name ?? ""} ${ta?.last_name ?? ""} ${ta?.email ?? ""}`.toLowerCase();
+        const q = search.toLowerCase();
+        return name.includes(q) || (inv.invoice_number || "").toLowerCase().includes(q);
+      })
+    : invoices;
+
   if (invoices.length === 0) {
     return (
       <div className="border border-dashed border-neutral-300 bg-white p-12 text-center rounded-sm">
@@ -233,6 +243,19 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
   }
 
   return (
+    <div className="space-y-3">
+      <div className="relative">
+        <svg className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by TA name or invoice number…"
+          className="w-72 rounded-sm border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-[#E91E8C] focus:outline-none"
+        />
+      </div>
     <div className="overflow-hidden border border-neutral-200 bg-white rounded-sm">
       <table className="w-full">
         <thead>
@@ -248,7 +271,14 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-neutral-100">
-          {invoices.map((inv) => {
+          {filtered.length === 0 ? (
+            <tr>
+              <td colSpan={8} className="py-10 text-center text-sm text-neutral-400">
+                No invoices match your search
+              </td>
+            </tr>
+          ) : null}
+          {filtered.map((inv) => {
             const ta = inv.profiles;
             const taName = ta?.first_name && ta?.last_name ? `${ta.first_name} ${ta.last_name}` : ta?.email || "\u2014";
             const initials = [ta?.first_name?.[0], ta?.last_name?.[0]].filter(Boolean).join("").toUpperCase() || "?";
@@ -443,6 +473,7 @@ function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
         );
       })}
     </div>
+    </div>
   );
 }
 
@@ -452,9 +483,26 @@ function ExpensesTable({ expenses, defaultFilter }: { expenses: Expense[]; defau
   const [datevLoadingId, setDatevLoadingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<ExpenseFilter>(defaultFilter);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
-  const flaggedExpenses = expenses.filter((e) => e.needs_review === true);
-  const displayedExpenses = filter === "flagged" ? flaggedExpenses : expenses;
+  const afterSearch = search
+    ? expenses.filter((e) => {
+        const ta = e.profiles;
+        const name = `${ta?.first_name ?? ""} ${ta?.last_name ?? ""} ${ta?.email ?? ""}`.toLowerCase();
+        return name.includes(search.toLowerCase());
+      })
+    : expenses;
+
+  const flaggedExpenses = afterSearch.filter((e) => e.needs_review === true);
+  const submittedExpenses = afterSearch.filter((e) => e.status === "submitted");
+  const approvedExpenses = afterSearch.filter((e) => e.status === "approved");
+  const paidExpenses = afterSearch.filter((e) => e.status === "paid");
+  const displayedExpenses =
+    filter === "flagged" ? flaggedExpenses
+    : filter === "submitted" ? submittedExpenses
+    : filter === "approved" ? approvedExpenses
+    : filter === "paid" ? paidExpenses
+    : afterSearch;
 
   async function updateStatus(id: string, status: string) {
     setLoadingId(id);
@@ -491,28 +539,41 @@ function ExpensesTable({ expenses, defaultFilter }: { expenses: Expense[]; defau
 
   return (
     <div className="space-y-3">
+      {/* Search */}
+      <div className="relative w-64">
+        <svg className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by TA name…"
+          className="w-full rounded-sm border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-[#E91E8C] focus:outline-none"
+        />
+      </div>
+
       {/* Sub-filter tabs — underline style */}
-      <div className="flex gap-6 border-b border-neutral-200">
-        <button
-          onClick={() => setFilter("all")}
-          className={`whitespace-nowrap pb-2 text-[12px] font-medium transition-colors border-b-2 -mb-px ${
-            filter === "all"
-              ? "border-neutral-900 text-neutral-900"
-              : "border-transparent text-neutral-500 hover:text-neutral-700"
-          }`}
-        >
-          All Expenses ({expenses.length})
-        </button>
-        <button
-          onClick={() => setFilter("flagged")}
-          className={`whitespace-nowrap pb-2 text-[12px] font-medium transition-colors border-b-2 -mb-px ${
-            filter === "flagged"
-              ? "border-neutral-900 text-neutral-900"
-              : "border-transparent text-neutral-500 hover:text-neutral-700"
-          }`}
-        >
-          Flagged ({flaggedExpenses.length})
-        </button>
+      <div className="flex gap-6 overflow-x-auto border-b border-neutral-200">
+        {([
+          { key: "all", label: `All (${afterSearch.length})` },
+          { key: "submitted", label: `Pending (${submittedExpenses.length})` },
+          { key: "approved", label: `Approved (${approvedExpenses.length})` },
+          { key: "paid", label: `Paid (${paidExpenses.length})` },
+          { key: "flagged", label: `Flagged (${flaggedExpenses.length})` },
+        ] as { key: ExpenseFilter; label: string }[]).map((f) => (
+          <button
+            key={f.key}
+            onClick={() => setFilter(f.key)}
+            className={`whitespace-nowrap pb-2 text-[12px] font-medium transition-colors border-b-2 -mb-px ${
+              filter === f.key
+                ? "border-neutral-900 text-neutral-900"
+                : "border-transparent text-neutral-500 hover:text-neutral-700"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
       </div>
 
       <div className="overflow-hidden border border-neutral-200 bg-white rounded-sm">

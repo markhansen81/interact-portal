@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { sendEmail, workOrderSignedEmailToTA, workOrderSignedEmailToAdmin } from "@/lib/email";
+import { workOrderSignedEmailToTA, workOrderSignedEmailToAdmin } from "@/lib/email";
+import { sendTemplatedEmail } from "@/lib/email-templates";
 import { notifyWorkOrderEvent, sendSlackAlert } from "@/lib/slack";
 import { generateSchoolProfile, generateHomestayProfile, PROFILE_FIELDS } from "@/lib/ta-profile-docs";
 
@@ -88,12 +89,21 @@ export async function POST(
     }
   }
 
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
+  const woVars = {
+    TA_NAME: taName,
+    PROJECT_NAME: wo.project_name ?? "",
+    SCHOOL_NAME: wo.school ?? "",
+    PORTAL_URL: APP_URL,
+  };
+
   // Send email to TA with signed PDF attached
   if (taEmail) {
-    const taEmailTemplate = workOrderSignedEmailToTA(taName, wo.project_name, wo.school);
-    await sendEmail({
+    await sendTemplatedEmail({
+      templateId: "wo-signed-ta",
+      vars: woVars,
+      fallback: workOrderSignedEmailToTA(taName, wo.project_name, wo.school),
       to: taEmail,
-      ...taEmailTemplate,
       attachments,
     });
   }
@@ -106,11 +116,12 @@ export async function POST(
     .eq("role", "admin");
 
   if (admins) {
-    const adminEmailTemplate = workOrderSignedEmailToAdmin(taName, wo.project_name, wo.school);
     for (const admin of admins) {
-      await sendEmail({
+      await sendTemplatedEmail({
+        templateId: "wo-signed-admin",
+        vars: woVars,
+        fallback: workOrderSignedEmailToAdmin(taName, wo.project_name, wo.school),
         to: admin.email,
-        ...adminEmailTemplate,
       });
     }
   }

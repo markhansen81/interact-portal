@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logActivity } from "@/lib/activity-log";
 import { notifyAdmins } from "@/lib/notifications";
-import { sendEmail, workOrderDeclinedEmailToAdmin } from "@/lib/email";
+import { workOrderDeclinedEmailToAdmin } from "@/lib/email";
+import { sendTemplatedEmail } from "@/lib/email-templates";
 import { notifyWorkOrderEvent } from "@/lib/slack";
 
 export async function POST(
@@ -93,11 +94,19 @@ export async function POST(
     .eq("role", "admin");
 
   if (admins) {
-    const emailTemplate = workOrderDeclinedEmailToAdmin(taName, wo.project_name, wo.school, reason || undefined);
+    const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
     for (const admin of admins) {
-      await sendEmail({
+      await sendTemplatedEmail({
+        templateId: "wo-declined",
+        vars: {
+          TA_NAME: taName,
+          PROJECT_NAME: wo.project_name ?? "",
+          SCHOOL_NAME: wo.school ?? "",
+          REASON: reason || "",
+          PORTAL_URL: APP_URL,
+        },
+        fallback: workOrderDeclinedEmailToAdmin(taName, wo.project_name, wo.school, reason || undefined),
         to: admin.email,
-        ...emailTemplate,
       });
     }
   }

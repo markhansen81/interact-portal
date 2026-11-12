@@ -34,6 +34,8 @@ export async function POST(
     return NextResponse.json({ error: "Offer not found" }, { status: 404 });
   if (!offer.contact_email)
     return NextResponse.json({ error: "No contact email" }, { status: 400 });
+  if (!offer.total || Number(offer.total) === 0)
+    return NextResponse.json({ error: "Cannot send an offer with a €0 total. Add pricing first." }, { status: 400 });
 
   // Collect programs
   const programs: string[] = Array.isArray(offer.programs) && offer.programs.length > 0

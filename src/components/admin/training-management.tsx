@@ -22,14 +22,23 @@ type Filter = "all" | "incomplete" | "online_missing" | "offline_missing" | "com
 
 export function TrainingManagement({ tas }: { tas: TA[] }) {
   const [filter, setFilter] = useState<Filter>("all");
+  const [search, setSearch] = useState("");
   const router = useRouter();
 
-  const complete = tas.filter((t) => t.training_online && t.training_offline);
-  const incomplete = tas.filter((t) => !t.training_online || !t.training_offline);
-  const onlineMissing = tas.filter((t) => !t.training_online);
-  const offlineMissing = tas.filter((t) => !t.training_offline);
+  const afterSearch = search
+    ? tas.filter((ta) => {
+        const q = search.toLowerCase();
+        const name = `${ta.first_name ?? ""} ${ta.last_name ?? ""} ${ta.email}`.toLowerCase();
+        return name.includes(q);
+      })
+    : tas;
 
-  const filtered = filter === "all" ? tas
+  const complete = afterSearch.filter((t) => t.training_online && t.training_offline);
+  const incomplete = afterSearch.filter((t) => !t.training_online || !t.training_offline);
+  const onlineMissing = afterSearch.filter((t) => !t.training_online);
+  const offlineMissing = afterSearch.filter((t) => !t.training_offline);
+
+  const filtered = filter === "all" ? afterSearch
     : filter === "complete" ? complete
     : filter === "incomplete" ? incomplete
     : filter === "online_missing" ? onlineMissing
@@ -54,7 +63,19 @@ export function TrainingManagement({ tas }: { tas: TA[] }) {
       </div>
 
       {/* Filter bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div className="relative">
+          <svg className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search TAs…"
+            className="w-64 rounded-sm border border-neutral-200 bg-white py-1.5 pl-8 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-[#E91E8C] focus:outline-none"
+          />
+        </div>
         <p className="text-sm text-neutral-500">
           Showing {filtered.length} of {tas.length} TAs
           {filter !== "all" && (

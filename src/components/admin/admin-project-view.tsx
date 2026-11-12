@@ -9,6 +9,7 @@ import { StaffingWizard } from"@/components/admin/staffing-wizard";
 interface Project {
  id: string;
  name: string;
+ ta_id: string | null;
  school: string | null;
  school_address: string | null;
  location: string | null;
@@ -551,10 +552,17 @@ export function AdminProjectView({
 
  return (
  <div className="space-y-8">
- {/* Back link */}
- <Link href="/admin/projects"className="text-sm text-neutral-500 hover:text-neutral-700">
- &larr; Back to Projects
- </Link>
+ {/* Back link + WO link */}
+ <div className="flex items-center gap-4">
+   <Link href="/admin/projects" className="text-sm text-neutral-500 hover:text-neutral-700">
+     &larr; Back to Projects
+   </Link>
+   {project.work_order_id && (
+     <Link href={`/admin/work-orders/${project.work_order_id}`} className="text-sm text-neutral-500 hover:text-neutral-700">
+       View Work Order &rarr;
+     </Link>
+   )}
+ </div>
 
  {/* Project header */}
  <div className="rounded-sm border border-neutral-200 bg-white p-6">
@@ -562,7 +570,11 @@ export function AdminProjectView({
  <div>
  <h1 className="text-2xl font-bold text-neutral-900">{project.name}</h1>
  <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-neutral-500">
- <span>TA: {project.ta_name}</span>
+ <span>TA: {project.ta_id ? (
+   <Link href={`/admin/teaching-artists/${project.ta_id}`} className="hover:text-[#E91E8C] hover:underline">
+     {project.ta_name}
+   </Link>
+ ) : project.ta_name}</span>
  {project.school && <span>School: {project.school}</span>}
  {project.program_type && <span>Program: {project.program_type}</span>}
  {project.start_date && project.end_date && (
@@ -620,7 +632,7 @@ export function AdminProjectView({
  hometown_country: m.profile.hometown_country,
  };
  return (
- <TAProfileCard key={m.ta_id} profile={taProfile} variant="school"/>
+ <TAProfileCard key={m.ta_id} profile={taProfile} variant="school" adminProfileLink={`/admin/teaching-artists/${m.ta_id}`}/>
  );
  })}
  </div>
@@ -654,7 +666,7 @@ export function AdminProjectView({
  hometown_country: m.profile.hometown_country,
  };
  return (
- <TAProfileCard key={m.ta_id} profile={taProfile} variant="homestay"/>
+ <TAProfileCard key={m.ta_id} profile={taProfile} variant="homestay" adminProfileLink={`/admin/teaching-artists/${m.ta_id}`}/>
  );
  })}
  </div>

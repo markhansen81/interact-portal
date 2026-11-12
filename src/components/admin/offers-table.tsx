@@ -38,10 +38,20 @@ const statusLabel: Record<OfferStatus, string> = {
   expired: "Expired",
 };
 
+const STATUS_FILTERS: { key: string; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "draft", label: "Draft" },
+  { key: "sent", label: "Sent" },
+  { key: "accepted", label: "Accepted" },
+  { key: "declined", label: "Declined" },
+  { key: "expired", label: "Expired" },
+];
+
 export function OffersTable({ offers }: { offers: Offer[] }) {
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
-  const filtered = offers.filter((o) => {
+  const afterSearch = offers.filter((o) => {
     if (!search) return true;
     const s = search.toLowerCase();
     return (
@@ -52,6 +62,13 @@ export function OffersTable({ offers }: { offers: Offer[] }) {
       o.offer_number?.toLowerCase().includes(s)
     );
   });
+
+  const filtered = statusFilter === "all" ? afterSearch : afterSearch.filter((o) => o.status === statusFilter);
+
+  const statusCounts = STATUS_FILTERS.reduce<Record<string, number>>((acc, f) => {
+    acc[f.key] = f.key === "all" ? afterSearch.length : afterSearch.filter((o) => o.status === f.key).length;
+    return acc;
+  }, {});
 
   const draftCount = offers.filter((o) => o.status === "draft").length;
   const sentCount = offers.filter((o) => o.status === "sent").length;
@@ -85,15 +102,34 @@ export function OffersTable({ offers }: { offers: Offer[] }) {
         </div>
       </div>
 
-      {/* Search */}
-      <div>
-        <input
-          type="text"
-          placeholder="Search by school, contact, program..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-sm border border-neutral-300 bg-white rounded-sm px-4 py-2 text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-0 transition-colors"
-        />
+      {/* Search + Status filter */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="relative">
+          <svg className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search by school, contact, program..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full max-w-sm border border-neutral-300 bg-white rounded-sm py-2 pl-8 pr-3 text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-0 transition-colors"
+          />
+        </div>
+        <div className="flex gap-1 rounded-sm bg-neutral-100 p-1 self-start">
+          {STATUS_FILTERS.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setStatusFilter(f.key)}
+              className={`rounded-sm px-3 py-1.5 text-xs font-medium transition-colors ${
+                statusFilter === f.key ? "bg-white text-neutral-900" : "text-neutral-500 hover:text-neutral-700"
+              }`}
+            >
+              {f.label}
+              <span className="ml-1 text-neutral-400">{statusCounts[f.key]}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Table */}
@@ -120,7 +156,7 @@ export function OffersTable({ offers }: { offers: Offer[] }) {
                 Status
               </th>
               <th className="pb-3 pr-6 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">
-                Created
+                Valid Until
               </th>
               <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-400">
                 Actions
@@ -131,16 +167,20 @@ export function OffersTable({ offers }: { offers: Offer[] }) {
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={8} className="py-12 text-center text-neutral-400">
-                  {search ? "No matching offers" : "No offers yet"}
+                  {search || statusFilter !== "all" ? "No matching offers" : "No offers yet"}
                 </td>
               </tr>
             ) : (
               filtered.map((offer) => {
                 const status = (offer.status || "draft") as OfferStatus;
+                const today = new Date().toISOString().split("T")[0];
+                const sevenDays = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
+                const isExpiringSoon = offer.status === "sent" && offer.valid_until && offer.valid_until <= sevenDays && offer.valid_until >= today;
+                const isPastDue = offer.status === "sent" && offer.valid_until && offer.valid_until < today;
                 return (
                   <tr
                     key={offer.id}
-                    className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors"
+                    className={`border-b border-neutral-100 hover:bg-neutral-50 transition-colors ${isPastDue ? "bg-red-50/40" : isExpiringSoon ? "bg-amber-50/40" : ""}`}
                   >
                     <td className="py-4 pr-6 font-medium text-neutral-900">
                       {offer.offer_number || "-"}
@@ -169,8 +209,16 @@ export function OffersTable({ offers }: { offers: Offer[] }) {
                         {statusLabel[status] || status}
                       </Badge>
                     </td>
-                    <td className="py-4 pr-6 text-neutral-600">
-                      {new Date(offer.created_at).toLocaleDateString("de-DE")}
+                    <td className="py-4 pr-6">
+                      {offer.valid_until ? (
+                        <span className={isPastDue ? "text-red-600 font-medium" : isExpiringSoon ? "text-amber-600 font-medium" : "text-neutral-600"}>
+                          {new Date(offer.valid_until + "T00:00:00").toLocaleDateString("de-DE")}
+                          {isPastDue && " (expired)"}
+                          {isExpiringSoon && " (soon)"}
+                        </span>
+                      ) : (
+                        <span className="text-neutral-400">—</span>
+                      )}
                     </td>
                     <td className="py-4">
                       <Link
