@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "npx playwright test",
+    "test:unit": "vitest run",
     "test:admin": "npx playwright test --grep @admin",
     "test:ta": "npx playwright test --grep @ta",
     "test:teacher": "npx playwright test --grep @teacher",
@@ -64,9 +65,11 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.12",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.12"
   }
 }
