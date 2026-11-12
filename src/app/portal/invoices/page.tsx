@@ -24,7 +24,7 @@ export default async function TAInvoicesPage() {
 
   // Fetch travel_hours + equipment_provided separately (new columns, handle gracefully)
   const woIds = (signedWOs || []).map((w) => w.id);
-  let woExtras: Record<string, { travel_hours: number | null; equipment_provided: boolean | null }> = {};
+  const woExtras: Record<string, { travel_hours: number | null; equipment_provided: boolean | null }> = {};
   if (woIds.length > 0) {
     const { data: extras } = await supabase
       .from("work_orders")
