@@ -90,8 +90,10 @@ export async function POST() {
         .eq("id", order.id);
       if (urlError) throw new Error(`DB update url: ${urlError.message}`);
 
-      // 5. Resend email if customer email exists
-      if (order.customer_email) {
+      // 5. Send correction email — skipped if already delivered in a prior attempt
+      // (repair_email_sent_at is set before fee update, so a failed fee update
+      //  leaves the order retryable but won't re-send the email)
+      if (order.customer_email && !order.repair_email_sent_at) {
         const currencySymbol = (order.currency || "EUR") === "EUR" ? "€" : order.currency;
         const parentName = `${order.customer_first_name || ""} ${order.customer_last_name || ""}`.trim() || "Kunde";
         const insuredName = [order.insured_first_name, order.insured_last_name].filter(Boolean).join(" ") || "Ihr Kind";
@@ -105,18 +107,20 @@ export async function POST() {
           order.school_name || ""
         );
 
-        await sendEmail({
+        const sent = await sendEmail({
           to: order.customer_email,
           subject: `[Korrektur] ${emailData.subject}`,
           html: emailData.html,
           attachments: [{ filename: `${dateStr}_${orderNum}_${surname}.pdf`, content: pdfBuffer }],
         });
+        if (!sent.ok) throw new Error(`Email delivery failed: ${JSON.stringify(sent.error)}`);
 
-        const { error: emailTsError } = await adminClient
+        // Persist delivery state before the final fee update so a retry skips re-sending
+        const { error: repairEmailError } = await adminClient
           .from("insurance_orders")
-          .update({ email_sent_at: new Date().toISOString() })
+          .update({ repair_email_sent_at: new Date().toISOString() })
           .eq("id", order.id);
-        if (emailTsError) throw new Error(`DB update email_sent_at: ${emailTsError.message}`);
+        if (repairEmailError) throw new Error(`DB update repair_email_sent_at: ${repairEmailError.message}`);
       }
 
       // Final step: mark the fee as corrected — only reached if everything above succeeded
