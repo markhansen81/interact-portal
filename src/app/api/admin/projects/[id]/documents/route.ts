@@ -68,6 +68,28 @@ export async function POST(
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
   }
 
+  // File size limit: 25MB
+  if (file.size > 25 * 1024 * 1024) {
+    return NextResponse.json({ error: "File too large (max 25MB)" }, { status: 400 });
+  }
+
+  // Allow common document types
+  const ALLOWED_TYPES = [
+    "application/pdf",
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "text/plain",
+  ];
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    return NextResponse.json({ error: "File type not allowed" }, { status: 400 });
+  }
+
   // Upload to Supabase storage
   const fileBuffer = Buffer.from(await file.arrayBuffer());
   const fileName = `${Date.now()}-${file.name}`;
