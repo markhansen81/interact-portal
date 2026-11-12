@@ -85,7 +85,7 @@ export function InvoiceCalculator({
  if (saved) {
  try {
  const draft = JSON.parse(saved);
- if (draft.addons?.length) setAddons(draft.addons);
+ if (draft.addons?.length) setAddons(draft.addons); // eslint-disable-line react-hooks/set-state-in-effect -- mount-only: restore localStorage draft
  if (draft.travelHours) setTravelHours(draft.travelHours);
  if (draft.notes) setNotes(draft.notes);
  setDraftLoaded(true);

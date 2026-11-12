@@ -192,6 +192,7 @@ export function OfferForm({ prefill, rates, offerId }: OfferFormProps) {
 
   // Auto-fill price when num_days or tariff changes for a line
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- derived state: sync programLines prices when tariff changes
     setProgramLines((prev) =>
       prev.map((line) => {
         if (!line.num_days) return line;

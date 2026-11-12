@@ -22,15 +22,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Full lint run — surfaces existing issues but does not block CI.
-      # TODO: resolve pre-existing lint debt (74 errors) and promote to strict.
-      - name: Lint (informational)
+      - name: Lint
         run: npm run lint
-        continue-on-error: true
-
-      # Lint new test files strictly — these must be clean.
-      - name: Lint test files (strict)
-        run: npx eslint src/__tests__
 
       - name: TypeScript check
         run: npx tsc --noEmit

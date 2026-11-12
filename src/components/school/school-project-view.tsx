@@ -295,6 +295,7 @@ export function SchoolProjectView({
  // --- Student actions ---
 
  const addStudent = useCallback(
+ // eslint-disable-next-line react-hooks/preserve-manual-memoization -- complex component with many callbacks; refactoring deferred
  async (groupId: string) => {
  const input = newStudents[groupId];
  if (!input?.first_name?.trim()) return;

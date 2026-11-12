@@ -137,7 +137,7 @@ export function AdminUploadForm() {
  }, []);
 
  useEffect(() => {
- fetchUploads();
+ fetchUploads(); // eslint-disable-line react-hooks/set-state-in-effect -- async fetch on mount
  }, [fetchUploads]);
 
  const { totalOutstanding, overdueCount, filteredUploads } = useMemo(() => {

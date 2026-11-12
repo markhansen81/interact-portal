@@ -65,7 +65,7 @@ export function ExpenseClaimForm({
  try {
  const draft = JSON.parse(saved);
  if (draft.items?.length) {
- setItems(
+ setItems( // eslint-disable-line react-hooks/set-state-in-effect -- mount-only: restore localStorage draft
  draft.items.map((item: Partial<ExpenseItem>) => ({
  ...emptyItem(),
  description: item.description ||"",
