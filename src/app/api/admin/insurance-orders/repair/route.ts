@@ -42,10 +42,11 @@ export async function POST() {
   for (const order of orders) {
     try {
       // 1. Fix the fee in DB
-      await adminClient
+      const { error: feeError } = await adminClient
         .from("insurance_orders")
         .update({ participation_fee: 129 })
         .eq("id", order.id);
+      if (feeError) throw new Error(`DB update fee: ${feeError.message}`);
 
       // 2. Regenerate PDF with corrected data
       const orderDate = new Date(order.created_at).toLocaleDateString("en-GB", {
@@ -79,18 +80,20 @@ export async function POST() {
       const orderNum = order.order_number || order.squarespace_order_id;
       const storagePath = `insurance-invoices/${dateStr}_${orderNum}_${surname}.pdf`;
 
-      await adminClient.storage.from("documents").upload(storagePath, pdfBuffer, {
+      const { error: uploadError } = await adminClient.storage.from("documents").upload(storagePath, pdfBuffer, {
         contentType: "application/pdf",
         upsert: true,
       });
+      if (uploadError) throw new Error(`Storage upload: ${uploadError.message}`);
 
       const newPdfUrl = await getSecureUrl("documents", storagePath);
 
       // 4. Update invoice_pdf_url
-      await adminClient
+      const { error: urlError } = await adminClient
         .from("insurance_orders")
         .update({ invoice_pdf_url: newPdfUrl })
         .eq("id", order.id);
+      if (urlError) throw new Error(`DB update url: ${urlError.message}`);
 
       // 5. Resend email if customer email exists
       if (order.customer_email) {
@@ -114,10 +117,11 @@ export async function POST() {
           attachments: [{ filename: `${dateStr}_${orderNum}_${surname}.pdf`, content: pdfBuffer }],
         });
 
-        await adminClient
+        const { error: emailTsError } = await adminClient
           .from("insurance_orders")
           .update({ email_sent_at: new Date().toISOString() })
           .eq("id", order.id);
+        if (emailTsError) throw new Error(`DB update email_sent_at: ${emailTsError.message}`);
       }
 
       results.push({ id: order.id, order_number: String(orderNum), email: order.customer_email || "-", status: "repaired" });
