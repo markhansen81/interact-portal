@@ -41,14 +41,9 @@ export async function POST() {
 
   for (const order of orders) {
     try {
-      // 1. Fix the fee in DB
-      const { error: feeError } = await adminClient
-        .from("insurance_orders")
-        .update({ participation_fee: 129 })
-        .eq("id", order.id);
-      if (feeError) throw new Error(`DB update fee: ${feeError.message}`);
-
-      // 2. Regenerate PDF with corrected data
+      // 1. Regenerate PDF with corrected data
+      // NOTE: fee DB update happens LAST so a mid-flight failure leaves the order
+      // still matchable by participation_fee=12900 on the next repair run.
       const orderDate = new Date(order.created_at).toLocaleDateString("en-GB", {
         year: "numeric", month: "long", day: "numeric",
       });
@@ -123,6 +118,13 @@ export async function POST() {
           .eq("id", order.id);
         if (emailTsError) throw new Error(`DB update email_sent_at: ${emailTsError.message}`);
       }
+
+      // Final step: mark the fee as corrected — only reached if everything above succeeded
+      const { error: feeError } = await adminClient
+        .from("insurance_orders")
+        .update({ participation_fee: 129 })
+        .eq("id", order.id);
+      if (feeError) throw new Error(`DB update fee: ${feeError.message}`);
 
       results.push({ id: order.id, order_number: String(orderNum), email: order.customer_email || "-", status: "repaired" });
     } catch (err) {
