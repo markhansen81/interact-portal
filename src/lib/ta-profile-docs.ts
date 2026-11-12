@@ -3,7 +3,7 @@
  * Called when a TA signs a work order and gets linked to a project.
  */
 
-interface ProfileData {
+export interface ProfileData {
   first_name?: string | null;
   last_name?: string | null;
   preferred_name?: string | null;

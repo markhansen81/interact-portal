@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { generateSchoolProfile, generateHomestayProfile, PROFILE_FIELDS } from "@/lib/ta-profile-docs";
+import { generateSchoolProfile, generateHomestayProfile, PROFILE_FIELDS, ProfileData } from "@/lib/ta-profile-docs";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -16,8 +16,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const { data: ta } = await adminClient.from("profiles").select(PROFILE_FIELDS + ", id, photo_url").eq("id", id).single();
   if (!ta) return NextResponse.json({ error: "TA not found" }, { status: 404 });
 
-  const schoolDoc = generateSchoolProfile(ta as any);
-  const homestayDoc = generateHomestayProfile(ta as any);
+  const schoolDoc = generateSchoolProfile(ta as ProfileData);
+  const homestayDoc = generateHomestayProfile(ta as ProfileData);
 
   await adminClient.from("ta_profile_docs").upsert({
     ta_id: id,

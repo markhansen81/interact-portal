@@ -109,7 +109,7 @@ function getChecklist(ta: TAProfile, docs: TADoc[], prefsCount: number, availCou
   const hasRightToWork = uploadedTypes.has("right_to_work");
 
   const personalFields = ["first_name", "last_name", "phone", "date_of_birth", "nationality", "street", "city", "postal_code"] as const;
-  const personalDone = personalFields.filter((f) => !!(ta as any)[f]).length;
+  const personalDone = personalFields.filter((f) => !!(ta as unknown as Record<string, unknown>)[f]).length;
 
   return [
     { id: "personal", label: "Personal Details", detail: `${personalDone}/${personalFields.length}`, done: personalDone === personalFields.length, category: "profile", portalPath: "/portal/profile" },

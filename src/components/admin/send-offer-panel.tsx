@@ -43,8 +43,8 @@ export function SendOfferPanel({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Send failed");
       router.refresh();
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Send failed");
     } finally {
       setSending(false);
     }
