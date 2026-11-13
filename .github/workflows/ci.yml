@@ -40,3 +40,77 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: placeholder
           RESEND_API_KEY: placeholder
           NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+  e2e:
+    name: E2E Tests (Browserless)
+    runs-on: ubuntu-latest
+    needs: ci
+    # Only run E2E when secrets are available (not on forks)
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium
+
+      - name: Wait for Vercel preview deployment
+        uses: patrickedqvist/wait-for-vercel-preview@v1.3.2
+        id: vercel
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          max_timeout: 300
+
+      - name: Run E2E tests via Browserless
+        run: npx playwright test --reporter=list
+        env:
+          TEST_BASE_URL: ${{ steps.vercel.outputs.url }}
+          BROWSERLESS_API_KEY: ${{ secrets.BROWSERLESS_API_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASS: ${{ secrets.E2E_ADMIN_PASS }}
+          E2E_TA_A_EMAIL: ${{ secrets.E2E_TA_A_EMAIL }}
+          E2E_TA_A_PASS: ${{ secrets.E2E_TA_A_PASS }}
+          E2E_TA_B_EMAIL: ${{ secrets.E2E_TA_B_EMAIL }}
+          E2E_TA_B_PASS: ${{ secrets.E2E_TA_B_PASS }}
+          E2E_SCHOOL_PROJECT_TOKEN: ${{ secrets.E2E_SCHOOL_PROJECT_TOKEN }}
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-results
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 14
+
+      - name: E2E summary
+        if: always()
+        run: |
+          echo "## E2E Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f test-results/.last-run.json ]; then
+            cat test-results/.last-run.json | node -e "
+              const data = require('fs').readFileSync('/dev/stdin', 'utf8');
+              const json = JSON.parse(data);
+              console.log('| Metric | Count |');
+              console.log('|--------|-------|');
+              console.log('| Passed | ' + (json.suites?.[0]?.specs?.filter(s => s.ok).length || 'N/A') + ' |');
+              console.log('| Failed | ' + (json.suites?.[0]?.specs?.filter(s => !s.ok).length || 'N/A') + ' |');
+            " >> $GITHUB_STEP_SUMMARY 2>/dev/null || echo "Could not parse test results" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No test results file found" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Screenshots and traces available in the **e2e-results** artifact." >> $GITHUB_STEP_SUMMARY

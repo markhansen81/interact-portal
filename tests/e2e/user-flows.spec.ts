@@ -5,9 +5,9 @@ import { loginAsAdmin, adminGoto, BASE_URL } from "./helpers";
 // Test data
 // ---------------------------------------------------------------------------
 
-const DANIELLE_EMAIL = "danielle.musick@test.com";
-const DANIELLE_PASS = "TestTA2026!";
-const SCHOOL_TOKEN = "5e758ca9-3a7e-4185-a2bb-ce94c749bc79";
+const DANIELLE_EMAIL = process.env.E2E_TA_B_EMAIL || "";
+const DANIELLE_PASS = process.env.E2E_TA_B_PASS || "";
+const SCHOOL_TOKEN = process.env.E2E_SCHOOL_PROJECT_TOKEN || "";
 const WO_THEATRE = "c0ba94eb-dbdd-41b0-b430-9a59712e4da8";
 
 const SCREENSHOT_DIR = "test-results/user-flows";
