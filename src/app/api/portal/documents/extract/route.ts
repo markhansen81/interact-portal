@@ -38,7 +38,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "file_url and doc_type required" }, { status: 400 });
   }
 
-  const expectedDoc = DOC_TYPE_DESCRIPTIONS[doc_type] || "An official document";
+  // Validate file_url is a Supabase storage URL to prevent SSRF
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!supabaseUrl || !file_url.startsWith(supabaseUrl + "/storage/")) {
+    return NextResponse.json({ error: "Invalid file URL" }, { status: 400 });
+  }
+
+  // Validate doc_type is a known type
+  if (!Object.prototype.hasOwnProperty.call(DOC_TYPE_DESCRIPTIONS, doc_type)) {
+    return NextResponse.json({ error: "Invalid document type" }, { status: 400 });
+  }
+
+  const expectedDoc = DOC_TYPE_DESCRIPTIONS[doc_type];
 
   try {
     // Fetch the file to send to Claude
